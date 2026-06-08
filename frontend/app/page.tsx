@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -69,9 +69,10 @@ export default function Home() {
         </div>
 
         <div className="fade-up absolute bottom-6 font-mono text-[11px] text-muted/60">
-          built with the raw Anthropic SDK · no framework magic
+          powered by a multi-provider LLM gateway with automatic failover
         </div>
       </div>
     </main>
   );
 }
+

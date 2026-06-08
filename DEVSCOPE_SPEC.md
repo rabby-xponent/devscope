@@ -264,26 +264,31 @@ interface TraceEvent {
 
 ## 8. Agent Design
 
-### System prompt
+### Two-phase architecture
+
+The agent does **not** synthesize the profile inside the tool-gathering loop. That caused 6,000+ token message histories that exceeded free-tier limits.
 
 ```
-You are DevScope, a developer intelligence agent. Your job is to build a 
-thorough, honest, and specific profile of a GitHub developer.
-
-Use the available tools to gather evidence. Be specific — cite repo names, 
-star counts, commit patterns, README quality. Avoid generic praise.
-
-When you have gathered enough evidence (typically 8-12 tool calls), produce 
-the final profile as a JSON object matching the DevProfile schema exactly.
-Return ONLY the JSON — no markdown, no explanation.
-
-Principles:
-- Be specific, not generic ("writes clear READMEs with working examples" 
-  not "good communicator")
-- Be honest — if repos are mostly forks with no commits, say so
-- Evidence-based — every claim must trace to something you observed
-- Constructive — growth areas should be actionable, not harsh
+Phase 1 — GATHER    ReAct loop with tools (truncated results in messages)
+Phase 2 — COMPRESS  Deterministic summary of all collected tool data
+Phase 3 — SYNTHESIZE  Single LLM call (no tools) → DevProfile JSON
 ```
+
+See [`backend/docs/AGENT.md`](./backend/docs/AGENT.md) for implementation details.
+
+### Gathering prompt (`SYSTEM_PROMPT`)
+
+The gathering agent calls tools only. It does not output profile JSON. Mandatory tools:
+
+- `get_aggregated_languages` — byte-weighted language percentages for expertise bars
+- `get_commit_activity` — recent push patterns, streaks, commit messages
+- `get_pr_activity` — PR/review activity for collaboration signals
+
+After ~10–14 tool calls, it responds with a brief completion message.
+
+### Synthesis prompt (`SYNTHESIS_PROMPT`)
+
+A separate call receives a compressed evidence summary and outputs the full `DevProfile` JSON, including `recruiterPanel` for recruiter-facing UI sections.
 
 ### Tool definitions
 

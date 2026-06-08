@@ -29,7 +29,7 @@ router.get('/generate', async (req: Request, res: Response) => {
     if (!force) {
       const cached = await readCache(username);
       if (cached) {
-        send({ type: 'complete', timestamp: new Date().toISOString(), profile: cached });
+        send({ type: 'complete', timestamp: new Date().toISOString(), profile: cached, cached: true });
         res.end();
         return;
       }
@@ -38,7 +38,7 @@ router.get('/generate', async (req: Request, res: Response) => {
     const profile = await agent.buildProfile(username, send);
     await writeCache(username, profile);
 
-    send({ type: 'complete', timestamp: new Date().toISOString(), profile });
+    send({ type: 'complete', timestamp: new Date().toISOString(), profile, cached: false });
     res.end();
   } catch (err: any) {
     send({

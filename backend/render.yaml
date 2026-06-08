@@ -5,7 +5,25 @@ services:
     buildCommand: npm install && npm run build
     startCommand: npm start
     envVars:
-      - key: LLM_API_KEY
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: DEEPSEEK_API_KEY
+        sync: false
+      - key: QWEN_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: LLM_PROVIDER_OVERRIDE
+        sync: false
+      - key: LLM_CACHE_ENABLED
+        sync: false
+      - key: LLM_CACHE_DIR
+        sync: false
+      - key: LLM_CACHE_TTL_MINUTES
         sync: false
       - key: GITHUB_TOKEN
         sync: false

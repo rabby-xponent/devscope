@@ -10,6 +10,7 @@ export function useDevScopeStream() {
   const [status, setStatus] = useState<Status>('idle');
   const [trace, setTrace] = useState<TraceEvent[]>([]);
   const [profile, setProfile] = useState<DevProfile | null>(null);
+  const [cached, setCached] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const sourceRef = useRef<EventSource | null>(null);
 
@@ -18,6 +19,7 @@ export function useDevScopeStream() {
     setStatus('idle');
     setTrace([]);
     setProfile(null);
+    setCached(false);
     setError(null);
   }, []);
 
@@ -26,6 +28,7 @@ export function useDevScopeStream() {
     setStatus('connecting');
     setTrace([]);
     setProfile(null);
+    setCached(false);
     setError(null);
 
     const url = `${API_URL}/api/generate?username=${encodeURIComponent(username)}${
@@ -46,6 +49,7 @@ export function useDevScopeStream() {
     source.addEventListener('complete', (e) => {
       const data = JSON.parse((e as MessageEvent).data);
       setProfile(data.profile);
+      setCached(!!data.cached);
       setStatus('complete');
       source.close();
     });
@@ -66,5 +70,5 @@ export function useDevScopeStream() {
     });
   }, []);
 
-  return { status, trace, profile, error, generate, reset };
+  return { status, trace, profile, cached, error, generate, reset };
 }

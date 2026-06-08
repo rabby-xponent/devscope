@@ -5,12 +5,13 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useDevScopeStream } from '@/hooks/useDevScopeStream';
 import { AgentTrace } from '@/components/AgentTrace';
+import { AgentProgress } from '@/components/AgentProgress';
 import { ProfileView } from '@/components/ProfileView';
 
 export default function ProfilePage() {
   const params = useParams();
   const username = String(params.username || '');
-  const { status, trace, profile, error, generate, reset } = useDevScopeStream();
+  const { status, trace, profile, cached, error, generate, reset } = useDevScopeStream();
 
   useEffect(() => {
     if (username) generate(username);
@@ -30,14 +31,22 @@ export default function ProfilePage() {
             <span className="h-2 w-2 rounded-full bg-signal" />
             devscope
           </Link>
-          {status === 'complete' && (
-            <button
-              onClick={() => generate(username, true)}
-              className="font-mono text-[11px] uppercase tracking-wider text-muted transition-colors hover:text-signal"
+          <div className="flex items-center gap-5">
+            {status === 'complete' && (
+              <button
+                onClick={() => generate(username, true)}
+                className="font-mono text-[11px] uppercase tracking-wider text-muted transition-colors hover:text-signal"
+              >
+                ↻ regenerate
+              </button>
+            )}
+            <Link
+              href="/"
+              className="rounded-md border border-edge px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-muted transition-colors hover:border-signal/50 hover:text-signal"
             >
-              ↻ regenerate
-            </button>
-          )}
+              ＋ analyze another
+            </Link>
+          </div>
         </div>
       </nav>
 
@@ -63,24 +72,24 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {!error && isWorking && (
-          <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
-            <div className="flex flex-col items-start justify-center">
-              <div className="font-mono text-xs uppercase tracking-widest text-muted">
-                analyzing
-              </div>
-              <h1 className="mt-2 text-3xl text-ece9f0">@{username}</h1>
-              <p className="mt-3 max-w-md text-muted">
-                The agent is investigating this developer&apos;s public footprint.
-                Watch it work in real time →
-              </p>
-            </div>
-            <AgentTrace trace={trace} active />
-          </div>
-        )}
+        {!error && isWorking && <AgentProgress username={username} trace={trace} />}
 
         {!error && status === 'complete' && profile && (
           <>
+            {cached && (
+              <div className="fade-up mb-8 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-edge bg-surface/60 px-4 py-3">
+                <p className="font-mono text-[11px] text-muted">
+                  <span className="text-signal">⚡ instant result —</span> this profile was analyzed
+                  before, so we served it from cache instead of running the agent again.
+                </p>
+                <button
+                  onClick={() => generate(username, true)}
+                  className="flex-none rounded-md border border-edge px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-muted transition-colors hover:border-signal/50 hover:text-signal"
+                >
+                  ↻ run a fresh analysis
+                </button>
+              </div>
+            )}
             <ProfileView profile={profile} />
             {trace.length > 0 && (
               <details className="mt-10 border-t border-edge pt-6">
