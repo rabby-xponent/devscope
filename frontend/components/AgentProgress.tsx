@@ -105,6 +105,23 @@ export function AgentProgress({ username, trace }: { username: string; trace: Tr
   const startRef = useRef(Date.now());
   const activeStepRef = useRef<HTMLLIElement | null>(null);
 
+  // Lock this view to the remaining viewport height (below the sticky nav and
+  // page padding) instead of guessing a fixed pixel height — measured at
+  // runtime so it adapts to any screen size and never leaves dead space below.
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [lockedHeight, setLockedHeight] = useState<number | null>(null);
+
+  useEffect(() => {
+    const measure = () => {
+      const top = rootRef.current?.getBoundingClientRect().top;
+      if (top === undefined) return;
+      setLockedHeight(Math.max(420, Math.round(window.innerHeight - top - 40)));
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, []);
+
   useEffect(() => {
     const timer = setInterval(() => {
       setElapsedSeconds(Math.floor((Date.now() - startRef.current) / 1000));
@@ -224,8 +241,12 @@ export function AgentProgress({ username, trace }: { username: string; trace: Tr
   })).filter((g) => g.steps.length > 0);
 
   return (
-    <div className="fade-up flex min-h-[65vh] flex-col justify-center gap-6">
-      <div className="rounded-lg border border-edge bg-surface p-4">
+    <div
+      ref={rootRef}
+      style={lockedHeight ? { height: lockedHeight } : undefined}
+      className="fade-up flex min-h-[60vh] flex-col gap-6 overflow-hidden"
+    >
+      <div className="flex-shrink-0 rounded-lg border border-edge bg-surface p-4">
         <div className="h-1.5 w-full overflow-hidden rounded-full bg-edge">
           <div
             className="h-full rounded-full bg-signal transition-all duration-700 ease-out"
@@ -243,8 +264,8 @@ export function AgentProgress({ username, trace }: { username: string; trace: Tr
         </div>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-[1fr_360px] lg:items-start">
-        <div className="flex flex-col lg:sticky lg:top-24">
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-8 lg:grid-cols-[1fr_360px]">
+        <div className="h-full overflow-y-auto">
           <div className="font-mono text-xs uppercase tracking-widest text-muted">analyzing</div>
           <h1 className="mt-2 text-3xl text-ece9f0">@{username}</h1>
           <p className="mt-3 max-w-md text-muted">
@@ -285,16 +306,13 @@ export function AgentProgress({ username, trace }: { username: string; trace: Tr
           )}
         </div>
 
-        <div className="relative rounded-lg border border-edge bg-surface/60 p-1">
-          <div className="flex items-center gap-2 border-b border-edge px-4 py-3">
+        <div className="relative flex h-full flex-col overflow-hidden rounded-lg border border-edge bg-surface/60">
+          <div className="flex flex-shrink-0 items-center gap-2 border-b border-edge px-4 py-3">
             <span className="h-2 w-2 rounded-full bg-signal pulse-dot" />
             <span className="font-mono text-xs uppercase tracking-widest text-muted">agent working</span>
           </div>
 
-          {/* Fixed height (not max-height) so this panel never resizes as steps
-              reveal — keeping the sticky left column stable instead of shifting
-              as the right column grows. Internal scroll handles overflow. */}
-          <div className="thin-scroll relative h-[480px] overflow-y-auto p-3">
+          <div className="thin-scroll relative min-h-0 flex-1 overflow-y-auto p-3">
             {grouped.length === 0 && !synthesizing && (
               <p className="px-2 py-4 font-mono text-xs text-muted">Waiting for the agent to start…</p>
             )}
