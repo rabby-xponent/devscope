@@ -9,89 +9,113 @@ import { searchHackerNews, searchDevto, webSearch } from './external.tool';
 
 export const toolDefinitions = [
   {
-    name: 'get_github_profile',
-    description:
-      'Fetch basic GitHub user profile: name, bio, followers, join year, public repo count, company, location.',
-    input_schema: {
-      type: 'object' as const,
-      properties: { username: { type: 'string' } },
-      required: ['username'],
-    },
-  },
-  {
-    name: 'get_repos',
-    description:
-      'List a user public repos (forks excluded), sorted by stars. Returns name, description, language, stars, forks, topics, plus total stars/forks. 30 per page.',
-    input_schema: {
-      type: 'object' as const,
-      properties: {
-        username: { type: 'string' },
-        page: { type: 'number', description: 'Page number, start at 1.' },
+    type: 'function' as const,
+    function: {
+      name: 'get_github_profile',
+      description:
+        'Fetch basic GitHub user profile: name, bio, followers, join year, public repo count, company, location.',
+      parameters: {
+        type: 'object',
+        properties: { username: { type: 'string' } },
+        required: ['username'],
       },
-      required: ['username', 'page'],
     },
   },
   {
-    name: 'get_repo_readme',
-    description:
-      'Fetch the README of a repo (first 4000 chars). Use on top 2-3 repos to assess documentation quality and communication style.',
-    input_schema: {
-      type: 'object' as const,
-      properties: {
-        owner: { type: 'string' },
-        repo: { type: 'string' },
+    type: 'function' as const,
+    function: {
+      name: 'get_repos',
+      description:
+        'List a user public repos (forks excluded), sorted by stars. Returns name, description, language, stars, forks, topics, plus total stars/forks. 30 per page.',
+      parameters: {
+        type: 'object',
+        properties: {
+          username: { type: 'string' },
+          page: { type: 'number', description: 'Page number, start at 1.' },
+        },
+        required: ['username', 'page'],
       },
-      required: ['owner', 'repo'],
     },
   },
   {
-    name: 'get_contribution_stats',
-    description:
-      'Get commit/PR/issue activity for the last year via GitHub GraphQL. Reveals how active and collaborative the developer is.',
-    input_schema: {
-      type: 'object' as const,
-      properties: { username: { type: 'string' } },
-      required: ['username'],
+    type: 'function' as const,
+    function: {
+      name: 'get_repo_readme',
+      description:
+        'Fetch the README of a repo (first 4000 chars). Use on top 2-3 repos to assess documentation quality and communication style.',
+      parameters: {
+        type: 'object',
+        properties: {
+          owner: { type: 'string' },
+          repo: { type: 'string' },
+        },
+        required: ['owner', 'repo'],
+      },
     },
   },
   {
-    name: 'get_pinned_repos',
-    description:
-      'Get the repos a user pinned to their profile. These represent what the developer considers their best work.',
-    input_schema: {
-      type: 'object' as const,
-      properties: { username: { type: 'string' } },
-      required: ['username'],
+    type: 'function' as const,
+    function: {
+      name: 'get_contribution_stats',
+      description:
+        'Get commit/PR/issue activity for the last year via GitHub GraphQL. Reveals how active and collaborative the developer is.',
+      parameters: {
+        type: 'object',
+        properties: { username: { type: 'string' } },
+        required: ['username'],
+      },
     },
   },
   {
-    name: 'search_hackernews',
-    description:
-      'Search Hacker News for mentions of a developer by name or username. Reveals community reputation and notable discussions.',
-    input_schema: {
-      type: 'object' as const,
-      properties: { query: { type: 'string' } },
-      required: ['query'],
+    type: 'function' as const,
+    function: {
+      name: 'get_pinned_repos',
+      description:
+        'Get the repos a user pinned to their profile. These represent what the developer considers their best work.',
+      parameters: {
+        type: 'object',
+        properties: { username: { type: 'string' } },
+        required: ['username'],
+      },
     },
   },
   {
-    name: 'search_devto',
-    description:
-      'Find DEV.to articles by this username. Reveals technical writing habits and communication style.',
-    input_schema: {
-      type: 'object' as const,
-      properties: { username: { type: 'string' } },
-      required: ['username'],
+    type: 'function' as const,
+    function: {
+      name: 'search_hackernews',
+      description:
+        'Search Hacker News for mentions of a developer by name or username. Reveals community reputation and notable discussions.',
+      parameters: {
+        type: 'object',
+        properties: { query: { type: 'string' } },
+        required: ['query'],
+      },
     },
   },
   {
-    name: 'web_search',
-    description:
-      'General web search for blog posts, talks, or other public presence. Use when GitHub data is thin.',
-    input_schema: {
-      type: 'object' as const,
-      properties: { query: { type: 'string' } },
-      required: ['query'],
+    type: 'function' as const,
+    function: {
+      name: 'search_devto',
+      description:
+        'Find DEV.to articles by this username. Reveals technical writing habits and communication style.',
+      parameters: {
+        type: 'object',
+        properties: { username: { type: 'string' } },
+        required: ['username'],
+      },
+    },
+  },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'web_search',
+      description:
+        'General web search for blog posts, talks, or other public presence. Use when GitHub data is thin.',
+      parameters: {
+        type: 'object',
+        properties: { query: { type: 'string' } },
+        required: ['query'],
+      },
     },
   },
 ];

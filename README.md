@@ -2,9 +2,9 @@
 
 > GitHub developer intelligence agent. Point it at a username — an AI agent investigates their repos, commits, READMEs, and web presence, then writes a structured developer profile. Watch the agent work in real time.
 
-DevScope is an agentic AI system built on the raw Anthropic SDK (no framework). A Claude agent runs a ReAct loop, calling tools to gather evidence about a developer, then synthesizes everything into a readable profile. The generation process streams live to the browser over Server-Sent Events, so you can watch each tool call as it happens.
+DevScope is an agentic AI system built on a provider-agnostic ReAct loop (using the OpenAI SDK pointed at any compatible endpoint — Gemini by default, free). The agent calls tools to gather evidence about a developer, then synthesizes everything into a readable profile. The generation process streams live to the browser over Server-Sent Events, so you can watch each tool call as it happens.
 
-![architecture](https://img.shields.io/badge/stack-Next.js%20%2B%20Express-f0a04b) ![agent](https://img.shields.io/badge/agent-Anthropic%20SDK-f0a04b)
+![stack](https://img.shields.io/badge/stack-Next.js%20%2B%20Express-f0a04b) ![agent](https://img.shields.io/badge/agent-Gemini%202.5%20Flash-f0a04b) ![cost](https://img.shields.io/badge/cost-free%20tier-3b6d11)
 
 ---
 
@@ -16,8 +16,8 @@ Browser (Next.js)                Express                    Agent loop
 /profile/[username]  ──SSE──▶   /api/generate   ──▶   AgentService (ReAct)
        │                                                      │
        │  live trace                                   ┌──────┴──────┐
-       ◀──events───────────────────────────────        │  Claude     │ ◀── tool decisions
-                                                        │  Sonnet     │
+       ◀──events───────────────────────────────        │  Gemini /   │ ◀── tool decisions
+                                                        │  any LLM    │
                                                         └──────┬──────┘
                                                                │ tool calls
                                           ┌────────────────────┼────────────────────┐
@@ -51,7 +51,7 @@ devscope/
 
 ### Prerequisites
 - Node.js 18+
-- An Anthropic API key ([console.anthropic.com](https://console.anthropic.com))
+- A free Gemini API key ([aistudio.google.com/apikey](https://aistudio.google.com/apikey)) — no credit card
 - A GitHub personal access token with `public_repo` read scope
 
 ### 1. Backend
@@ -60,7 +60,7 @@ devscope/
 cd backend
 npm install
 cp .env.example .env
-# Fill in ANTHROPIC_API_KEY and GITHUB_TOKEN in .env
+# Fill in LLM_API_KEY (Gemini) and GITHUB_TOKEN in .env
 npm run dev          # starts on http://localhost:4000
 ```
 
@@ -94,7 +94,7 @@ The two halves deploy independently.
 
 The backend needs a long-lived process for SSE (it can't run on serverless functions with short timeouts).
 
-**Railway:** Connect the repo, set root directory to `backend/`, add env vars `ANTHROPIC_API_KEY`, `GITHUB_TOKEN`, `FRONTEND_URL`. The included `railway.toml` handles build and start.
+**Railway:** Connect the repo, set root directory to `backend/`, add env vars `LLM_API_KEY`, `GITHUB_TOKEN`, `FRONTEND_URL`. The included `railway.toml` handles build and start.
 
 **Render:** The included `render.yaml` defines the service. Point it at `backend/` and add the same env vars.
 
@@ -113,7 +113,9 @@ Then update the backend's `FRONTEND_URL` env var to your Vercel domain so CORS a
 ### Backend (`.env`)
 | Variable | Description |
 |---|---|
-| `ANTHROPIC_API_KEY` | Anthropic API key |
+| `LLM_API_KEY` | Gemini API key (free tier) |
+| `LLM_BASE_URL` | LLM endpoint, defaults to Gemini |
+| `LLM_MODEL` | Model name, defaults to `gemini-2.5-flash` |
 | `GITHUB_TOKEN` | GitHub PAT, `public_repo` read scope |
 | `PORT` | Default 4000 |
 | `FRONTEND_URL` | Allowed CORS origin |
@@ -129,7 +131,7 @@ Then update the backend's `FRONTEND_URL` env var to your Vercel domain so CORS a
 
 ## Design notes
 
-- **Raw Anthropic SDK, no LangChain.** The agent loop is ~120 lines in `agent.service.ts`. Every token in and out is visible and debuggable.
+- **Provider-agnostic, no LangChain.** The agent loop is ~120 lines in `agent.service.ts` using the OpenAI SDK. Swap between Gemini, Groq, or OpenAI by changing three env vars (`LLM_API_KEY`, `LLM_BASE_URL`, `LLM_MODEL`). Every token in and out is visible and debuggable.
 - **SSE, not WebSockets.** Generation is one-directional server→client streaming, which is exactly what Server-Sent Events are for.
 - **File cache, no database.** One JSON file per username with a 24-hour TTL. Swap in Redis later by changing `cache.service.ts`.
 - **Two processes, not one.** Express handles the long-running SSE stream; Next.js handles the UI. They deploy separately.

@@ -1,23 +1,31 @@
-import Anthropic from '@anthropic-ai/sdk';
+import OpenAI from 'openai';
 import { toolDefinitions, executeTool, summarizeToolResult } from './tools/definitions';
 import { SYSTEM_PROMPT } from './prompts';
 import { DevProfile, TraceEvent } from '../types/profile';
 
 const MAX_LOOPS = 14;
-const MODEL = 'claude-sonnet-4-6';
 const CACHE_VERSION = 1;
 
+// Provider-agnostic config. Defaults to Gemini's OpenAI-compatible endpoint.
+const LLM_BASE_URL =
+  process.env.LLM_BASE_URL ||
+  'https://generativelanguage.googleapis.com/v1beta/openai/';
+const LLM_MODEL = process.env.LLM_MODEL || 'gemini-2.5-flash';
+const LLM_API_KEY = process.env.LLM_API_KEY || process.env.GEMINI_API_KEY || '';
+
 type EventEmitter = (event: TraceEvent) => void;
+type ChatMessage = OpenAI.Chat.Completions.ChatCompletionMessageParam;
 
 export class AgentService {
-  private client: Anthropic;
+  private client: OpenAI;
 
   constructor() {
-    this.client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    this.client = new OpenAI({ apiKey: LLM_API_KEY, baseURL: LLM_BASE_URL });
   }
 
   async buildProfile(username: string, emit: EventEmitter): Promise<DevProfile> {
-    const messages: Anthropic.MessageParam[] = [
+    const messages: ChatMessage[] = [
+      { role: 'system', content: SYSTEM_PROMPT },
       {
         role: 'user',
         content: `Build a developer intelligence profile for the GitHub user: ${username}`,
@@ -28,34 +36,39 @@ export class AgentService {
     let repoData: any = null;
 
     for (let i = 0; i < MAX_LOOPS; i++) {
-      const response = await this.client.messages.create({
-        model: MODEL,
-        max_tokens: 4096,
-        system: SYSTEM_PROMPT,
-        tools: toolDefinitions as any,
+      const response = await this.client.chat.completions.create({
+        model: LLM_MODEL,
         messages,
+        tools: toolDefinitions,
+        max_tokens: 4096,
       });
 
-      messages.push({ role: 'assistant', content: response.content });
+      const choice = response.choices[0];
+      const msg = choice.message;
+      messages.push(msg);
 
-      if (response.stop_reason === 'tool_use') {
-        const toolResults: Anthropic.ToolResultBlockParam[] = [];
-
-        for (const block of response.content) {
-          if (block.type !== 'tool_use') continue;
+      if (choice.finish_reason === 'tool_calls' && msg.tool_calls?.length) {
+        for (const call of msg.tool_calls) {
+          const name = call.function.name;
+          let args: Record<string, any> = {};
+          try {
+            args = JSON.parse(call.function.arguments || '{}');
+          } catch {
+            args = {};
+          }
 
           emit({
             type: 'tool_call',
             timestamp: new Date().toISOString(),
-            tool: block.name,
-            input: block.input as Record<string, unknown>,
+            tool: name,
+            input: args,
           });
 
           let result: any;
           try {
-            result = await executeTool(block.name, block.input as Record<string, any>);
-            if (block.name === 'get_github_profile') githubData = result;
-            if (block.name === 'get_repos' && !repoData) repoData = result;
+            result = await executeTool(name, args);
+            if (name === 'get_github_profile') githubData = result;
+            if (name === 'get_repos' && !repoData) repoData = result;
           } catch (err: any) {
             const status = err.response?.status;
             if (status === 404) {
@@ -70,27 +83,23 @@ export class AgentService {
           emit({
             type: 'tool_result',
             timestamp: new Date().toISOString(),
-            tool: block.name,
-            summary: result.error ? `Error: ${result.error}` : summarizeToolResult(block.name, result),
+            tool: name,
+            summary: result.error
+              ? `Error: ${result.error}`
+              : summarizeToolResult(name, result),
           });
 
-          toolResults.push({
-            type: 'tool_result',
-            tool_use_id: block.id,
+          messages.push({
+            role: 'tool',
+            tool_call_id: call.id,
             content: JSON.stringify(result),
           });
         }
-
-        messages.push({ role: 'user', content: toolResults });
         continue;
       }
 
-      // end_turn — parse the final JSON
-      const text = response.content
-        .filter((b): b is Anthropic.TextBlock => b.type === 'text')
-        .map((b) => b.text)
-        .join('');
-
+      // finish_reason === 'stop' — parse the final JSON profile
+      const text = msg.content || '';
       const synthesized = this.parseProfileJson(text);
       return this.assembleProfile(username, synthesized, githubData, repoData);
     }
