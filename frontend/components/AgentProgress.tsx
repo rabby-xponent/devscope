@@ -304,6 +304,30 @@ export function AgentProgress({ username, trace }: { username: string; trace: Tr
               </ul>
             </div>
           )}
+
+          {synthesizing && (
+            <div className="fade-up mt-6 rounded-lg border border-signal/30 bg-signaldim p-4">
+              <div className="flex items-center gap-3">
+                <span className="text-xl">✨</span>
+                <div className="min-w-0">
+                  <div className="text-sm font-medium text-signal">Writing your analysis</div>
+                  <div className="mt-0.5 font-mono text-[11px] text-muted">
+                    Synthesizing {allSteps.filter((s) => s.status === 'done').length} data points into
+                    recruiter intelligence…
+                  </div>
+                </div>
+              </div>
+              <div className="mt-3 flex gap-1">
+                {Array.from({ length: 14 }).map((_, i) => (
+                  <span
+                    key={i}
+                    className="h-1 flex-1 rounded-full bg-signal/30 pulse-dot"
+                    style={{ animationDelay: `${i * 100}ms` }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="relative flex h-full flex-col overflow-hidden rounded-lg border border-edge bg-surface/60">
@@ -357,26 +381,9 @@ export function AgentProgress({ username, trace }: { username: string; trace: Tr
             ))}
 
             {synthesizing && (
-              <div className="fade-up rounded-lg border border-signal/30 bg-signaldim p-4">
-                <div className="flex items-center gap-3">
-                  <span className="text-xl">✨</span>
-                  <div className="min-w-0">
-                    <div className="text-sm font-medium text-signal">Writing your analysis</div>
-                    <div className="mt-0.5 font-mono text-[11px] text-muted">
-                      Synthesizing {allSteps.filter((s) => s.status === 'done').length} data points into
-                      recruiter intelligence…
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-3 flex gap-1">
-                  {Array.from({ length: 14 }).map((_, i) => (
-                    <span
-                      key={i}
-                      className="h-1 flex-1 rounded-full bg-signal/30 pulse-dot"
-                      style={{ animationDelay: `${i * 100}ms` }}
-                    />
-                  ))}
-                </div>
+              <div className="fade-up flex items-center gap-3 rounded-lg border border-signal/30 bg-signaldim px-3 py-2.5">
+                <span className="block h-3 w-3 flex-none animate-spin rounded-full border-2 border-edge border-t-signal" />
+                <p className="text-sm text-ece9f0">Writing your analysis…</p>
               </div>
             )}
           </div>

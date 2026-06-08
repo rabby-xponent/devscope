@@ -104,6 +104,20 @@ export default function ProfilePage() {
           </>
         )}
       </div>
+
+      <footer className="border-t border-edge py-6 text-center">
+        <p className="font-mono text-[11px] text-muted/60">
+          developed by{' '}
+          <a
+            href="#"
+            target="_blank"
+            rel="noreferrer"
+            className="text-muted transition-colors hover:text-signal"
+          >
+            Golam Rabby
+          </a>
+        </p>
+      </footer>
     </main>
   );
 }

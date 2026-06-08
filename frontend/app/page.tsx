@@ -68,8 +68,21 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="fade-up absolute bottom-6 font-mono text-[11px] text-muted/60">
-          powered by a multi-provider LLM gateway with automatic failover
+        <div className="fade-up absolute bottom-6 flex flex-col items-center gap-1.5 text-center">
+          <span className="font-mono text-[11px] text-muted/60">
+            powered by a multi-provider LLM gateway with automatic failover
+          </span>
+          <span className="font-mono text-[11px] text-muted/60">
+            developed by{' '}
+            <a
+              href="https://www.linkedin.com/in/golamrabby-/"
+              target="_blank"
+              rel="noreferrer"
+              className="text-muted transition-colors hover:text-signal"
+            >
+              Golam Rabby
+            </a>
+          </span>
         </div>
       </div>
     </main>
