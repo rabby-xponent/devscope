@@ -1,8 +1,8 @@
-﻿# DevScope
+# DevScope
 
-> GitHub developer intelligence agent. Point it at a username â€” an AI agent investigates their repos, commits, READMEs, and web presence, then writes a structured developer profile. Watch the agent work in real time.
+> GitHub developer intelligence agent. Point it at a username — an AI agent investigates their repos, commits, READMEs, and web presence, then writes a structured developer profile. Watch the agent work in real time.
 
-DevScope is an agentic AI system built on a provider-agnostic ReAct loop (using the OpenAI SDK pointed at any compatible endpoint â€” Multi-provider LLM gateway with automatic failover (Groq -> OpenRouter -> DeepSeek -> Gemini)). The agent calls tools to gather evidence about a developer, then synthesizes everything into a readable profile. The generation process streams live to the browser over Server-Sent Events, so you can watch each tool call as it happens.
+DevScope is an agentic AI system built on a provider-agnostic ReAct loop (using the OpenAI SDK pointed at any compatible endpoint — Multi-provider LLM gateway with automatic failover (Groq -> OpenRouter -> DeepSeek -> Gemini)). The agent calls tools to gather evidence about a developer, then synthesizes everything into a readable profile. The generation process streams live to the browser over Server-Sent Events, so you can watch each tool call as it happens.
 
 ![stack](https://img.shields.io/badge/stack-Next.js%20%2B%20Express-f0a04b) ![agent](https://img.shields.io/badge/agent-Gemini%202.5%20Flash-f0a04b) ![cost](https://img.shields.io/badge/cost-free%20tier-3b6d11)
 
@@ -12,15 +12,15 @@ DevScope is an agentic AI system built on a provider-agnostic ReAct loop (using 
 
 ```
 Browser (Next.js)                Express                    Agent loop
-â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€                â”€â”€â”€â”€â”€â”€â”€                    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-/profile/[username]  â”€â”€SSEâ”€â”€â–¶   /api/generate   â”€â”€â–¶   AgentService (ReAct)
-       â”‚                                                      â”‚
-       â”‚  live trace                                   â”Œâ”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”
-       â—€â”€â”€eventsâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€        â”‚  Gemini /   â”‚ â—€â”€â”€ tool decisions
-                                                        â”‚  any LLM    â”‚
-                                                        â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”˜
-                                                               â”‚ tool calls
-                                          â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+─────────────────                ───────                    ──────────
+/profile/[username]  ──SSE──▶   /api/generate   ──▶   AgentService (ReAct)
+       │                                                      │
+       │  live trace                                   ┌──────┴──────┐
+       ◀───events──────────────────────────────────────│  Gemini /   │ ◀─── tool decisions
+                                                       │  any LLM    │
+                                                       └──────┬──────┘
+                                                              │ tool calls
+                                          ┌───────────────────┼───────────────────┐
                                        GitHub API          HN Algolia            DEV.to / web
 ```
 
@@ -36,15 +36,15 @@ See [`DEVSCOPE_SPEC.md`](./DEVSCOPE_SPEC.md) for the full product and architectu
 
 ```
 devscope/
-â”œâ”€â”€ backend/         Express API + agent (TypeScript)
-â”‚   â””â”€â”€ src/
-â”‚       â”œâ”€â”€ agent/   ReAct loop, tools, system prompt
-â”‚       â”œâ”€â”€ routes/  SSE generate route + cached profile route
-â”‚       â””â”€â”€ cache/   File-based profile cache
-â””â”€â”€ frontend/        Next.js app (App Router)
-    â”œâ”€â”€ app/         Landing page + profile page
-    â”œâ”€â”€ components/  AgentTrace, ProfileView
-    â””â”€â”€ hooks/       useDevScopeStream (EventSource)
+├── backend/         Express API + agent (TypeScript)
+│   └── src/
+│       ├── agent/   ReAct loop, tools, system prompt
+│       ├── routes/  SSE generate route + cached profile route
+│       └── cache/   File-based profile cache
+└── frontend/        Next.js app (App Router)
+    ├── app/         Landing page + profile page
+    ├── components/  AgentTrace, ProfileView
+    └── hooks/       useDevScopeStream (EventSource)
 ```
 
 ---
@@ -53,7 +53,7 @@ devscope/
 
 ### Prerequisites
 - Node.js 18+
-- A free Gemini API key ([aistudio.google.com/apikey](https://aistudio.google.com/apikey)) â€” no credit card
+- A free Gemini API key ([aistudio.google.com/apikey](https://aistudio.google.com/apikey)) — no credit card
 - A GitHub personal access token with `public_repo` read scope
 
 ### 1. Backend
@@ -92,7 +92,7 @@ Open [localhost:3000](http://localhost:3000), enter a GitHub username, and watch
 
 The two halves deploy independently.
 
-### Backend â†’ Railway or Render
+### Backend → Railway or Render
 
 The backend needs a long-lived process for SSE (it can't run on serverless functions with short timeouts).
 
@@ -100,7 +100,7 @@ The backend needs a long-lived process for SSE (it can't run on serverless funct
 
 **Render:** The included `render.yaml` defines the service. Point it at `backend/` and add the same env vars.
 
-### Frontend â†’ Vercel
+### Frontend → Vercel
 
 1. Import the repo on Vercel, set root directory to `frontend/`.
 2. Add env var `NEXT_PUBLIC_API_URL` = your deployed backend URL.
@@ -145,7 +145,7 @@ Then update the backend's `FRONTEND_URL` env var to your Vercel domain so CORS a
 - **Two-phase agent, no token blow-up.** Tool gathering and profile synthesis are separate. Full tool results are stored in memory; only truncated summaries stay in the LLM message history. A dedicated synthesis call receives a compressed evidence summary (~2K chars).
 - **Parallel tool execution.** Independent tools within the same LLM turn run concurrently; GitHub API calls have 8s timeouts.
 - **Provider-agnostic, no LangChain.** The LLM gateway in `src/llm/` tries OpenRouter first, then Groq, then others — with per-model cooldowns on 404/outage, failover, and request-level caching.
-- **SSE, not WebSockets.** Generation is one-directional serverâ†’client streaming, which is exactly what Server-Sent Events are for.
+- **SSE, not WebSockets.** Generation is one-directional server→client streaming, which is exactly what Server-Sent Events are for.
 - **File cache, no database.** One JSON file per username with a 24-hour TTL. Swap in Redis later by changing `cache.service.ts`.
 - **Two processes, not one.** Express handles the long-running SSE stream; Next.js handles the UI. They deploy separately.
 
