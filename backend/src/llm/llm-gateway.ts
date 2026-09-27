@@ -39,6 +39,7 @@ export interface CompletionRequest {
   tools?: CompletionParams['tools'];
   max_tokens?: number;
   timeoutMs?: number;
+  response_format?: CompletionParams['response_format'];
   provider?: {
     allow_fallbacks?: boolean;
     require_parameters?: boolean;
@@ -167,11 +168,12 @@ export class LLMGateway {
     emit: EventEmitter
   ): Promise<ProviderAttemptResult> {
     const { name, client } = candidate;
-    const requestParams = {
+    const requestParams: any = {
       model,
       messages: request.messages,
       tools: request.tools,
       max_tokens: request.max_tokens,
+      ...(request.response_format ? { response_format: request.response_format } : {}),
       ...(name === 'openrouter' && request.provider ? { provider: request.provider } : {}),
       ...(name === 'openrouter' ? { transforms: [] } : {}),
     };
@@ -188,6 +190,14 @@ export class LLMGateway {
           signal: controller?.signal,
         });
         if (timer) clearTimeout(timer);
+
+        const content = response.choices[0]?.message?.content?.trim();
+        if (!content) {
+          throw new Error(
+            `LLM ${name}/${model} returned empty content (possibly exhausted tokens on reasoning)`
+          );
+        }
+
         const latencyMs = Date.now() - start;
         recordSuccess(name, latencyMs);
         this.log('result', { provider: name, model, latencyMs, usage: response.usage });

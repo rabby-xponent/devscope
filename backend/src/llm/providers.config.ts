@@ -21,29 +21,35 @@ function openRouterHeaders(): Record<string, string> {
   };
 }
 
-// Priority order: openrouter -> groq -> deepseek -> gemini -> qwen -> openai.
+// Priority order: gemini -> groq -> openrouter -> deepseek -> qwen -> openai.
 // Every provider below speaks the OpenAI-compatible chat completions API, so
 // no per-provider response translation is needed.
 export const PROVIDER_CATALOG: ProviderConfig[] = [
   {
+    name: 'gemini',
+    envVar: 'GEMINI_API_KEY',
+    baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
+    model: 'gemini-3.8-flash',
+    fallbackModels: ['gemini-flash-latest', 'gemini-3.7-flash'],
+  },
+  {
     name: 'groq',
     envVar: 'GROQ_API_KEY',
     baseURL: 'https://api.groq.com/openai/v1',
-    model: 'llama-3.3-70b-versatile',
+    model: 'openai/gpt-oss-120b',
     fallbackModels: [
-      'meta-llama/llama-4-scout-17b-16e-instruct',
-      'llama-3.1-8b-instant',
+      'qwen/qwen3.8-27b',
+      'openai/gpt-oss-20b',
     ],
   },
   {
     name: 'openrouter',
     envVar: 'OPENROUTER_API_KEY',
     baseURL: 'https://openrouter.ai/api/v1',
-    model: 'openrouter/free',
+    model: 'qwen/qwen3.8-27b:free',
     fallbackModels: [
-      'qwen/qwen3-235b-a22b:free',
-      'deepseek/deepseek-r1-distill-llama-70b:free',
-      'mistralai/mistral-small-3.1-24b-instruct:free',
+      'google/gemma-4-26b-a4b-it:free',
+      'meta-llama/llama-3.3-70b-instruct:free',
     ],
     defaultHeaders: openRouterHeaders(),
   },
@@ -53,13 +59,6 @@ export const PROVIDER_CATALOG: ProviderConfig[] = [
     baseURL: 'https://api.deepseek.com/v1',
     model: 'deepseek-v4-flash',
     fallbackModels: [],
-  },
-  {
-    name: 'gemini',
-    envVar: 'GEMINI_API_KEY',
-    baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
-    model: 'gemini-2.5-flash',
-    fallbackModels: ['gemini-2.5-flash-lite'],
   },
   {
     name: 'qwen',

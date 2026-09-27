@@ -325,6 +325,7 @@ export class AgentService {
           tools: [],
           max_tokens: 4096,
           timeoutMs: SYNTHESIS_TIMEOUT_MS,
+          response_format: { type: 'json_object' },
           provider: {
             allow_fallbacks: true,
             require_parameters: true,
@@ -422,8 +423,15 @@ export class AgentService {
       .replace(/```/g, '')
       .trim();
 
-    const raw = this.extractJsonObject(cleaned);
-    if (!raw) throw new Error('Agent did not return valid JSON.');
+    let raw = this.extractJsonObject(cleaned);
+    if (!raw) {
+      const start = cleaned.indexOf('{');
+      if (start !== -1) {
+        raw = cleaned.slice(start);
+      } else {
+        throw new Error('Agent did not return valid JSON.');
+      }
+    }
 
     try {
       return this.sanitizeProseFields(JSON.parse(raw));
@@ -485,7 +493,46 @@ export class AgentService {
       .replace(/,(\s*[\]}])/g, '$1')
       .replace(/("|\]|\})(\s*)\r?\n(\s*)(")/g, '$1,$2\n$3$4');
 
-    return this.escapeStrayQuotesInStrings(withFixedCommas);
+    let patched = this.escapeStrayQuotesInStrings(withFixedCommas);
+
+    // If brackets or braces were left open due to token limits, close them
+    let openBraces = 0;
+    let openBrackets = 0;
+    let inStr = false;
+    let esc = false;
+    for (let i = 0; i < patched.length; i++) {
+      const c = patched[i];
+      if (esc) {
+        esc = false;
+        continue;
+      }
+      if (c === '\\') {
+        esc = true;
+        continue;
+      }
+      if (c === '"') {
+        inStr = !inStr;
+        continue;
+      }
+      if (inStr) continue;
+
+      if (c === '{') openBraces++;
+      else if (c === '}') openBraces = Math.max(0, openBraces - 1);
+      else if (c === '[') openBrackets++;
+      else if (c === ']') openBrackets = Math.max(0, openBrackets - 1);
+    }
+
+    if (inStr) patched += '"';
+    while (openBrackets > 0) {
+      patched += ']';
+      openBrackets--;
+    }
+    while (openBraces > 0) {
+      patched += '}';
+      openBraces--;
+    }
+
+    return patched;
   }
 
   private escapeStrayQuotesInStrings(text: string): string {
