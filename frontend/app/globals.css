@@ -73,15 +73,48 @@ body {
   background-position: center;
 }
 
-/* Custom scrollbar for trace panel */
+/* Global and element-level custom thin scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #272430 transparent;
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #272430;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3f3b4d;
+}
+
+/* Custom ultrathin scrollbar for panels */
+.thin-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #272430 transparent;
+}
 .thin-scroll::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
+  height: 4px;
 }
 .thin-scroll::-webkit-scrollbar-track {
   background: transparent;
 }
 .thin-scroll::-webkit-scrollbar-thumb {
   background: #272430;
+  border-radius: 9999px;
+}
+.thin-scroll::-webkit-scrollbar-thumb:hover {
+  background: #f0a04b;
 }
 
 /* ==========================================================================

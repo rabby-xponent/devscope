@@ -267,7 +267,7 @@ export function AgentProgress({ username, trace }: { username: string; trace: Tr
       </div>
 
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-8 lg:grid-cols-[1fr_360px]">
-        <div className="h-full overflow-y-auto">
+        <div className="thin-scroll h-full overflow-y-auto pr-2">
           <div className="font-mono text-xs uppercase tracking-widest text-muted">analyzing</div>
           <h1 className="mt-2 text-3xl text-ece9f0">@{username}</h1>
           <p className="mt-3 max-w-md text-muted">

@@ -177,6 +177,19 @@
 
 ---
 
+### Milestone 9: Sleek Ultra-Thin Scrollbars across Layout & Progress Panel
+* **Problem:** Windows desktop browsers defaulted to wide, 16px stark white scrollbars on the left column of [`AgentProgress.tsx`](./frontend/components/AgentProgress.tsx), clashing with the sleek dark mode aesthetic.
+* **Changes:**
+  - **Global Dark Thin Scrollbars ([`globals.css`](./frontend/app/globals.css)):**
+    * Applied global `scrollbar-width: thin` and `scrollbar-color: #272430 transparent` across all elements.
+    * Configured 5px rounded webkit scrollbars with hover transition (`#3f3b4d`).
+    * Refined `.thin-scroll` utility to 4px with warm amber hover (`#f0a04b`) matching the agent trace.
+  - **Progress Layout Synchronization ([`AgentProgress.tsx`](./frontend/components/AgentProgress.tsx)):**
+    * Applied `.thin-scroll pr-2` to the left candidate column container so both columns share the same ultra-thin, elegant scroll treatment.
+  - **Verification:** `npm run build` compiled cleanly with 0 errors.
+
+---
+
 ## 3. Build & Test Verification Record
 
 | Test | Target | Result | Latency / Notes |
