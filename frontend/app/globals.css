@@ -135,6 +135,7 @@ body {
     print-color-adjust: exact !important;
     box-shadow: none !important;
     text-shadow: none !important;
+    background-image: none !important; /* Neutralize all dark mode CSS gradients */
   }
 
   html,
@@ -162,6 +163,8 @@ body {
   .print-avoid-break {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
+    background-image: none !important;
+    background-color: #ffffff !important;
   }
 
   /* Keep headings firmly attached to following content (prevents orphan headers) */
@@ -182,7 +185,7 @@ body {
 
   .text-muted,
   .text-muted\/60 {
-    color: #475569 !important;
+    color: #334155 !important;
   }
 
   .text-signal {
@@ -194,17 +197,31 @@ body {
   }
 
   .border-edge,
+  .border-edge\/60,
   .border-edge\/80 {
     border-color: #cbd5e1 !important;
   }
 
+  /* All dark surfaces and gradients map to crisp white in print */
   .bg-surface,
+  .bg-surface\/30,
   .bg-surface\/40,
   .bg-surface\/50,
   .bg-surface\/60,
   .bg-surface\/70,
-  .bg-surface\/80 {
-    background-color: #f8fafc !important;
+  .bg-surface\/80,
+  .bg-surface\/90,
+  .bg-ink,
+  .bg-ink\/40,
+  .bg-ink\/70,
+  .bg-ink\/90,
+  .from-surface\/90,
+  .via-surface\/60,
+  .via-surface\/80,
+  .to-ink,
+  .to-surface {
+    background-color: #ffffff !important;
+    background-image: none !important;
   }
 
   /* High contrast badge and pill print overrides */

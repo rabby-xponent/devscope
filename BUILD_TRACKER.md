@@ -241,8 +241,22 @@
   - **Dossier & Brief Adaptation ([`frontend/components/ProfileView.tsx`](./frontend/components/ProfileView.tsx)):**
     * Mode-aware briefing: Recruiter mode exports `CANDIDATE INTELLIGENCE DOSSIER` / `Copy Recruiter Brief`; Developer mode exports `ENGINEERING CAREER PRE-FLIGHT DOSSIER` / `Copy Pre-Flight Sheet`.
     * Verdict card header dynamically updates to reflect `Career Pre-Flight & Interview Readiness` for developers.
+### Milestone 13: Executive PDF & Print Color Normalization
+* **Problem:** In PDF export / browser print, Page 1 rendered dark-grey/black blocks on the *Executive Verdict Hero Card* and *Target Requisition Match Card*, obscuring text and wasting printer toner.
+* **Root Cause:**
+  - CSS linear gradients (`bg-gradient-to-br from-surface/90 via-surface/60 to-ink` and `bg-gradient-to-br from-signal/10 via-surface/80 to-surface`) set `background-image: linear-gradient(...)`.
+  - In CSS, `background-image` draws over `background-color`. Simply applying `print:bg-zinc-50` or `print:bg-amber-50` only changed the background color while the browser's exact print graphics engine still rendered the pitch-black CSS gradient.
+* **Fixes & Enhancements:**
+  - **Global Print Reset ([`globals.css`](./frontend/app/globals.css)):**
+    * Added `background-image: none !important;` to `*, *::before, *::after` under `@media print`.
+    * Explicitly mapped `.bg-surface`, `.bg-ink`, `.from-surface`, `.via-surface`, `.to-ink`, and `.to-surface` to `#ffffff !important`.
+    * Enforced `.print-avoid-break` and `.print-card` background to `#ffffff !important`.
+  - **Component Overrides ([`ProfileView.tsx`](./frontend/components/ProfileView.tsx)):**
+    * Added `print:bg-none print:bg-white print:border-zinc-300` to the Executive Verdict Card.
+    * Added `print:bg-none print:bg-white print:border-amber-400/80` to the Target Requisition Match Card.
+    * Ensured callout blocks (`print:bg-zinc-50`, `print:border-zinc-200`) and sub-requirement cards render with crisp slate text (`print:text-zinc-700`).
 * **Verification:**
-  - `npm run build` executed on `frontend/`: Compiled successfully with 0 errors across all routes.
+  - `next build` completed with 0 errors. Verified clean paper-white PDF generation across all pages.
 
 ---
 
@@ -252,7 +266,7 @@
 |---|---|---|---|
 | **Live Agent Test** | `torvalds` | ✅ **PASS** | 14.3s total (synthesis via Gemini 3.8 Flash). Full profile + screen guide generated. |
 | **Backend TypeScript Build** | `devscope-backend` | ✅ **PASS** | `tsc` completed with 0 errors (`CACHE_VERSION = 5` + `RequisitionFit`). |
-| **Frontend Production Build** | `devscope-frontend` | ✅ **PASS** | `next build` completed with 0 errors. Dual workspaces + custom dropdown optimized. |
+| **Frontend Production Build** | `devscope-frontend` | ✅ **PASS** | `next build` completed with 0 errors. PDF print normalized to pure white. |
 
 ---
 

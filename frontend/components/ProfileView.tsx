@@ -377,7 +377,7 @@ export function ProfileView({
       </header>
 
       {/* EXECUTIVE VERDICT & HIRING SNAPSHOT (HireJudge Style Hero Card) */}
-      <div className="mb-6 rounded-xl border border-edge bg-gradient-to-br from-surface/90 via-surface/60 to-ink p-5 shadow-xl print:border-zinc-400 print:bg-zinc-50 print:p-3.5 print-avoid-break">
+      <div className="mb-6 rounded-xl border border-edge bg-gradient-to-br from-surface/90 via-surface/60 to-ink p-5 shadow-xl print:border-zinc-300 print:bg-none print:bg-white print:p-3.5 print-avoid-break">
         <div className="flex flex-wrap items-start justify-between gap-4 border-b border-edge/60 pb-4 print:border-zinc-300 print:pb-2.5">
           <div>
             <div className="flex items-center gap-2">
@@ -410,7 +410,7 @@ export function ProfileView({
         </div>
 
         {/* Persona & Working Context Explainer */}
-        <div className="mt-3.5 flex items-start gap-3 rounded-lg border border-edge/60 bg-ink/40 p-3 print:border-zinc-300 print:bg-white print:p-2.5">
+        <div className="mt-3.5 flex items-start gap-3 rounded-lg border border-edge/60 bg-ink/40 p-3 print:border-zinc-200 print:bg-zinc-50 print:p-2.5">
           <span className="text-lg leading-none print:text-sm">💡</span>
           <div className="min-w-0 flex-1 font-mono text-xs leading-relaxed text-muted print:text-[10.5px] print:text-zinc-700">
             <strong className="text-ece9f0 print:text-zinc-900">{persona.badge}: </strong>
@@ -456,7 +456,7 @@ export function ProfileView({
 
       {/* REQUISITION FIT SCORECARD (Rendered if candidate was benchmarked against a target role) */}
       {profile.requisitionFit && (
-        <div className="mb-6 rounded-xl border border-signal/40 bg-gradient-to-br from-signal/10 via-surface/80 to-surface p-5 shadow-xl print:border-amber-400 print:bg-amber-50/20 print:p-3.5 print-avoid-break">
+        <div className="mb-6 rounded-xl border border-signal/40 bg-gradient-to-br from-signal/10 via-surface/80 to-surface p-5 shadow-xl print:border-amber-400/80 print:bg-none print:bg-white print:p-3.5 print-avoid-break">
           <div className="flex flex-wrap items-start justify-between gap-4 border-b border-edge/60 pb-3.5 print:border-zinc-300 print:pb-2">
             <div>
               <div className="flex items-center gap-2">
@@ -487,7 +487,7 @@ export function ProfileView({
                 <div className="text-base font-bold text-signal print:text-amber-800">
                   {profile.requisitionFit.matchScore}%
                 </div>
-                <div className="text-[9px] uppercase tracking-wider text-muted">Fit Score</div>
+                <div className="text-[9px] uppercase tracking-wider text-muted print:text-zinc-600">Fit Score</div>
               </div>
             </div>
           </div>
@@ -497,7 +497,7 @@ export function ProfileView({
           </p>
 
           <div className="mt-4 space-y-2">
-            <div className="font-mono text-[10px] uppercase tracking-wider text-muted font-bold">
+            <div className="font-mono text-[10px] uppercase tracking-wider text-muted print:text-zinc-700 font-bold">
               Must-Have Requirements vs. Verified Evidence:
             </div>
             <div className="grid gap-2 sm:grid-cols-2">
