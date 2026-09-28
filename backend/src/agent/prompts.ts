@@ -59,7 +59,15 @@ REQUIRED OUTPUT SHAPE:
     "commitQuality": "excellent|good|average|poor",
     "commitStyleInsight": "string",
     "consistencyPattern": "daily|regular|sporadic|burst"
-  }
+  },
+  "claimEvidenceMatrix": [
+    {
+      "skill": "string — e.g. TypeScript, React, Next.js, PostgreSQL, Docker",
+      "status": "verified|production_observed|unverified_probe",
+      "evidenceSource": "github_code|live_production|ecosystem|none",
+      "detail": "string — verified evidence summary or sharp screening probe"
+    }
+  ]
 }
 
 CAREER STAGE & WORKING DEVELOPER EVALUATION RULES:
@@ -76,6 +84,12 @@ CAREER STAGE & WORKING DEVELOPER EVALUATION RULES:
   1. One on architecture/system design or data flow in their primary stack.
   2. One on production debugging, state, or edge-case handling.
   3. One on code quality, testing, or trade-offs.
+
+CLAIM VS. EVIDENCE MATRIX RULES:
+- Generate 4 to 6 items in claimEvidenceMatrix evaluating core technical competencies:
+  * 'verified' (evidenceSource: 'github_code' or 'ecosystem'): Technologies with undeniable direct proof in public GitHub repositories (high byte count, pinned repos, merged PRs).
+  * 'production_observed' (evidenceSource: 'live_production'): Technologies detected in the LIVE DEPLOYED APP AUDIT (e.g. Next.js, Tailwind CSS, Supabase) proving production delivery even if code is private.
+  * 'unverified_probe' (evidenceSource: 'none'): Skills commonly associated with their stack, mentioned in bio, or claimed on typical resumes without direct artifact proof. Provide a sharp, targeted interview question to probe genuine depth.
 
 WEB PRESENCE RULES:
 - webPresence.hackerNews must be a URL string or null

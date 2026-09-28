@@ -176,8 +176,25 @@ export function ProfileView({ profile }: { profile: DevProfile }) {
       'Strengths:',
       ...profile.strengths.map((s) => `+ ${s}`),
       '',
+      ...(profile.liveAppAudit
+        ? [
+            '',
+            `Live Production Audit: ${profile.liveAppAudit.url}`,
+            `Status: ${profile.liveAppAudit.isLive ? 'LIVE' : 'OFFLINE'} (${profile.liveAppAudit.responseTimeMs}ms) · Stack: ${profile.liveAppAudit.detectedStack.framework || 'Web App'} · Hosting: ${profile.liveAppAudit.hostingPlatform || 'Cloud'}`,
+          ]
+        : []),
+      ...(profile.claimEvidenceMatrix && profile.claimEvidenceMatrix.length > 0
+        ? [
+            '',
+            'Claim vs. Evidence Matrix:',
+            ...profile.claimEvidenceMatrix.map(
+              (m) => `• [${m.status.toUpperCase()}] ${m.skill}: ${m.detail}`
+            ),
+          ]
+        : []),
       ...(rp?.phoneScreenGuide && rp.phoneScreenGuide.length > 0
         ? [
+            '',
             'Suggested 15-Minute Screen Questions:',
             ...rp.phoneScreenGuide.map(
               (q, i) =>
@@ -353,6 +370,115 @@ export function ProfileView({ profile }: { profile: DevProfile }) {
                 {rp.privateWorkContext}
               </p>
             </div>
+          )}
+        </div>
+      )}
+
+      {profile.liveAppAudit && (
+        <div className="mt-4 rounded-lg border border-edge bg-surface/70 p-4 print:mt-2.5 print:p-3 print-card">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-edge/60 pb-3 print:pb-2">
+            <div className="flex items-center gap-2.5">
+              <span className="text-xl">🌐</span>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-xs font-semibold uppercase tracking-wider text-signal">
+                    Live Deployed Application Audit
+                  </span>
+                  {profile.liveAppAudit.hostingPlatform && (
+                    <span className="rounded bg-surface px-2 py-0.5 font-mono text-[10px] text-muted border border-edge">
+                      {profile.liveAppAudit.hostingPlatform}
+                    </span>
+                  )}
+                </div>
+                <div className="mt-0.5">
+                  <a
+                    href={profile.liveAppAudit.finalUrl || profile.liveAppAudit.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-mono text-xs text-ece9f0 underline decoration-muted/50 hover:text-signal"
+                  >
+                    {profile.liveAppAudit.url}
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div>
+              <span
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-mono text-[11px] ${
+                  profile.liveAppAudit.isLive
+                    ? 'border-emerald-600/50 bg-emerald-950/30 text-emerald-400'
+                    : 'border-rose-600/50 bg-rose-950/30 text-rose-400'
+                }`}
+              >
+                <span>{profile.liveAppAudit.isLive ? '🟢' : '🔴'}</span>
+                <span>
+                  {profile.liveAppAudit.isLive
+                    ? `Live (${profile.liveAppAudit.responseTimeMs}ms · ${profile.liveAppAudit.speedRating})`
+                    : `HTTP ${profile.liveAppAudit.status}`}
+                </span>
+              </span>
+            </div>
+          </div>
+
+          {profile.liveAppAudit.title && (
+            <div className="mt-3">
+              <div className="font-sans text-sm font-medium text-ece9f0">{profile.liveAppAudit.title}</div>
+              {profile.liveAppAudit.description && (
+                <p className="mt-1 text-xs text-muted leading-relaxed">{profile.liveAppAudit.description}</p>
+              )}
+            </div>
+          )}
+
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <div className="rounded border border-edge/60 bg-surface/50 p-2.5 font-mono text-xs">
+              <div className="text-[10px] uppercase tracking-wider text-muted font-semibold">Detected Tech Stack</div>
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                {profile.liveAppAudit.detectedStack.framework && (
+                  <span className="rounded bg-signal/10 px-2 py-0.5 text-signal border border-signal/20 text-[11px]">
+                    {profile.liveAppAudit.detectedStack.framework}
+                  </span>
+                )}
+                {profile.liveAppAudit.detectedStack.styling?.map((s, i) => (
+                  <span key={i} className="rounded bg-surface px-2 py-0.5 text-ece9f0 border border-edge text-[11px]">
+                    {s}
+                  </span>
+                ))}
+                {profile.liveAppAudit.detectedStack.toolsAndLibraries?.map((t, i) => (
+                  <span key={i} className="rounded bg-surface px-2 py-0.5 text-muted border border-edge text-[11px]">
+                    {t}
+                  </span>
+                ))}
+                {profile.liveAppAudit.detectedStack.backendSignals?.map((b, i) => (
+                  <span key={i} className="rounded bg-blue-950/40 px-2 py-0.5 text-blue-300 border border-blue-800/40 text-[11px]">
+                    {b}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded border border-edge/60 bg-surface/50 p-2.5 font-mono text-xs">
+              <div className="text-[10px] uppercase tracking-wider text-muted font-semibold">Production Standards</div>
+              <div className="mt-1.5 grid grid-cols-2 gap-1 text-[11px]">
+                <span className={profile.liveAppAudit.productionStandards.httpsEnforced ? 'text-emerald-400' : 'text-zinc-500'}>
+                  {profile.liveAppAudit.productionStandards.httpsEnforced ? '✓' : '✗'} HTTPS Enforced
+                </span>
+                <span className={profile.liveAppAudit.productionStandards.mobileResponsive ? 'text-emerald-400' : 'text-zinc-500'}>
+                  {profile.liveAppAudit.productionStandards.mobileResponsive ? '✓' : '✗'} Mobile Viewport
+                </span>
+                <span className={profile.liveAppAudit.productionStandards.hasSeoMeta ? 'text-emerald-400' : 'text-zinc-500'}>
+                  {profile.liveAppAudit.productionStandards.hasSeoMeta ? '✓' : '✗'} SEO / Meta Tags
+                </span>
+                <span className={profile.liveAppAudit.productionStandards.hasSecurityHeaders ? 'text-emerald-400' : 'text-zinc-500'}>
+                  {profile.liveAppAudit.productionStandards.hasSecurityHeaders ? '✓' : '✗'} Security Headers
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {profile.liveAppAudit.architectureSummary && (
+            <p className="mt-3 font-mono text-[11px] leading-relaxed text-muted/90 print:text-[10px]">
+              <strong className="text-ece9f0">Architecture Audit:</strong> {profile.liveAppAudit.architectureSummary}
+            </p>
           )}
         </div>
       )}
@@ -579,8 +705,51 @@ export function ProfileView({ profile }: { profile: DevProfile }) {
         </div>
       </Section>
 
+      {profile.claimEvidenceMatrix && profile.claimEvidenceMatrix.length > 0 && (
+        <Section index="09" title="Claim vs. Evidence Matrix" className="print-avoid-break">
+          <p className="mb-4 max-w-2xl text-[13px] text-muted print:mb-2 print:text-[10.5px]">
+            Cross-referencing candidate technical claims against verified codebase artifacts and live production builds.
+          </p>
+          <div className="space-y-2.5 max-w-3xl">
+            {profile.claimEvidenceMatrix.map((item, i) => {
+              const isVerified = item.status === 'verified';
+              const isObserved = item.status === 'production_observed';
+              return (
+                <div
+                  key={i}
+                  className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 rounded-lg border border-edge bg-surface/50 p-3 print:p-2 print-card"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-mono text-sm font-semibold text-ece9f0">{item.skill}</span>
+                      <span
+                        className={`inline-flex items-center gap-1 rounded px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider ${
+                          isVerified
+                            ? 'border border-emerald-500/30 bg-emerald-950/30 text-emerald-400'
+                            : isObserved
+                              ? 'border border-blue-500/30 bg-blue-950/30 text-blue-300'
+                              : 'border border-amber-500/30 bg-amber-950/30 text-amber-300'
+                        }`}
+                      >
+                        <span>{isVerified ? '✓ Code Verified' : isObserved ? '🌐 Live Shipped' : '🔍 Unverified Probe'}</span>
+                      </span>
+                    </div>
+                    <p className="mt-1 font-mono text-xs leading-relaxed text-muted print:text-[10.5px]">
+                      {item.detail}
+                    </p>
+                  </div>
+                  <div className="flex-none font-mono text-[10px] uppercase text-muted/70 sm:text-right">
+                    source: {item.evidenceSource.replace('_', ' ')}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Section>
+      )}
+
       {rp && (
-        <Section index="09" title="Interview prep" className="print-avoid-break">
+        <Section index="10" title="Interview prep" className="print-avoid-break">
           <div className="grid max-w-3xl gap-8 sm:grid-cols-2 print:gap-4">
             <div>
               <h3 className="mb-3 font-mono text-[11px] uppercase tracking-widest text-signal print:text-amber-700 font-semibold print:mb-1.5">
@@ -619,7 +788,7 @@ export function ProfileView({ profile }: { profile: DevProfile }) {
       )}
 
       {rp && rp.phoneScreenGuide && rp.phoneScreenGuide.length > 0 && (
-        <Section index="10" title="15-Minute Technical Screen Guide">
+        <Section index="11" title="15-Minute Technical Screen Guide">
           <p className="mb-6 max-w-2xl text-[13px] text-muted print:mb-2.5 print:text-[10.5px]">
             Calibrated technical screening questions for non-technical recruiters and hiring teams.
             Use these during initial candidate qualification to probe hands-on depth.

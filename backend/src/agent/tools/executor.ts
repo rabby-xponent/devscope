@@ -1,4 +1,5 @@
 import { searchHackerNews, searchDevto, webSearch } from './external.tool';
+import { inspectLiveUrl } from './live-url.tool';
 import {
   getGithubProfile,
   getRepos,
@@ -34,6 +35,8 @@ export async function executeTool(name: string, input: Record<string, any>): Pro
       return searchDevto(input.username);
     case 'web_search':
       return webSearch(input.query);
+    case 'inspect_live_url':
+      return inspectLiveUrl(input.url);
     default:
       throw new Error(`Unknown tool: ${name}`);
   }

@@ -151,6 +151,19 @@ export const toolDefinitions = [
       },
     },
   },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'inspect_live_url',
+      description:
+        'Inspect and audit a live deployed web app, SaaS demo, or portfolio URL. Measures response time, detects production frameworks (Next.js, React, Tailwind, Vite, etc.), hosting platform, and security standards.',
+      parameters: {
+        type: 'object',
+        properties: { url: { type: 'string' } },
+        required: ['url'],
+      },
+    },
+  },
 ];
 
 export function summarizeToolResult(name: string, result: any): string {
@@ -184,6 +197,10 @@ export function summarizeToolResult(name: string, result: any): string {
       return result.found ? `${result.articleCount} DEV.to articles` : 'No DEV.to presence';
     case 'web_search':
       return result.abstract ? `Found: ${result.source}` : 'No notable web results';
+    case 'inspect_live_url':
+      return result.isLive
+        ? `Live ${result.detectedStack?.framework || 'Web App'} (${result.responseTimeMs}ms, ${result.hostingPlatform || 'hosted'})`
+        : `Inspection finished: HTTP ${result.status}`;
     default:
       return 'Done';
   }

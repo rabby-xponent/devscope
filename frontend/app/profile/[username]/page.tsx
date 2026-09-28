@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { useDevScopeStream } from '@/hooks/useDevScopeStream';
 import { AgentTrace } from '@/components/AgentTrace';
 import { AgentProgress } from '@/components/AgentProgress';
@@ -10,13 +10,15 @@ import { ProfileView } from '@/components/ProfileView';
 
 export default function ProfilePage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const username = String(params.username || '');
+  const liveUrl = searchParams.get('liveUrl') || undefined;
   const { status, trace, profile, cached, error, generate, reset } = useDevScopeStream();
 
   useEffect(() => {
-    if (username) generate(username);
+    if (username) generate(username, false, liveUrl);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [username]);
+  }, [username, liveUrl]);
 
   const isWorking = status === 'connecting' || status === 'streaming';
 
@@ -34,7 +36,7 @@ export default function ProfilePage() {
           <div className="flex items-center gap-5">
             {status === 'complete' && (
               <button
-                onClick={() => generate(username, true)}
+                onClick={() => generate(username, true, liveUrl)}
                 className="font-mono text-[11px] uppercase tracking-wider text-muted transition-colors hover:text-signal"
               >
                 ↻ regenerate
@@ -57,7 +59,7 @@ export default function ProfilePage() {
             <p className="mt-2 text-muted">{error}</p>
             <div className="mt-6 flex justify-center gap-3">
               <button
-                onClick={() => generate(username, true)}
+                onClick={() => generate(username, true, liveUrl)}
                 className="rounded-md bg-signal px-4 py-2 font-mono text-xs uppercase tracking-wider text-ink"
               >
                 retry

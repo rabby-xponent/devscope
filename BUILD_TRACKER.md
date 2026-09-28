@@ -80,13 +80,40 @@
 
 ---
 
+### Milestone 5: Multi-Signal Technical Talent Intelligence (Phase 2)
+* **Goal:** Solve the reality of tech hiring where working junior/mid engineers write code in private repos, but have live deployed projects (Vercel, Render, Netlify, custom portfolios) that prove production capability.
+* **Backend Additions:**
+  - **Live Application Audit Tool ([`live-url.tool.ts`](./backend/src/agent/tools/live-url.tool.ts)):**
+    * SSRF-safe public URL inspection (rejects loopback, internal IPv4/v6 ranges).
+    * Measures real-world response latency (ms) and speed rating (`fast` / `moderate` / `slow`).
+    * Detects production client frameworks (`Next.js`, `React`, `Remix`, `Vite`, `Vue`, `Nuxt`, `SvelteKit`, `Astro`, `Angular`).
+    * Detects styling & UI systems (`Tailwind CSS`, `Radix UI / shadcn`, `Styled Components`, `Emotion`).
+    * Identifies analytics, monitoring, icons, and backend API signatures (`REST /api`, `Supabase`, `Firebase`, `GraphQL`).
+    * Verifies production standards: HTTPS enforcement, mobile viewport, SEO meta/title tags, and security headers.
+  - **Schema Evolution ([`profile.ts`](./backend/src/types/profile.ts)):**
+    * Added `LiveAppAudit` and `ClaimEvidenceItem` types to `DevProfile`.
+    * Bumped `CACHE_VERSION = 5`.
+  - **Agent Synthesis & Prompt Calibration ([`prompts.ts`](./backend/src/agent/prompts.ts) & [`agent.service.ts`](./backend/src/agent/agent.service.ts)):**
+    * Injected live app audit signals into synthesis prompt.
+    * Generates a 4-to-6 item **Claim vs. Evidence Matrix** classifying skills into `verified` (direct GitHub proof), `production_observed` (live bundle proof), and `unverified_probe` (sharp interview probe questions).
+* **Frontend Additions:**
+  - **Multi-Input Search UI ([`frontend/app/page.tsx`](./frontend/app/page.tsx)):**
+    * Expandable `＋ Audit live deployed project or portfolio demo` input alongside GitHub handle.
+  - **Live Deployed Application Audit Card ([`ProfileView.tsx`](./frontend/components/ProfileView.tsx)):**
+    * Live status chip (`🟢 Live (142ms)`), platform badge, detected framework tags, production standards checklist, and architectural summary.
+  - **Section 09 — Claim vs. Evidence Matrix ([`ProfileView.tsx`](./frontend/components/ProfileView.tsx)):**
+    * Explicit comparison separating verified skills from unverified resume claims with targeted recruiter probe questions.
+  - **Recruiter Brief Integration:** One-click copy brief now includes live audit status and claim matrix breakdown.
+
+---
+
 ## 3. Build & Test Verification Record
 
 | Test | Target | Result | Latency / Notes |
 |---|---|---|---|
 | **Live Agent Test** | `torvalds` | ✅ **PASS** | 14.3s total (synthesis via Gemini 3.8 Flash). Full profile + screen guide generated. |
-| **Backend TypeScript Build** | `devscope-backend` | ✅ **PASS** | `tsc` completed with 0 errors. |
-| **Frontend Next.js Build** | `devscope-frontend` | ✅ **PASS** | `next build` completed with 0 errors. All routes static/dynamic optimized. |
+| **Backend TypeScript Build** | `devscope-backend` | ✅ **PASS** | `tsc` completed with 0 errors (`CACHE_VERSION = 5`). |
+| **Frontend Next.js Build** | `devscope-frontend` | ✅ **PASS** | `next build` completed with 0 errors. Static/dynamic routes optimized. |
 
 ---
 
@@ -94,15 +121,9 @@
 
 ```mermaid
 pie title Roadmap Milestone Status
-    "Completed (Phase 1)" : 4
-    "In Progress / Next (Phase 2)" : 3
+    "Completed (Phase 1 & Phase 2)" : 5
     "Future Expansion (Phase 3)" : 2
 ```
-
-### Phase 2: Multi-Signal Evaluation (Next Up)
-- [ ] **Multi-Input Landing Page:** Support inputting `[GitHub Username]` + optional `[Live Deployed URL]` (Vercel, Render, portfolio).
-- [ ] **Live App Inspection Tool:** Lightweight web crawler in `backend/src/agent/tools/` to inspect DOM, bundle size, detected tech stack, and API response health of shipped apps.
-- [ ] **Claim vs. Evidence Matrix:** Cross-referencing candidate-claimed skills against verified artifacts (highlighting verified vs. unverified buzzwords).
 
 ### Phase 3: Enterprise & ATS Integration
 - [ ] **GitHub OAuth Private Contribution Proof:** Querying GraphQL `includePrivateContributions: true` for zero-code aggregate commit counts.

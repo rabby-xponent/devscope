@@ -14,9 +14,10 @@ import { searchHackerNews, searchDevto, webSearch } from './tools/external.tool'
 import { SYNTHESIS_PROMPT } from './prompts';
 import { DevProfile, TraceEvent } from '../types/profile';
 import { LLMGateway } from '../llm/llm-gateway';
+import { inspectLiveUrl, normalizeUrl } from './tools/live-url.tool';
 
 const SYNTHESIS_TIMEOUT_MS = 90_000;
-export const CACHE_VERSION = 4;
+export const CACHE_VERSION = 5;
 
 type EventEmitter = (event: TraceEvent) => void;
 type ChatMessage = OpenAI.Chat.Completions.ChatCompletionMessageParam;
@@ -28,7 +29,7 @@ export class AgentService {
     this.gateway = new LLMGateway();
   }
 
-  async buildProfile(username: string, emit: EventEmitter): Promise<DevProfile> {
+  async buildProfile(username: string, emit: EventEmitter, liveUrl?: string): Promise<DevProfile> {
     const t0 = Date.now();
     const collectedData: Record<string, unknown> = {};
     let githubData: any;
@@ -50,7 +51,7 @@ export class AgentService {
 
     await this.emitPrefetchResult('get_github_profile', { username }, githubData, collectedData, emit);
     await this.emitPrefetchResult('get_repos', { username, page: 1 }, repoData, collectedData, emit);
-    await this.prefetchEvidence(username, githubData, repoData, collectedData, emit);
+    await this.prefetchEvidence(username, githubData, repoData, collectedData, emit, liveUrl);
     console.log(`[perf] pre-fetch: ${Date.now() - t0}ms`);
 
     console.log(`[perf] gather phase: 0ms (skipped, prefetched) (${Date.now() - t0}ms total)`);
@@ -58,7 +59,7 @@ export class AgentService {
     const synthesized = await this.synthesizeProfile(username, collectedData, emit, t0);
     const finalized = this.finalizeSynthesizedProfile(synthesized, username, githubData, collectedData);
     console.log(`[perf] total: ${Date.now() - t0}ms`);
-    return this.assembleProfile(username, finalized, githubData, repoData);
+    return this.assembleProfile(username, finalized, githubData, repoData, collectedData);
   }
 
   private async emitPrefetchResult(
@@ -88,7 +89,8 @@ export class AgentService {
     githubData: any,
     repoData: any,
     collectedData: Record<string, unknown>,
-    emit: EventEmitter
+    emit: EventEmitter,
+    liveUrl?: string
   ): Promise<void> {
     const displayName = githubData?.name || username;
     const topRepos: Array<{ name: string }> = repoData?.repos?.slice(0, 3) ?? [];
@@ -124,6 +126,17 @@ export class AgentService {
         run: () => getRepoReadme(username, repo.name),
       })),
     ];
+
+    // Priority Live Application Inspection: user-provided liveUrl OR github profile websiteUrl
+    const candidateLiveUrl = liveUrl || githubData?.websiteUrl;
+    if (candidateLiveUrl && typeof candidateLiveUrl === 'string' && candidateLiveUrl.trim().length > 0) {
+      const normalized = normalizeUrl(candidateLiveUrl);
+      tasks.push({
+        name: 'inspect_live_url',
+        input: { url: normalized },
+        run: () => inspectLiveUrl(normalized),
+      });
+    }
 
     await Promise.all(
       tasks.map(async (task) => {
@@ -280,6 +293,23 @@ export class AgentService {
       }
     }
 
+    const liveApp = data.inspect_live_url as any;
+    if (liveApp) {
+      parts.push(
+        `LIVE DEPLOYED APP AUDIT:\n` +
+        `- URL: ${liveApp.url} (Final: ${liveApp.finalUrl || liveApp.url})\n` +
+        `- Status: ${liveApp.status} (IsLive: ${liveApp.isLive}, ${liveApp.responseTimeMs}ms)\n` +
+        `- Hosting Platform: ${liveApp.hostingPlatform || 'Unknown'}\n` +
+        `- Title: ${liveApp.title || 'None'}\n` +
+        `- Description: ${liveApp.description || 'None'}\n` +
+        `- Detected Framework: ${liveApp.detectedStack?.framework || 'None'}\n` +
+        `- Styling: ${liveApp.detectedStack?.styling?.join(', ') || 'None'}\n` +
+        `- Tools/Libraries: ${liveApp.detectedStack?.toolsAndLibraries?.join(', ') || 'None'}\n` +
+        `- Backend Signals: ${liveApp.detectedStack?.backendSignals?.join(', ') || 'None'}\n` +
+        `- Architecture Summary: ${liveApp.architectureSummary || 'None'}`
+      );
+    }
+
     return parts.join('\n');
   }
 
@@ -359,7 +389,61 @@ export class AgentService {
   ): any {
     this.enforceExpertiseFromLanguages(s, collectedData);
     this.enforceWebPresence(s, username, githubData, collectedData);
+    this.enforceClaimEvidenceMatrix(s, collectedData);
     return s;
+  }
+
+  private enforceClaimEvidenceMatrix(s: any, collectedData: Record<string, unknown>): void {
+    if (Array.isArray(s.claimEvidenceMatrix) && s.claimEvidenceMatrix.length > 0) {
+      s.claimEvidenceMatrix = s.claimEvidenceMatrix
+        .map((item: any) => ({
+          skill: String(item.skill || '').trim(),
+          status: ['verified', 'production_observed', 'unverified_probe'].includes(item.status)
+            ? item.status
+            : 'verified',
+          evidenceSource: ['github_code', 'live_production', 'ecosystem', 'none'].includes(item.evidenceSource)
+            ? item.evidenceSource
+            : 'github_code',
+          detail: String(item.detail || '').trim(),
+        }))
+        .filter((item: any) => item.skill.length > 0);
+      return;
+    }
+
+    const matrix: any[] = [];
+    const languages = (collectedData.get_aggregated_languages as any)?.languages || [];
+    for (const lang of languages.slice(0, 3)) {
+      matrix.push({
+        skill: lang.name,
+        status: 'verified',
+        evidenceSource: 'github_code',
+        detail: `Verified via codebase analysis: ${lang.percentage}% aggregate volume across public repositories.`,
+      });
+    }
+
+    const live = collectedData.inspect_live_url as any;
+    if (live?.isLive && live.detectedStack) {
+      if (live.detectedStack.framework && live.detectedStack.framework !== 'Static / Vanilla HTML') {
+        matrix.push({
+          skill: live.detectedStack.framework,
+          status: 'production_observed',
+          evidenceSource: 'live_production',
+          detail: `Observed live in production bundle on ${live.hostingPlatform || 'web'} (${live.responseTimeMs}ms response time).`,
+        });
+      }
+      if (live.detectedStack.styling?.length) {
+        matrix.push({
+          skill: live.detectedStack.styling[0],
+          status: 'production_observed',
+          evidenceSource: 'live_production',
+          detail: `Detected in active production UI bundle at ${live.url}.`,
+        });
+      }
+    }
+
+    if (matrix.length > 0) {
+      s.claimEvidenceMatrix = matrix;
+    }
   }
 
   private enforceExpertiseFromLanguages(s: any, collectedData: Record<string, unknown>): void {
@@ -630,7 +714,8 @@ export class AgentService {
     username: string,
     s: any,
     githubData: any,
-    repoData: any
+    repoData: any,
+    collectedData: Record<string, unknown>
   ): DevProfile {
     return {
       username,
@@ -660,6 +745,8 @@ export class AgentService {
       strengths: s.strengths || [],
       growthAreas: s.growthAreas || [],
       recruiterPanel: s.recruiterPanel || undefined,
+      liveAppAudit: (collectedData.inspect_live_url as any) || undefined,
+      claimEvidenceMatrix: Array.isArray(s.claimEvidenceMatrix) && s.claimEvidenceMatrix.length > 0 ? s.claimEvidenceMatrix : undefined,
     };
   }
 }

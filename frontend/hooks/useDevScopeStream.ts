@@ -23,7 +23,7 @@ export function useDevScopeStream() {
     setError(null);
   }, []);
 
-  const generate = useCallback((username: string, force = false) => {
+  const generate = useCallback((username: string, force = false, liveUrl?: string) => {
     sourceRef.current?.close();
     setStatus('connecting');
     setTrace([]);
@@ -31,9 +31,11 @@ export function useDevScopeStream() {
     setCached(false);
     setError(null);
 
-    const url = `${API_URL}/api/generate?username=${encodeURIComponent(username)}${
-      force ? '&force=true' : ''
-    }`;
+    const params = new URLSearchParams({ username });
+    if (force) params.set('force', 'true');
+    if (liveUrl && liveUrl.trim()) params.set('liveUrl', liveUrl.trim());
+
+    const url = `${API_URL}/api/generate?${params.toString()}`;
     const source = new EventSource(url);
     sourceRef.current = source;
 

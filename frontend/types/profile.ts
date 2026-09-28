@@ -73,6 +73,41 @@ export interface DevProfile {
     privateWorkContext?: string;
     phoneScreenGuide?: PhoneScreenQuestion[];
   };
+
+  liveAppAudit?: LiveAppAudit;
+  claimEvidenceMatrix?: ClaimEvidenceItem[];
+}
+
+export interface LiveAppAudit {
+  url: string;
+  finalUrl: string;
+  status: number;
+  isLive: boolean;
+  responseTimeMs: number;
+  speedRating: 'fast' | 'moderate' | 'slow';
+  title: string | null;
+  description: string | null;
+  hostingPlatform: string | null;
+  detectedStack: {
+    framework?: string;
+    styling?: string[];
+    toolsAndLibraries?: string[];
+    backendSignals?: string[];
+  };
+  productionStandards: {
+    httpsEnforced: boolean;
+    mobileResponsive: boolean;
+    hasSeoMeta: boolean;
+    hasSecurityHeaders: boolean;
+  };
+  architectureSummary: string;
+}
+
+export interface ClaimEvidenceItem {
+  skill: string;
+  status: 'verified' | 'production_observed' | 'unverified_probe';
+  evidenceSource: 'github_code' | 'live_production' | 'ecosystem' | 'none';
+  detail: string;
 }
 
 export type TraceEventType = 'tool_call' | 'tool_result' | 'thinking' | 'complete' | 'error';

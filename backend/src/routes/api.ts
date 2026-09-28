@@ -8,7 +8,8 @@ const agent = new AgentService();
 
 router.get('/generate', async (req: Request, res: Response) => {
   const username = String(req.query.username || '').trim();
-  const force = req.query.force === 'true';
+  const liveUrl = req.query.liveUrl ? String(req.query.liveUrl).trim() : undefined;
+  const force = req.query.force === 'true' || Boolean(liveUrl);
 
   if (!username || !/^[a-zA-Z0-9_-]+$/.test(username)) {
     res.status(400).json({ error: 'Valid username required' });
@@ -35,7 +36,7 @@ router.get('/generate', async (req: Request, res: Response) => {
       }
     }
 
-    const profile = await agent.buildProfile(username, send);
+    const profile = await agent.buildProfile(username, send, liveUrl);
     await writeCache(username, profile);
 
     send({ type: 'complete', timestamp: new Date().toISOString(), profile, cached: false });
