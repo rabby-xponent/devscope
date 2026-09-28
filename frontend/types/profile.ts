@@ -76,6 +76,22 @@ export interface DevProfile {
 
   liveAppAudit?: LiveAppAudit;
   claimEvidenceMatrix?: ClaimEvidenceItem[];
+  requisitionFit?: RequisitionFit;
+}
+
+export interface RequisitionRequirement {
+  requirement: string;
+  status: 'met' | 'partially_met' | 'gap_probe';
+  evidence: string;
+}
+
+export interface RequisitionFit {
+  roleTitle: string;
+  matchScore: number;
+  verdict: 'strong_match' | 'qualified_with_probes' | 'high_gap_risk';
+  summary: string;
+  requirements: RequisitionRequirement[];
+  customProbeQuestions?: string[];
 }
 
 export interface LiveAppAudit {

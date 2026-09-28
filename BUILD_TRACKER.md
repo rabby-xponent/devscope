@@ -190,6 +190,19 @@
 
 ---
 
+### Milestone 10: Architectural Specification: Job Requisitions & Dual-Sided Platform Positioning
+* **Specification Document:** [`requisition_and_saved_profiles_spec.md`](../.gemini/antigravity-ide/brain/ef2042c3-a50e-41db-a1fe-0d5e8f449925/requisition_and_saved_profiles_spec.md)
+* **Strategic Positioning Clarified:**
+  - **Recruiter Space:** "Talent Intelligence Suite" — Screen 200–500 applicants against a saved Job Requisition without re-pasting JDs. Evaluates candidates using Requisition Match Scores, Claim vs. Evidence Ledgers, and 15-Minute Technical Phone Screen Guides.
+  - **Developer Space:** "Career Pre-Flight & Self-Audit" — Working engineers paste their profile and a target JD to uncover blind spots, see how hiring teams perceive their private work, and simulate the exact interview questions recruiters will ask.
+* **Architecture & Data Models Defined:**
+  - Added `SavedRequisition` model (Title, Company, Raw JD, Parsed Competencies, Seniority Floor, Private Repo Policy).
+  - Added `RequisitionFit` and `RequisitionRequirement` models to `DevProfile` schema.
+  - Designed the 3 recruiter candidate ingestion pathways: One-Click Requisition Dropdown, Batch CSV Import, and Shareable Application Links.
+  - Outlined client-side persistence (LocalStorage) and future `/api/requisitions` backend persistence.
+
+---
+
 ## 3. Build & Test Verification Record
 
 | Test | Target | Result | Latency / Notes |
