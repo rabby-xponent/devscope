@@ -131,6 +131,26 @@
 
 ---
 
+### Milestone 7: Profile Dossier Redesign & Executive Recruiter Navigation
+* **Components Updated:** [`frontend/components/ProfileView.tsx`](./frontend/components/ProfileView.tsx)
+* **Features & Upgrades Implemented:**
+  - **Executive Candidate Verdict Card (HireJudge Pattern):**
+    * Prominent decision badge right at top: Seniority level (e.g. `SENIOR LEVEL`), Candidate Persona (`💼 Working Professional`), and recommendation chip (`★ Shortlist Recommendation`).
+    * **Ground-Truth Signal Confidence Metric:** Calculated confidence index (e.g. `94% Signal Confidence`).
+    * **Working Professional Bias Explainer:** Prominently informs hiring teams why public commit counts may be sparse due to enterprise/corporate proprietary repos.
+  - **Sticky Recruiter Sub-Navigation Bar:**
+    * 4 categorized tabs: `Overview & Facts`, `Evidence & Live Audit`, `Codebase Signals`, and `15-Min Phone Screen`.
+    * Clean scannability for fast candidate qualification without endless scrolling.
+    * In print / PDF export mode, all sections automatically render unrolled in the 2–3 page document.
+  - **Elevated Production Evidence & Claim Matrix:**
+    * Live Deployed App Audit card with latency meter (`🟢 Live Shipped (142ms)`), hosting badge, detected stack, and production checklist.
+    * Claim vs. Evidence Matrix structured as an audit ledger with clear verified/observed/unverified probe states.
+  - **15-Minute Technical Phone Screen Playbook:**
+    * Clean Q1/Q2/Q3 cards with side-by-side "What to Listen For" (green) and "Red Flag Signal" (rose) boxes.
+  - **Verification:** `next build` completed with zero errors; `/profile/[username]` dynamic route optimized.
+
+---
+
 ## 3. Build & Test Verification Record
 
 | Test | Target | Result | Latency / Notes |
