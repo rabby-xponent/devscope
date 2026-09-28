@@ -107,6 +107,30 @@
 
 ---
 
+### Milestone 6: HireJudge-Inspired Landing Page & Editorial Repositioning
+* **Inspiration & Target:** UI patterns and conversion flow from `https://hirejudge.com/` (bold editorial typography, high-contrast dark/warm-parchment sections, live dossier visual teaser, and crisp recruiter problem statements).
+* **Changes in [`frontend/app/page.tsx`](./frontend/app/page.tsx):**
+  - **Editorial Hero & Floating Dossier Preview:**
+    * High-impact headline: *"Verify engineering depth without the guesswork."* with warm orange accent (`#f0a04b` / `#c2410c`).
+    * Dual-input recruiter console (GitHub handle + optional live deployed app URL) with instant sample pills (`gaearon`, `tj`, `sindresorhus`).
+    * Interactive floating preview dossier demonstrating candidate fit (94% confidence, working professional tag, live bundle audit, claim matrix preview, phone screen guide).
+  - **Executive Proof Bar:**
+    * 4 key metrics highlighting speed and transparency: `11+ Deterministic Tools`, `~14s Latency`, `100% Zero Login / No BS`, `2-3pg Executive PDF Brief`.
+  - **Inverted Warm Parchment Section ("The Technical Hiring Reality"):**
+    * High-contrast editorial card (`#f4f0e8`) confronting the core dilemma:
+      * **For the Technical Recruiter:** Resume keyword bloat, inability to verify private enterprise code, hours lost in unvetted tech screens.
+      * **For the Working Engineer:** 90%+ code trapped in corporate private repos, uncredited architectural contributions, penalized for lack of public GitHub hobby activity.
+      * **The Cost:** Costly bad hires and wasted engineering hours.
+  - **Ground-Truth 3-Step Pipeline ("How DevScope Works"):**
+    * Step 1: Input Identity & Work (GitHub + live URL).
+    * Step 2: 11-Tool Agent Deep Scan (commits, dependencies, live bundle, PR discussions).
+    * Step 3: Executive Candidate Dossier (Persona classification, claim-vs-evidence matrix, 15-min phone screen guide).
+  - **Executive Feature Grid:**
+    * 6 high-density cards detailing Working Professional Bias Elimination, Live App Audit, Claim vs. Evidence Matrix, Tailored Phone Screen Guide, 1-Click Recruiter Brief, and Committee-Ready PDF.
+  - **Verification:** `npm run build` completed with zero warnings or errors.
+
+---
+
 ## 3. Build & Test Verification Record
 
 | Test | Target | Result | Latency / Notes |
