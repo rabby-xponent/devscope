@@ -16,6 +16,7 @@ export default function ProfilePage() {
   const liveUrl = searchParams.get('liveUrl') || undefined;
   const roleId = searchParams.get('roleId') || undefined;
   const rawJd = searchParams.get('jd') || undefined;
+  const mode = searchParams.get('mode') === 'developer' ? 'developer' : 'recruiter';
 
   let activeJd = rawJd;
   let activeTitle = searchParams.get('roleTitle') || undefined;
@@ -124,7 +125,7 @@ export default function ProfilePage() {
                 </button>
               </div>
             )}
-            <ProfileView profile={profile} />
+            <ProfileView profile={profile} mode={mode} />
             {trace.length > 0 && (
               <details className="mt-10 border-t border-edge pt-6 print:hidden">
                 <summary className="cursor-pointer font-mono text-xs uppercase tracking-widest text-muted hover:text-signal">

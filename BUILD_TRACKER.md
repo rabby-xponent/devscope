@@ -217,8 +217,32 @@
     * Prominent visual scorecard card displaying match score badge, role title, requirement check matrix (`met`, `partial`, `missing`), and tailored phone-screen probes.
     * Formats role fit findings into the 1-click `📋 Copy Recruiter Brief` for instant ATS/Slack sharing.
     * Integrated with `@media print` rules for clean, unorphaned multi-page PDF generation.
+### Milestone 12: Dual Workspaces (Recruiter vs Developer), Bespoke RequisitionSelect, & UI Decluttering
+* **User Feedback Addressed:**
+  1. Primitive native HTML `<select>` dropdown replaced with custom dark-glass popover component.
+  2. Separate spaces for recruiters and developers with dedicated persistence and profiles.
+  3. UI decluttering: eliminated squeezed margins, dense borders, and cluttered test scenario pills.
+* **Architecture & Additions:**
+  - **Workspace Profiles Engine ([`frontend/lib/workspace-profiles.ts`](./frontend/lib/workspace-profiles.ts)):**
+    * Mode switcher persistence (`recruiter` | `developer`).
+    * **Recruiter Profile**: Company name, active requisition, recent candidate screenings history (`recordCandidateScreening`).
+    * **Developer Profile**: Auto-saved GitHub username, portfolio URL, target role benchmark, and past pre-flight audit runs (`recordDeveloperAudit`).
+  - **Custom Dark-Glass RequisitionSelect Component ([`frontend/components/RequisitionSelect.tsx`](./frontend/components/RequisitionSelect.tsx)):**
+    * Completely replaces native browser select.
+    * Sleek button trigger displaying active role title, company chip, and animated chevron.
+    * Absolute glassmorphic dropdown with outside-click and ESC key dismissal.
+    * Features: General Profile Audit option, list of saved roles with tech stack tags, active checkmark, role deletion for custom JDs, and a prominent "+ Create & Save New Job Description" button.
+  - **Refactored Console UI & Decluttering ([`frontend/app/page.tsx`](./frontend/app/page.tsx)):**
+    * Segmented pill toggle: `[ 🏢 Recruiter Workspace ]` vs `[ 💻 Developer Space ]`.
+    * Dedicated, un-cramped views with generous 24px padding and relaxed input heights (`py-3`).
+    * Recruiter view emphasizes candidate screening and past screenings history.
+    * Developer view emphasizes career pre-flight self-audit, blind-spot discovery, and interview question defense against target roles.
+    * Archetype live test samples moved to a spaced-out, understated bottom strip.
+  - **Dossier & Brief Adaptation ([`frontend/components/ProfileView.tsx`](./frontend/components/ProfileView.tsx)):**
+    * Mode-aware briefing: Recruiter mode exports `CANDIDATE INTELLIGENCE DOSSIER` / `Copy Recruiter Brief`; Developer mode exports `ENGINEERING CAREER PRE-FLIGHT DOSSIER` / `Copy Pre-Flight Sheet`.
+    * Verdict card header dynamically updates to reflect `Career Pre-Flight & Interview Readiness` for developers.
 * **Verification:**
-  - `npx tsc --noEmit` executed on both `backend/` and `frontend/` with 0 compilation errors.
+  - `npm run build` executed on `frontend/`: Compiled successfully with 0 errors across all routes.
 
 ---
 
@@ -228,7 +252,7 @@
 |---|---|---|---|
 | **Live Agent Test** | `torvalds` | ✅ **PASS** | 14.3s total (synthesis via Gemini 3.8 Flash). Full profile + screen guide generated. |
 | **Backend TypeScript Build** | `devscope-backend` | ✅ **PASS** | `tsc` completed with 0 errors (`CACHE_VERSION = 5` + `RequisitionFit`). |
-| **Frontend TypeScript Build** | `devscope-frontend` | ✅ **PASS** | `tsc` completed with 0 errors (`SavedRequisition` + modal + scorecard). |
+| **Frontend Production Build** | `devscope-frontend` | ✅ **PASS** | `next build` completed with 0 errors. Dual workspaces + custom dropdown optimized. |
 
 ---
 

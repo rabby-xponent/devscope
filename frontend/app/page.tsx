@@ -3,13 +3,26 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import RequisitionSelect from '@/components/RequisitionSelect';
 import {
   getSavedRequisitions,
   saveRequisition,
+  deleteRequisition,
   getActiveRequisitionId,
   setActiveRequisitionId,
   SavedRequisition,
 } from '@/lib/requisitions';
+import {
+  getActiveWorkspaceMode,
+  setActiveWorkspaceMode,
+  getRecruiterProfile,
+  recordCandidateScreening,
+  getDeveloperProfile,
+  recordDeveloperAudit,
+  WorkspaceMode,
+  RecruiterWorkspaceProfile,
+  DeveloperWorkspaceProfile,
+} from '@/lib/workspace-profiles';
 
 const CANDIDATE_ARCHETYPES = [
   {
@@ -33,9 +46,22 @@ const CANDIDATE_ARCHETYPES = [
 ];
 
 export default function Home() {
-  const [username, setUsername] = useState('');
-  const [liveUrl, setLiveUrl] = useState('');
-  const [showLiveUrl, setShowLiveUrl] = useState(false);
+  // Workspace Mode (Recruiter vs Developer)
+  const [workspaceMode, setWorkspaceMode] = useState<WorkspaceMode>('recruiter');
+
+  // Recruiter Workspace State
+  const [recruiterCandidate, setRecruiterCandidate] = useState('');
+  const [recruiterLiveUrl, setRecruiterLiveUrl] = useState('');
+  const [showRecruiterLiveUrl, setShowRecruiterLiveUrl] = useState(false);
+  const [recruiterProfile, setRecruiterProfile] = useState<RecruiterWorkspaceProfile | null>(null);
+
+  // Developer Space State
+  const [devUsername, setDevUsername] = useState('');
+  const [devLiveUrl, setDevLiveUrl] = useState('');
+  const [showDevLiveUrl, setShowDevLiveUrl] = useState(false);
+  const [devProfile, setDevProfile] = useState<DeveloperWorkspaceProfile | null>(null);
+
+  // Requisitions State
   const [requisitions, setRequisitions] = useState<SavedRequisition[]>([]);
   const [activeRoleId, setActiveRoleId] = useState<string>('req_senior_fullstack');
   const [showRoleModal, setShowRoleModal] = useState(false);
@@ -46,15 +72,45 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
+    // Load workspace mode
+    const mode = getActiveWorkspaceMode();
+    setWorkspaceMode(mode);
+
+    // Load requisitions
     const list = getSavedRequisitions();
     setRequisitions(list);
     const active = getActiveRequisitionId();
     if (active) setActiveRoleId(active);
+
+    // Load recruiter & developer profiles
+    const recProf = getRecruiterProfile();
+    setRecruiterProfile(recProf);
+
+    const dProf = getDeveloperProfile();
+    setDevProfile(dProf);
+    if (dProf.githubUsername) setDevUsername(dProf.githubUsername);
+    if (dProf.portfolioUrl) setDevLiveUrl(dProf.portfolioUrl);
+    if (dProf.portfolioUrl) setShowDevLiveUrl(true);
   }, []);
+
+  const handleSwitchWorkspace = (mode: WorkspaceMode) => {
+    setWorkspaceMode(mode);
+    setActiveWorkspaceMode(mode);
+  };
 
   const handleRoleChange = (id: string) => {
     setActiveRoleId(id);
     setActiveRequisitionId(id || null);
+  };
+
+  const handleDeleteRole = (id: string) => {
+    deleteRequisition(id);
+    const updated = getSavedRequisitions();
+    setRequisitions(updated);
+    if (activeRoleId === id) {
+      setActiveRoleId(updated[0]?.id || '');
+      setActiveRequisitionId(updated[0]?.id || null);
+    }
   };
 
   const handleCreateRole = (e: React.FormEvent) => {
@@ -68,7 +124,8 @@ export default function Home() {
       seniorityMinYears: 3,
       allowPrivateRepos: true,
     });
-    setRequisitions(getSavedRequisitions());
+    const updated = getSavedRequisitions();
+    setRequisitions(updated);
     setActiveRoleId(created.id);
     setActiveRequisitionId(created.id);
     setShowRoleModal(false);
@@ -78,14 +135,30 @@ export default function Home() {
   };
 
   const handleAnalyze = (targetUser?: string, targetLive?: string, targetRole?: string) => {
-    const u = (targetUser ?? username).trim().replace(/^@/, '');
-    const l = (targetLive ?? liveUrl).trim();
+    const isDev = workspaceMode === 'developer';
+    const fallbackUser = isDev ? devUsername : recruiterCandidate;
+    const fallbackLive = isDev ? devLiveUrl : recruiterLiveUrl;
+
+    const u = (targetUser ?? fallbackUser).trim().replace(/^@/, '');
+    const l = (targetLive ?? fallbackLive).trim();
     const r = targetRole !== undefined ? targetRole : activeRoleId;
     if (!u) return;
+
+    const roleObj = requisitions.find((item) => item.id === r);
+    const roleTitle = roleObj?.title || 'General Engineering Audit';
+
+    if (isDev) {
+      recordDeveloperAudit(u, roleTitle);
+      setDevProfile(getDeveloperProfile());
+    } else {
+      recordCandidateScreening(u, r, roleTitle);
+      setRecruiterProfile(getRecruiterProfile());
+    }
 
     const params = new URLSearchParams();
     if (l) params.set('liveUrl', l);
     if (r) params.set('roleId', r);
+    params.set('mode', workspaceMode);
 
     const qs = params.toString() ? `?${params.toString()}` : '';
     router.push(`/profile/${encodeURIComponent(u)}${qs}`);
@@ -117,7 +190,7 @@ export default function Home() {
 
           <div className="flex items-center gap-3">
             <span className="hidden font-mono text-[11px] text-muted/70 md:inline-block">
-              Recruiter & EM Edition
+              {workspaceMode === 'developer' ? 'Developer Career Suite' : 'Recruiter & EM Edition'}
             </span>
             <button
               onClick={() => handleAnalyze('gaearon', 'https://overreacted.io')}
@@ -139,138 +212,313 @@ export default function Home() {
             <div className="lg:col-span-7">
               <div className="inline-flex items-center gap-2 rounded-full border border-edge bg-surface/70 px-3 py-1 font-mono text-[11px] uppercase tracking-widest text-signal">
                 <span className="h-1.5 w-1.5 rounded-full bg-signal animate-pulse" />
-                Technical Talent Intelligence
+                {workspaceMode === 'developer' ? 'Engineering Career Pre-Flight' : 'Technical Talent Intelligence'}
               </div>
 
               <h1 className="mt-6 font-sans text-4xl font-semibold leading-[1.12] tracking-tight text-ece9f0 sm:text-5xl lg:text-[56px]">
-                Verify engineering depth{' '}
-                <span className="text-signal">without the guesswork.</span>
+                {workspaceMode === 'developer' ? (
+                  <>
+                    Audit your engineering signal{' '}
+                    <span className="text-signal">before the interview.</span>
+                  </>
+                ) : (
+                  <>
+                    Verify engineering depth{' '}
+                    <span className="text-signal">without the guesswork.</span>
+                  </>
+                )}
               </h1>
 
               <p className="mt-5 max-w-xl text-[16px] leading-relaxed text-muted">
-                Resume keywords and vanity commit streaks lie. DevScope cross-examines
-                real GitHub codebases, inspects live deployed applications, and builds calibrated
-                recruiter dossiers with a 15-minute phone screen guide.
+                {workspaceMode === 'developer'
+                  ? 'Uncover automated screening blind spots, benchmark your GitHub code against target job descriptions, and prepare for phone-screen questions calibrated to your gaps.'
+                  : 'Resume keywords and vanity commit streaks lie. DevScope cross-examines real GitHub codebases, inspects live deployed applications, and builds calibrated recruiter dossiers with a 15-minute phone screen guide.'}
               </p>
 
-              {/* Assessment Input Box */}
-              <div id="console" className="mt-8 max-w-xl rounded-xl border border-edge bg-surface/90 p-3 shadow-2xl backdrop-blur focus-within:border-signal/70">
-                {/* Active Requisition / Role Selector Bar */}
-                <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2 border-b border-edge/40 pb-2.5">
-                  <div className="flex flex-wrap items-center gap-1.5 font-mono text-[11px] text-muted">
-                    <span className="text-signal">🎯</span>
-                    <span className="font-semibold text-ece9f0">Evaluating for:</span>
-                    <select
-                      value={activeRoleId}
-                      onChange={(e) => handleRoleChange(e.target.value)}
-                      className="max-w-[220px] truncate rounded border border-edge/60 bg-[#0c0b0e] px-2 py-1 font-mono text-xs text-ece9f0 outline-none focus:border-signal"
-                    >
-                      <option value="">General Profile Audit (No JD)</option>
-                      {requisitions.map((req) => (
-                        <option key={req.id} value={req.id}>
-                          {req.title} ({req.company})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+              {/* Workspace Switcher & Assessment Box */}
+              <div id="console" className="mt-8 max-w-xl">
+                {/* Segmented Workspace Tabs */}
+                <div className="flex rounded-xl bg-[#09080b] p-1 border border-edge/80 shadow-inner">
                   <button
                     type="button"
-                    onClick={() => setShowRoleModal(true)}
-                    className="flex items-center gap-1 rounded border border-edge/60 bg-surface px-2 py-1 font-mono text-[10px] text-signal transition-colors hover:border-signal/60 hover:bg-signal/10"
-                    title="Save a new Job Description to score candidates against"
+                    onClick={() => handleSwitchWorkspace('recruiter')}
+                    className={`flex flex-1 items-center justify-center gap-2 rounded-lg py-2.5 px-3 font-mono text-xs font-semibold tracking-wide transition-all ${
+                      workspaceMode === 'recruiter'
+                        ? 'bg-surface text-ece9f0 border border-edge/80 shadow-md text-signal'
+                        : 'text-muted hover:text-ece9f0'
+                    }`}
                   >
-                    <span>+ New JD</span>
-                  </button>
-                </div>
-
-                <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
-                  <div className="flex flex-1 items-center gap-2 rounded-lg bg-[#0c0b0e]/90 px-3 py-2.5 border border-edge/60 focus-within:border-signal/50">
-                    <span className="font-mono text-xs text-signal font-bold">@</span>
-                    <input
-                      type="text"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleAnalyze()}
-                      placeholder="candidate-github-username"
-                      className="w-full bg-transparent font-mono text-sm text-ece9f0 outline-none placeholder:text-muted/50"
-                      autoFocus
-                    />
-                  </div>
-
-                  <button
-                    onClick={() => handleAnalyze()}
-                    className="flex-none rounded-lg bg-signal px-6 py-2.5 font-mono text-xs font-semibold uppercase tracking-wider text-ink transition-all hover:bg-signal/90 hover:shadow-[0_0_20px_#f0a04b40]"
-                  >
-                    Generate Dossier
-                  </button>
-                </div>
-
-                {/* Optional Live App Input Toggle */}
-                <div className="mt-2.5 border-t border-edge/40 pt-2.5">
-                  {showLiveUrl ? (
-                    <div className="flex items-center gap-2 rounded-lg bg-[#0c0b0e]/70 px-3 py-2 border border-edge/60">
-                      <span className="text-sm">🌐</span>
-                      <input
-                        type="url"
-                        value={liveUrl}
-                        onChange={(e) => setLiveUrl(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleAnalyze()}
-                        placeholder="https://candidate-app.vercel.app (optional demo / portfolio)"
-                        className="flex-1 bg-transparent font-mono text-xs text-ece9f0 outline-none placeholder:text-muted/50"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setLiveUrl('');
-                          setShowLiveUrl(false);
-                        }}
-                        className="font-mono text-xs text-muted hover:text-signal"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => setShowLiveUrl(true)}
-                      className="flex items-center gap-1.5 font-mono text-[11px] text-muted transition-colors hover:text-signal"
-                    >
-                      <span className="text-signal font-bold">＋</span>
-                      <span>Include live deployed app or portfolio URL (audits production build)</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Sample Profiles */}
-              <div className="mt-5 flex flex-wrap items-center gap-2 font-mono text-[11px] text-muted">
-                <span className="text-muted/70">Test real scenarios:</span>
-                {CANDIDATE_ARCHETYPES.map((arch) => (
-                  <button
-                    key={arch.username}
-                    onClick={() => handleAnalyze(arch.username, arch.liveUrl)}
-                    className="group rounded-full border border-edge bg-surface/40 px-3 py-1 text-muted transition-all hover:border-signal/50 hover:text-signal"
-                    title={arch.note}
-                  >
-                    <span>@{arch.username}</span>
-                    <span className="ml-1 text-[10px] text-muted/60 group-hover:text-signal/80">
-                      ({arch.label.split('/')[0].trim()})
+                    <span>🏢</span>
+                    <span>Recruiter Workspace</span>
+                    <span className="hidden sm:inline-block text-[10px] px-1.5 py-0.5 rounded bg-signal/15 text-signal font-normal">
+                      Screening
                     </span>
                   </button>
-                ))}
-              </div>
 
-              {/* Micro-Trust Signals */}
-              <div className="mt-6 flex flex-wrap items-center gap-6 font-mono text-[11px] text-muted/70">
-                <span className="flex items-center gap-1.5">
-                  <span className="text-signal font-bold">✓</span> No Candidate Login Needed
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="text-signal font-bold">✓</span> Private Dev Bias Resistant
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="text-signal font-bold">✓</span> 1-Click Executive PDF Export
-                </span>
+                  <button
+                    type="button"
+                    onClick={() => handleSwitchWorkspace('developer')}
+                    className={`flex flex-1 items-center justify-center gap-2 rounded-lg py-2.5 px-3 font-mono text-xs font-semibold tracking-wide transition-all ${
+                      workspaceMode === 'developer'
+                        ? 'bg-surface text-ece9f0 border border-edge/80 shadow-md text-emerald-400'
+                        : 'text-muted hover:text-ece9f0'
+                    }`}
+                  >
+                    <span>💻</span>
+                    <span>Developer Space</span>
+                    <span className="hidden sm:inline-block text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-normal">
+                      Pre-Flight
+                    </span>
+                  </button>
+                </div>
+
+                {/* Workspace Body Container */}
+                <div className="mt-3.5 rounded-2xl border border-edge bg-surface/90 p-5 sm:p-6 shadow-2xl backdrop-blur-md">
+                  {workspaceMode === 'recruiter' ? (
+                    /* RECRUITER WORKSPACE CONTENT */
+                    <div className="space-y-4">
+                      {/* Active Requisition Picker (Bespoke Dropdown) */}
+                      <div>
+                        <RequisitionSelect
+                          requisitions={requisitions}
+                          activeRoleId={activeRoleId}
+                          onSelectRole={handleRoleChange}
+                          onOpenCreateModal={() => setShowRoleModal(true)}
+                          onDeleteRole={handleDeleteRole}
+                          label="Candidate Evaluated For:"
+                        />
+                      </div>
+
+                      {/* Candidate Handle & Action */}
+                      <div className="space-y-1.5">
+                        <label className="block font-mono text-[11px] uppercase tracking-wider text-muted/80">
+                          Candidate GitHub Profile
+                        </label>
+                        <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
+                          <div className="flex flex-1 items-center gap-2 rounded-xl bg-[#0c0b0e] px-3.5 py-3 border border-edge/80 focus-within:border-signal/70 transition-colors">
+                            <span className="font-mono text-sm text-signal font-bold">@</span>
+                            <input
+                              type="text"
+                              value={recruiterCandidate}
+                              onChange={(e) => setRecruiterCandidate(e.target.value)}
+                              onKeyDown={(e) => e.key === 'Enter' && handleAnalyze()}
+                              placeholder="candidate-github-username"
+                              className="w-full bg-transparent font-mono text-sm text-ece9f0 outline-none placeholder:text-muted/40"
+                              autoFocus
+                            />
+                          </div>
+
+                          <button
+                            onClick={() => handleAnalyze()}
+                            className="flex-none rounded-xl bg-signal px-6 py-3 font-mono text-xs font-semibold uppercase tracking-wider text-ink transition-all hover:bg-signal/90 hover:shadow-[0_0_25px_#f0a04b50]"
+                          >
+                            Screen Candidate
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Optional Live Demo URL */}
+                      <div>
+                        {showRecruiterLiveUrl ? (
+                          <div className="flex items-center gap-2 rounded-xl bg-[#0c0b0e]/70 px-3.5 py-2.5 border border-edge/60">
+                            <span className="text-sm">🌐</span>
+                            <input
+                              type="url"
+                              value={recruiterLiveUrl}
+                              onChange={(e) => setRecruiterLiveUrl(e.target.value)}
+                              onKeyDown={(e) => e.key === 'Enter' && handleAnalyze()}
+                              placeholder="https://candidate-app.vercel.app (production demo / portfolio)"
+                              className="flex-1 bg-transparent font-mono text-xs text-ece9f0 outline-none placeholder:text-muted/40"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setRecruiterLiveUrl('');
+                                setShowRecruiterLiveUrl(false);
+                              }}
+                              className="font-mono text-xs text-muted hover:text-signal"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setShowRecruiterLiveUrl(true)}
+                            className="flex items-center gap-1.5 font-mono text-[11px] text-muted transition-colors hover:text-signal"
+                          >
+                            <span className="text-signal font-bold">＋</span>
+                            <span>Add live deployed app or demo URL (audits production bundle)</span>
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Recent Screenings in Recruiter Profile */}
+                      {recruiterProfile && recruiterProfile.recentScreenings.length > 0 && (
+                        <div className="pt-2 border-t border-edge/40">
+                          <div className="font-mono text-[10px] uppercase tracking-wider text-muted/60 mb-1.5">
+                            Recently Screened Candidates:
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {recruiterProfile.recentScreenings.slice(0, 4).map((item) => (
+                              <button
+                                key={item.username}
+                                onClick={() => handleAnalyze(item.username, undefined, item.roleId)}
+                                className="inline-flex items-center gap-1.5 rounded-lg border border-edge/60 bg-[#0c0b0e] px-2.5 py-1 font-mono text-xs text-muted hover:border-signal/50 hover:text-signal transition-colors"
+                              >
+                                <span>@{item.username}</span>
+                                {item.roleTitle && (
+                                  <span className="text-[10px] text-muted/60">· {item.roleTitle}</span>
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    /* DEVELOPER PRE-FLIGHT SPACE CONTENT */
+                    <div className="space-y-4">
+                      {/* Developer Headline Note */}
+                      <div className="rounded-xl border border-emerald-500/20 bg-emerald-950/20 p-3">
+                        <div className="flex items-center gap-2 font-mono text-xs text-emerald-400 font-medium">
+                          <span>🛡️</span>
+                          <span>Career Pre-Flight & Interview Readiness</span>
+                        </div>
+                        <p className="mt-1 text-[11px] leading-relaxed text-muted font-sans">
+                          Inspect your public commits, uncover automated screening blind spots, and receive the exact 15-minute technical phone-screen questions calibrated to your gaps.
+                        </p>
+                      </div>
+
+                      {/* Developer GitHub Handle */}
+                      <div className="space-y-1.5">
+                        <label className="block font-mono text-[11px] uppercase tracking-wider text-muted/80">
+                          Your GitHub Profile
+                        </label>
+                        <div className="flex items-center gap-2 rounded-xl bg-[#0c0b0e] px-3.5 py-3 border border-edge/80 focus-within:border-emerald-500/70 transition-colors">
+                          <span className="font-mono text-sm text-emerald-400 font-bold">@</span>
+                          <input
+                            type="text"
+                            value={devUsername}
+                            onChange={(e) => setDevUsername(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleAnalyze()}
+                            placeholder="your-github-username"
+                            className="w-full bg-transparent font-mono text-sm text-ece9f0 outline-none placeholder:text-muted/40"
+                            autoFocus
+                          />
+                        </div>
+                      </div>
+
+                      {/* Target Role Benchmark */}
+                      <div>
+                        <RequisitionSelect
+                          requisitions={requisitions}
+                          activeRoleId={activeRoleId}
+                          onSelectRole={handleRoleChange}
+                          onOpenCreateModal={() => setShowRoleModal(true)}
+                          onDeleteRole={handleDeleteRole}
+                          label="Benchmark Against Target Role:"
+                        />
+                      </div>
+
+                      {/* Optional Developer Portfolio / Live App */}
+                      <div>
+                        {showDevLiveUrl ? (
+                          <div className="flex items-center gap-2 rounded-xl bg-[#0c0b0e]/70 px-3.5 py-2.5 border border-edge/60">
+                            <span className="text-sm">🌐</span>
+                            <input
+                              type="url"
+                              value={devLiveUrl}
+                              onChange={(e) => setDevLiveUrl(e.target.value)}
+                              onKeyDown={(e) => e.key === 'Enter' && handleAnalyze()}
+                              placeholder="https://myportfolio.dev or https://myapp.vercel.app"
+                              className="flex-1 bg-transparent font-mono text-xs text-ece9f0 outline-none placeholder:text-muted/40"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setDevLiveUrl('');
+                                setShowDevLiveUrl(false);
+                              }}
+                              className="font-mono text-xs text-muted hover:text-signal"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setShowDevLiveUrl(true)}
+                            className="flex items-center gap-1.5 font-mono text-[11px] text-muted transition-colors hover:text-emerald-400"
+                          >
+                            <span className="text-emerald-400 font-bold">＋</span>
+                            <span>Include my live portfolio or deployed demo URL</span>
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Action Button */}
+                      <button
+                        onClick={() => handleAnalyze()}
+                        className="w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 py-3 font-mono text-xs font-semibold uppercase tracking-wider text-ink transition-all hover:opacity-95 hover:shadow-[0_0_25px_#10b98150]"
+                      >
+                        Run Career Pre-Flight & Defense Guide →
+                      </button>
+
+                      {/* Past Developer Audits */}
+                      {devProfile && devProfile.recentAudits.length > 0 && (
+                        <div className="pt-2 border-t border-edge/40">
+                          <div className="font-mono text-[10px] uppercase tracking-wider text-muted/60 mb-1.5">
+                            Your Past Pre-Flights:
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {devProfile.recentAudits.slice(0, 3).map((item) => (
+                              <button
+                                key={`${item.username}-${item.targetRole}`}
+                                onClick={() => handleAnalyze(item.username, undefined, activeRoleId)}
+                                className="inline-flex items-center gap-1.5 rounded-lg border border-edge/60 bg-[#0c0b0e] px-2.5 py-1 font-mono text-xs text-muted hover:border-emerald-400 hover:text-emerald-400 transition-colors"
+                              >
+                                <span>@{item.username}</span>
+                                <span className="text-[10px] text-muted/60">vs {item.targetRole}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Test Verified Profiles (Subtle & Uncluttered) */}
+                <div className="mt-6 flex flex-wrap items-center gap-2 font-mono text-[11px] text-muted/80">
+                  <span className="text-muted/60 font-medium">Or test with live profiles:</span>
+                  {CANDIDATE_ARCHETYPES.map((arch) => (
+                    <button
+                      key={arch.username}
+                      onClick={() => handleAnalyze(arch.username, arch.liveUrl)}
+                      className="group rounded-lg border border-edge/60 bg-surface/50 px-2.5 py-1 text-muted transition-all hover:border-signal/50 hover:text-signal"
+                      title={arch.note}
+                    >
+                      <span className="font-medium">@{arch.username}</span>
+                      <span className="ml-1 text-[10px] text-muted/50 group-hover:text-signal/70">
+                        ({arch.label.split('/')[0].trim()})
+                      </span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Trust Signals Row */}
+                <div className="mt-4 flex flex-wrap items-center gap-5 font-mono text-[11px] text-muted/60">
+                  <span className="flex items-center gap-1.5">
+                    <span className="text-signal font-bold">✓</span> No Candidate Login Needed
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="text-signal font-bold">✓</span> Private Dev Bias Resistant
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="text-signal font-bold">✓</span> 1-Click Executive PDF Export
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -280,10 +528,10 @@ export default function Home() {
                 {/* Dossier Header Badge */}
                 <div className="flex items-center justify-between border-b border-edge/80 pb-4">
                   <div className="font-mono text-[10px] uppercase tracking-widest text-muted">
-                    Generated Dossier Preview
+                    {workspaceMode === 'developer' ? 'Career Pre-Flight Preview' : 'Generated Dossier Preview'}
                   </div>
                   <span className="rounded-full border border-emerald-500/30 bg-emerald-950/40 px-2 py-0.5 font-mono text-[10px] font-semibold text-emerald-400">
-                    94% Confidence
+                    {workspaceMode === 'developer' ? '94% Target Fit' : '94% Confidence'}
                   </span>
                 </div>
 
@@ -371,7 +619,9 @@ export default function Home() {
                 </div>
 
                 <div className="mt-3 text-center font-mono text-[10px] text-muted/60">
-                  Ready to share with hiring committees in PDF format.
+                  {workspaceMode === 'developer'
+                    ? 'Export your interview defense guide to PDF with 1 click.'
+                    : 'Ready to share with hiring committees in PDF format.'}
                 </div>
               </div>
             </div>

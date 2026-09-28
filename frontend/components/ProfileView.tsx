@@ -174,15 +174,25 @@ function expertiseBarWidth(level: string, percentage?: number): string {
   return `${LEVEL_WIDTH[level] ?? 20}%`;
 }
 
-export function ProfileView({ profile }: { profile: DevProfile }) {
+export function ProfileView({
+  profile,
+  mode = 'recruiter',
+}: {
+  profile: DevProfile;
+  mode?: 'recruiter' | 'developer';
+}) {
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<'verdict' | 'evidence' | 'signals' | 'interview'>('verdict');
   const g = profile.github;
   const rp = profile.recruiterPanel;
 
+  const isDev = mode === 'developer';
+
   const copyRecruiterBrief = () => {
     const lines = [
-      `CANDIDATE INTELLIGENCE DOSSIER: ${g.name || profile.username} (@${profile.username})`,
+      isDev
+        ? `ENGINEERING CAREER PRE-FLIGHT DOSSIER: ${g.name || profile.username} (@${profile.username})`
+        : `CANDIDATE INTELLIGENCE DOSSIER: ${g.name || profile.username} (@${profile.username})`,
       `Estimated Seniority: ${rp?.seniorityEstimate?.toUpperCase() || 'ENGINEER'} (${rp?.seniorityReason || ''})`,
       `Candidate Classification: ${rp?.developerPersona ? PERSONA_CONFIG[rp.developerPersona]?.label : 'Engineer'}`,
       `Headline: ${profile.headline}`,
@@ -333,14 +343,22 @@ export function ProfileView({ profile }: { profile: DevProfile }) {
             <h1 className="text-2xl font-bold tracking-tight text-ece9f0 sm:text-3xl print:text-xl print:text-zinc-900">
               {g.name || profile.username}
             </h1>
-            {/* Recruiter Action Buttons */}
+            {/* Recruiter / Developer Action Buttons */}
             <div className="flex items-center gap-2 print:hidden">
               <button
                 onClick={copyRecruiterBrief}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-edge bg-surface/90 px-3.5 py-2 font-mono text-[11px] font-medium uppercase tracking-wider text-ece9f0 shadow-sm transition-all hover:border-signal/50 hover:bg-surface hover:text-signal active:scale-95"
               >
                 <span>{copied ? '✓' : '📋'}</span>
-                <span>{copied ? 'Copied ATS Brief!' : 'Copy Recruiter Brief'}</span>
+                <span>
+                  {copied
+                    ? isDev
+                      ? 'Copied Pre-Flight!'
+                      : 'Copied ATS Brief!'
+                    : isDev
+                      ? 'Copy Pre-Flight Sheet'
+                      : 'Copy Recruiter Brief'}
+                </span>
               </button>
               <button
                 onClick={() => window.print()}
@@ -365,7 +383,7 @@ export function ProfileView({ profile }: { profile: DevProfile }) {
             <div className="flex items-center gap-2">
               <span className="inline-block h-2 w-2 rounded-full bg-signal animate-pulse" />
               <span className="font-mono text-[10px] uppercase tracking-widest text-muted print:text-zinc-600 font-bold">
-                Executive Candidate Assessment
+                {isDev ? 'Career Pre-Flight & Interview Readiness' : 'Executive Candidate Assessment'}
               </span>
             </div>
             <div className="mt-1 flex flex-wrap items-center gap-2.5">
