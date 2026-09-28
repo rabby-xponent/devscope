@@ -22,7 +22,7 @@ export default function ProfilePage() {
 
   return (
     <main className="min-h-screen">
-      <nav className="sticky top-0 z-10 border-b border-edge bg-ink/80 backdrop-blur">
+      <nav className="sticky top-0 z-10 border-b border-edge bg-ink/80 backdrop-blur print:hidden">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
           <Link
             href="/"
@@ -50,9 +50,9 @@ export default function ProfilePage() {
         </div>
       </nav>
 
-      <div className="mx-auto max-w-5xl px-6 py-10">
+      <div className="mx-auto max-w-5xl px-6 py-10 print:max-w-none print:p-0">
         {error && (
-          <div className="fade-up rounded-lg border border-edge bg-surface p-8 text-center">
+          <div className="fade-up rounded-lg border border-edge bg-surface p-8 text-center print:hidden">
             <p className="font-mono text-sm text-signal">analysis failed</p>
             <p className="mt-2 text-muted">{error}</p>
             <div className="mt-6 flex justify-center gap-3">
@@ -77,7 +77,7 @@ export default function ProfilePage() {
         {!error && status === 'complete' && profile && (
           <>
             {cached && (
-              <div className="fade-up mb-8 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-edge bg-surface/60 px-4 py-3">
+              <div className="fade-up mb-8 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-edge bg-surface/60 px-4 py-3 print:hidden">
                 <p className="font-mono text-[11px] text-muted">
                   <span className="text-signal">⚡ instant result —</span> this profile was analyzed
                   before, so we served it from cache instead of running the agent again.
@@ -92,7 +92,7 @@ export default function ProfilePage() {
             )}
             <ProfileView profile={profile} />
             {trace.length > 0 && (
-              <details className="mt-10 border-t border-edge pt-6">
+              <details className="mt-10 border-t border-edge pt-6 print:hidden">
                 <summary className="cursor-pointer font-mono text-xs uppercase tracking-widest text-muted hover:text-signal">
                   view agent trace ({trace.filter((t) => t.type === 'tool_call').length} tool calls)
                 </summary>
@@ -105,7 +105,7 @@ export default function ProfilePage() {
         )}
       </div>
 
-      <footer className="border-t border-edge py-6 text-center">
+      <footer className="border-t border-edge py-6 text-center print:hidden">
         <p className="font-mono text-[11px] text-muted/60">
           developed by{' '}
           <a

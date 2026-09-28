@@ -82,5 +82,169 @@ body {
 }
 .thin-scroll::-webkit-scrollbar-thumb {
   background: #272430;
-  border-radius: 3px;
+}
+
+/* ==========================================================================
+   Executive Print & PDF Export Styles
+   Calibrated for high-contrast, professional recruiter dossiers
+   ========================================================================== */
+@media print {
+  @page {
+    size: letter portrait;
+    margin: 10mm 12mm 10mm 12mm;
+  }
+
+  /* Force exact background color and graphic reproduction in Chrome & Safari */
+  *,
+  *::before,
+  *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font-size: 9.5pt !important;
+    line-height: 1.35 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Hide screen chrome, interactive buttons, debug traces, and web navigation */
+  nav,
+  button,
+  details,
+  .print\:hidden,
+  .print-hidden,
+  footer.print\:hidden {
+    display: none !important;
+  }
+
+  /* Break avoidance to prevent sliced cards and isolated lines */
+  .print-card,
+  .print-avoid-break {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Keep headings firmly attached to following content (prevents orphan headers) */
+  h1, h2, h3, h4, h5, h6,
+  .print-heading,
+  .print-header {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  /* Force light theme executive color overrides */
+  .text-ece9f0,
+  .text-ece9f0\/90,
+  .text-ece9f0\/95,
+  .text-ece9f0\/80 {
+    color: #0f172a !important;
+  }
+
+  .text-muted,
+  .text-muted\/60 {
+    color: #475569 !important;
+  }
+
+  .text-signal {
+    color: #b45309 !important; /* Executive amber tone */
+  }
+
+  .bg-signal {
+    background-color: #d97706 !important;
+  }
+
+  .border-edge,
+  .border-edge\/80 {
+    border-color: #cbd5e1 !important;
+  }
+
+  .bg-surface,
+  .bg-surface\/40,
+  .bg-surface\/50,
+  .bg-surface\/60,
+  .bg-surface\/70,
+  .bg-surface\/80 {
+    background-color: #f8fafc !important;
+  }
+
+  /* High contrast badge and pill print overrides */
+  .text-emerald-300,
+  .text-emerald-400 {
+    color: #065f46 !important;
+  }
+  .bg-emerald-900\/30,
+  .bg-emerald-950\/20 {
+    background-color: #ecfdf5 !important;
+    border-color: #a7f3d0 !important;
+  }
+
+  .text-blue-300 {
+    color: #1e40af !important;
+  }
+  .bg-blue-900\/30 {
+    background-color: #eff6ff !important;
+    border-color: #bfdbfe !important;
+  }
+
+  .text-purple-300 {
+    color: #581c87 !important;
+  }
+  .bg-purple-900\/30 {
+    background-color: #faf5ff !important;
+    border-color: #e9d5ff !important;
+  }
+
+  .text-amber-300,
+  .text-yellow-300 {
+    color: #92400e !important;
+  }
+  .bg-amber-900\/30,
+  .bg-yellow-900\/30 {
+    background-color: #fefce8 !important;
+    border-color: #fef08a !important;
+  }
+
+  .text-orange-300 {
+    color: #9a3412 !important;
+  }
+  .bg-orange-900\/30 {
+    background-color: #fff7ed !important;
+    border-color: #fed7aa !important;
+  }
+
+  .text-rose-400,
+  .text-red-300 {
+    color: #991b1b !important;
+  }
+  .bg-rose-950\/20,
+  .bg-red-900\/30 {
+    background-color: #fef2f2 !important;
+    border-color: #fecaca !important;
+  }
+
+  .text-zinc-300,
+  .text-zinc-400 {
+    color: #334155 !important;
+  }
+  .bg-zinc-800\/60 {
+    background-color: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
+  }
+
+  /* Compact layout spacing for clean 2-3 page dossier */
+  .fade-up {
+    animation: none !important;
+  }
+
+  article {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
 }

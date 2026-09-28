@@ -60,14 +60,23 @@
 
 ---
 
-### Milestone 4: Frontend Recruiter Dossier UI
-* **Components Updated:** [`frontend/components/ProfileView.tsx`](./frontend/components/ProfileView.tsx)
+### Milestone 4: Frontend Recruiter Dossier UI & Executive PDF Export Engine
+* **Components Updated:**
+  - [`frontend/components/ProfileView.tsx`](./frontend/components/ProfileView.tsx)
+  - [`frontend/app/globals.css`](./frontend/app/globals.css)
+  - [`frontend/app/profile/[username]/page.tsx`](./frontend/app/profile/[username]/page.tsx)
 * **Features Added:**
   - **Persona Badge & Recruiter Context Callout:** Visual chip (e.g. `💼 Working Professional`) and context note explaining private work history.
   - **Section 10 — 15-Minute Technical Screen Guide:** Card layout displaying each question alongside "What to listen for" (green) and "Red flag signal" (rose).
   - **Candidate Dossier Export Actions:**
     * `📋 Copy Recruiter Brief`: One-click copy of an executive summary formatted for Slack, email, or ATS insertion.
-    * `🖨️ Print / PDF`: Print-ready view for hiring committee meetings.
+    * `🖨️ Print / PDF`: Instant browser print dialog triggering an executive multi-page dossier export.
+  - **Executive Multi-Page PDF & Print Engine:**
+    * **Page Break Integrity:** Applied `break-inside: avoid !important` and `break-after: avoid !important` to ensure headings never orphan at page bottoms, and cards (questions, repos, metrics) never split in half across page folds.
+    * **Color & Contrast Calibration:** Set `-webkit-print-color-adjust: exact !important;` with high-contrast light mode styling (`#0f172a` text, `#cbd5e1` borders, corporate badges) tailored for hiring committees and paper/PDF readability.
+    * **Executive Dossier Branding:** Added print-only branded header (`DEVSCOPE Candidate Intelligence Dossier`, candidate handle, generation date) and confidentiality footer (`CONFIDENTIAL · Generated for Hiring Committee Evaluation`).
+    * **UI De-cluttering:** Automatically hides all web chrome, navigation links, regenerator controls, agent trace accordions, and buttons (`print:hidden`).
+    * **Compact Density:** Compressed sprawling 5-page printouts into a tight, crisp **2–3 page** executive briefing.
 
 ---
 
