@@ -14,6 +14,12 @@ export interface RepoHighlight {
   why: string;
 }
 
+export interface PhoneScreenQuestion {
+  question: string;
+  whatToListenFor: string;
+  redFlagSignal: string;
+}
+
 export interface DevProfile {
   username: string;
   generatedAt: string;
@@ -63,6 +69,9 @@ export interface DevProfile {
     commitQuality: 'excellent' | 'good' | 'average' | 'poor';
     commitStyleInsight: string;
     consistencyPattern: 'daily' | 'regular' | 'sporadic' | 'burst';
+    developerPersona?: 'working_professional' | 'fresher_builder' | 'open_source_contributor' | 'specialist';
+    privateWorkContext?: string;
+    phoneScreenGuide?: PhoneScreenQuestion[];
   };
 }
 

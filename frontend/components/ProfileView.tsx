@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { DevProfile } from '@/types/profile';
 
 function Stat({ label, value }: { label: string; value: string | number }) {
@@ -90,6 +91,29 @@ const CONSISTENCY_STYLES: Record<string, string> = {
   burst: 'border-orange-600/50 bg-orange-900/30 text-orange-300',
 };
 
+const PERSONA_CONFIG: Record<string, { icon: string; label: string; style: string }> = {
+  working_professional: {
+    icon: '💼',
+    label: 'Working Professional',
+    style: 'border-blue-500/50 bg-blue-900/30 text-blue-300',
+  },
+  fresher_builder: {
+    icon: '🌱',
+    label: 'Active Builder',
+    style: 'border-emerald-500/50 bg-emerald-900/30 text-emerald-300',
+  },
+  open_source_contributor: {
+    icon: '🌐',
+    label: 'OSS Contributor',
+    style: 'border-purple-500/50 bg-purple-900/30 text-purple-300',
+  },
+  specialist: {
+    icon: '⚡',
+    label: 'Domain Specialist',
+    style: 'border-amber-500/50 bg-amber-900/30 text-amber-300',
+  },
+};
+
 function isUrl(value: string): boolean {
   return /^https?:\/\//i.test(value.trim());
 }
@@ -132,8 +156,38 @@ function expertiseBarWidth(level: string, percentage?: number): string {
 }
 
 export function ProfileView({ profile }: { profile: DevProfile }) {
+  const [copied, setCopied] = useState(false);
   const g = profile.github;
   const rp = profile.recruiterPanel;
+
+  const copyRecruiterBrief = () => {
+    const lines = [
+      `Candidate: ${g.name || profile.username} (@${profile.username})`,
+      `Estimated Seniority: ${rp?.seniorityEstimate?.toUpperCase() || 'ENGINEER'} (${rp?.seniorityReason || ''})`,
+      `Headline: ${profile.headline}`,
+      '',
+      'Key Highlights:',
+      ...(rp?.standoutFacts || []).map((f) => `• ${f}`),
+      '',
+      'Expertise: ' + profile.expertise.map((e) => `${e.language} (${e.percentage || 0}%)`).join(', '),
+      '',
+      'Strengths:',
+      ...profile.strengths.map((s) => `+ ${s}`),
+      '',
+      ...(rp?.phoneScreenGuide && rp.phoneScreenGuide.length > 0
+        ? [
+            'Suggested 15-Minute Screen Questions:',
+            ...rp.phoneScreenGuide.map(
+              (q, i) =>
+                `${i + 1}. ${q.question}\n   Listen for: ${q.whatToListenFor}\n   Red flag: ${q.redFlagSignal}`
+            ),
+          ]
+        : []),
+    ];
+    navigator.clipboard.writeText(lines.join('\n'));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const activeColor =
     rp && rp.daysSinceLastCommit <= 30
@@ -195,7 +249,23 @@ export function ProfileView({ profile }: { profile: DevProfile }) {
               </span>
             )}
           </div>
-          <h1 className="mt-1 text-2xl text-ece9f0">{g.name}</h1>
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <h1 className="mt-1 text-2xl text-ece9f0">{g.name}</h1>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={copyRecruiterBrief}
+                className="rounded-md border border-edge bg-surface/80 px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-muted transition-colors hover:border-signal/50 hover:text-signal"
+              >
+                {copied ? '✓ Copied Brief!' : '📋 Copy Recruiter Brief'}
+              </button>
+              <button
+                onClick={() => window.print()}
+                className="rounded-md border border-edge bg-surface/80 px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-muted transition-colors hover:border-signal/50 hover:text-signal"
+              >
+                🖨️ Print / PDF
+              </button>
+            </div>
+          </div>
           <p className="mt-2 max-w-2xl text-lg leading-relaxed text-ece9f0/90">
             {profile.headline}
           </p>
@@ -216,6 +286,13 @@ export function ProfileView({ profile }: { profile: DevProfile }) {
             Recruiter quick panel
           </div>
           <div className="flex flex-wrap gap-2">
+            {rp.developerPersona && PERSONA_CONFIG[rp.developerPersona] && (
+              <Pill
+                icon={PERSONA_CONFIG[rp.developerPersona].icon}
+                label={PERSONA_CONFIG[rp.developerPersona].label}
+                className={PERSONA_CONFIG[rp.developerPersona].style}
+              />
+            )}
             {activeLabel && (
               <Pill
                 icon={rp.recentlyActive ? '🟢' : rp.daysSinceLastCommit <= 90 ? '🟡' : '🔴'}
@@ -246,6 +323,15 @@ export function ProfileView({ profile }: { profile: DevProfile }) {
           </div>
           {rp.seniorityReason && (
             <p className="mt-3 font-mono text-[11px] text-muted">{rp.seniorityReason}</p>
+          )}
+          {rp.privateWorkContext && (
+            <div className="mt-3 flex items-start gap-2.5 rounded-md border border-edge/80 bg-surface/70 px-3 py-2.5">
+              <span className="text-sm leading-none">💡</span>
+              <p className="font-mono text-[11px] leading-relaxed text-muted">
+                <span className="font-medium text-ece9f0">Hiring Context: </span>
+                {rp.privateWorkContext}
+              </p>
+            </div>
           )}
         </div>
       )}
@@ -507,6 +593,50 @@ export function ProfileView({ profile }: { profile: DevProfile }) {
                 </ul>
               )}
             </div>
+          </div>
+        </Section>
+      )}
+
+      {rp && rp.phoneScreenGuide && rp.phoneScreenGuide.length > 0 && (
+        <Section index="10" title="15-Minute Technical Screen Guide">
+          <p className="mb-6 max-w-2xl text-[13px] text-muted">
+            Calibrated technical screening questions for non-technical recruiters and hiring teams.
+            Use these during initial candidate qualification to probe hands-on depth.
+          </p>
+          <div className="max-w-3xl space-y-4">
+            {rp.phoneScreenGuide.map((item, i) => (
+              <div
+                key={i}
+                className="rounded-lg border border-edge bg-surface/60 p-4 transition-colors hover:border-signal/30"
+              >
+                <div className="flex items-start gap-3">
+                  <span className="flex h-5 w-5 flex-none items-center justify-center rounded-full bg-signal/10 font-mono text-xs font-semibold text-signal">
+                    Q{i + 1}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <h4 className="text-[15px] font-medium text-ece9f0">{item.question}</h4>
+                    <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
+                      <div className="rounded border border-emerald-500/20 bg-emerald-950/20 p-3">
+                        <div className="flex items-center gap-1.5 font-mono text-[11px] font-semibold text-emerald-400">
+                          <span>✓</span> What to listen for
+                        </div>
+                        <p className="mt-1 font-sans text-xs leading-relaxed text-zinc-300">
+                          {item.whatToListenFor}
+                        </p>
+                      </div>
+                      <div className="rounded border border-rose-500/20 bg-rose-950/20 p-3">
+                        <div className="flex items-center gap-1.5 font-mono text-[11px] font-semibold text-rose-400">
+                          <span>⚠️</span> Red flag signal
+                        </div>
+                        <p className="mt-1 font-sans text-xs leading-relaxed text-zinc-300">
+                          {item.redFlagSignal}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </Section>
       )}

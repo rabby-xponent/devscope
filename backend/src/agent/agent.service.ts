@@ -16,7 +16,7 @@ import { DevProfile, TraceEvent } from '../types/profile';
 import { LLMGateway } from '../llm/llm-gateway';
 
 const SYNTHESIS_TIMEOUT_MS = 90_000;
-export const CACHE_VERSION = 3;
+export const CACHE_VERSION = 4;
 
 type EventEmitter = (event: TraceEvent) => void;
 type ChatMessage = OpenAI.Chat.Completions.ChatCompletionMessageParam;
