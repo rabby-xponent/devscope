@@ -190,16 +190,35 @@
 
 ---
 
-### Milestone 10: Architectural Specification: Job Requisitions & Dual-Sided Platform Positioning
-* **Specification Document:** [`requisition_and_saved_profiles_spec.md`](../.gemini/antigravity-ide/brain/ef2042c3-a50e-41db-a1fe-0d5e8f449925/requisition_and_saved_profiles_spec.md)
-* **Strategic Positioning Clarified:**
-  - **Recruiter Space:** "Talent Intelligence Suite" — Screen 200–500 applicants against a saved Job Requisition without re-pasting JDs. Evaluates candidates using Requisition Match Scores, Claim vs. Evidence Ledgers, and 15-Minute Technical Phone Screen Guides.
-  - **Developer Space:** "Career Pre-Flight & Self-Audit" — Working engineers paste their profile and a target JD to uncover blind spots, see how hiring teams perceive their private work, and simulate the exact interview questions recruiters will ask.
-* **Architecture & Data Models Defined:**
-  - Added `SavedRequisition` model (Title, Company, Raw JD, Parsed Competencies, Seniority Floor, Private Repo Policy).
-  - Added `RequisitionFit` and `RequisitionRequirement` models to `DevProfile` schema.
-  - Designed the 3 recruiter candidate ingestion pathways: One-Click Requisition Dropdown, Batch CSV Import, and Shareable Application Links.
-  - Outlined client-side persistence (LocalStorage) and future `/api/requisitions` backend persistence.
+### Milestone 11: End-to-End Implementation of Saved Requisitions & Role Intelligence
+* **Goal:** Eliminate repetitive JD copy-pasting for recruiters assessing high applicant volumes, while giving candidates tailored gap analysis and interview defense questions against specific roles.
+* **Backend Additions & Enhancements:**
+  - **Schema Update ([`backend/src/types/profile.ts`](./backend/src/types/profile.ts)):**
+    * Added `RequisitionFit` (matchScore, roleTitle, summary, requirements array, roleSpecificQuestions) and `RequisitionRequirement` (name, importance, candidateEvidence, status) to `DevProfile`.
+  - **Prompt Calibration ([`backend/src/agent/prompts.ts`](./backend/src/agent/prompts.ts)):**
+    * Added dedicated `REQUISITION & JOB DESCRIPTION EVALUATION RULES` to agent synthesis prompt to extract core tech, seniority, and produce structured rubric matches.
+  - **Agent Service Integration ([`backend/src/agent/agent.service.ts`](./backend/src/agent/agent.service.ts)):**
+    * Accepted `jobDescription` and `roleTitle` parameters.
+    * Injected role specifications into `compressToolData` and the LLM synthesis context.
+    * Added deterministic fallback fit generation when LLM models are exhausted or offline.
+  - **API Route Propagation ([`backend/src/routes/api.ts`](./backend/src/routes/api.ts)):**
+    * `GET /api/agent/stream` extracts `jd` and `roleTitle` query parameters and forwards them to `agentService.analyzeCandidate()`.
+* **Frontend Additions & Enhancements:**
+  - **Requisitions Manager Library ([`frontend/lib/requisitions.ts`](./frontend/lib/requisitions.ts)):**
+    * Client-side LocalStorage persistence with 3 pre-configured engineering archetypes (*Senior Full-Stack Engineer*, *Backend Systems Engineer*, *Frontend UI/UX Architect*).
+    * Helpers: `getSavedRequisitions()`, `saveRequisition()`, `getRequisitionById()`, `deleteRequisition()`, `getActiveRequisitionId()`, `setActiveRequisitionId()`.
+  - **Recruiter Console Active Role Selector ([`frontend/app/page.tsx`](./frontend/app/page.tsx)):**
+    * Interactive dropdown inside the assessment box allowing 1-click selection of target open requisition or "General Profile Audit (No JD)".
+    * Modal dialog (`+ New JD`) allowing recruiters to create and save custom job requisitions on the fly.
+  - **Dossier & Stream Pipeline Synchronization:**
+    * [`useDevScopeStream.ts`](./frontend/hooks/useDevScopeStream.ts): Sends encoded `jd` and `roleTitle` parameters via EventSource.
+    * [`profile/[username]/page.tsx`](./frontend/app/profile/[username]/page.tsx): Reads `roleId`, resolves requisition from storage, and passes `activeJd` and `activeTitle` across initial streams, retries, and cache refreshes.
+  - **Requisition Fit Scorecard ([`frontend/components/ProfileView.tsx`](./frontend/components/ProfileView.tsx)):**
+    * Prominent visual scorecard card displaying match score badge, role title, requirement check matrix (`met`, `partial`, `missing`), and tailored phone-screen probes.
+    * Formats role fit findings into the 1-click `📋 Copy Recruiter Brief` for instant ATS/Slack sharing.
+    * Integrated with `@media print` rules for clean, unorphaned multi-page PDF generation.
+* **Verification:**
+  - `npx tsc --noEmit` executed on both `backend/` and `frontend/` with 0 compilation errors.
 
 ---
 
@@ -208,8 +227,8 @@
 | Test | Target | Result | Latency / Notes |
 |---|---|---|---|
 | **Live Agent Test** | `torvalds` | ✅ **PASS** | 14.3s total (synthesis via Gemini 3.8 Flash). Full profile + screen guide generated. |
-| **Backend TypeScript Build** | `devscope-backend` | ✅ **PASS** | `tsc` completed with 0 errors (`CACHE_VERSION = 5`). |
-| **Frontend Next.js Build** | `devscope-frontend` | ✅ **PASS** | `next build` completed with 0 errors. Static/dynamic routes optimized. |
+| **Backend TypeScript Build** | `devscope-backend` | ✅ **PASS** | `tsc` completed with 0 errors (`CACHE_VERSION = 5` + `RequisitionFit`). |
+| **Frontend TypeScript Build** | `devscope-frontend` | ✅ **PASS** | `tsc` completed with 0 errors (`SavedRequisition` + modal + scorecard). |
 
 ---
 

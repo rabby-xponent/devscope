@@ -1,8 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import {
+  getSavedRequisitions,
+  saveRequisition,
+  getActiveRequisitionId,
+  setActiveRequisitionId,
+  SavedRequisition,
+} from '@/lib/requisitions';
 
 const CANDIDATE_ARCHETYPES = [
   {
@@ -29,15 +36,59 @@ export default function Home() {
   const [username, setUsername] = useState('');
   const [liveUrl, setLiveUrl] = useState('');
   const [showLiveUrl, setShowLiveUrl] = useState(false);
+  const [requisitions, setRequisitions] = useState<SavedRequisition[]>([]);
+  const [activeRoleId, setActiveRoleId] = useState<string>('req_senior_fullstack');
+  const [showRoleModal, setShowRoleModal] = useState(false);
+  const [newTitle, setNewTitle] = useState('');
+  const [newCompany, setNewCompany] = useState('');
+  const [newJdText, setNewJdText] = useState('');
+
   const router = useRouter();
 
-  const handleAnalyze = (targetUser?: string, targetLive?: string) => {
+  useEffect(() => {
+    const list = getSavedRequisitions();
+    setRequisitions(list);
+    const active = getActiveRequisitionId();
+    if (active) setActiveRoleId(active);
+  }, []);
+
+  const handleRoleChange = (id: string) => {
+    setActiveRoleId(id);
+    setActiveRequisitionId(id || null);
+  };
+
+  const handleCreateRole = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTitle.trim() || !newJdText.trim()) return;
+    const created = saveRequisition({
+      title: newTitle.trim(),
+      company: newCompany.trim() || 'Internal Team',
+      rawJdText: newJdText.trim(),
+      coreStack: [],
+      seniorityMinYears: 3,
+      allowPrivateRepos: true,
+    });
+    setRequisitions(getSavedRequisitions());
+    setActiveRoleId(created.id);
+    setActiveRequisitionId(created.id);
+    setShowRoleModal(false);
+    setNewTitle('');
+    setNewCompany('');
+    setNewJdText('');
+  };
+
+  const handleAnalyze = (targetUser?: string, targetLive?: string, targetRole?: string) => {
     const u = (targetUser ?? username).trim().replace(/^@/, '');
     const l = (targetLive ?? liveUrl).trim();
+    const r = targetRole !== undefined ? targetRole : activeRoleId;
     if (!u) return;
 
-    const query = l ? `?liveUrl=${encodeURIComponent(l)}` : '';
-    router.push(`/profile/${encodeURIComponent(u)}${query}`);
+    const params = new URLSearchParams();
+    if (l) params.set('liveUrl', l);
+    if (r) params.set('roleId', r);
+
+    const qs = params.toString() ? `?${params.toString()}` : '';
+    router.push(`/profile/${encodeURIComponent(u)}${qs}`);
   };
 
   return (
@@ -104,6 +155,34 @@ export default function Home() {
 
               {/* Assessment Input Box */}
               <div id="console" className="mt-8 max-w-xl rounded-xl border border-edge bg-surface/90 p-3 shadow-2xl backdrop-blur focus-within:border-signal/70">
+                {/* Active Requisition / Role Selector Bar */}
+                <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2 border-b border-edge/40 pb-2.5">
+                  <div className="flex flex-wrap items-center gap-1.5 font-mono text-[11px] text-muted">
+                    <span className="text-signal">🎯</span>
+                    <span className="font-semibold text-ece9f0">Evaluating for:</span>
+                    <select
+                      value={activeRoleId}
+                      onChange={(e) => handleRoleChange(e.target.value)}
+                      className="max-w-[220px] truncate rounded border border-edge/60 bg-[#0c0b0e] px-2 py-1 font-mono text-xs text-ece9f0 outline-none focus:border-signal"
+                    >
+                      <option value="">General Profile Audit (No JD)</option>
+                      {requisitions.map((req) => (
+                        <option key={req.id} value={req.id}>
+                          {req.title} ({req.company})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowRoleModal(true)}
+                    className="flex items-center gap-1 rounded border border-edge/60 bg-surface px-2 py-1 font-mono text-[10px] text-signal transition-colors hover:border-signal/60 hover:bg-signal/10"
+                    title="Save a new Job Description to score candidates against"
+                  >
+                    <span>+ New JD</span>
+                  </button>
+                </div>
+
                 <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
                   <div className="flex flex-1 items-center gap-2 rounded-lg bg-[#0c0b0e]/90 px-3 py-2.5 border border-edge/60 focus-within:border-signal/50">
                     <span className="font-mono text-xs text-signal font-bold">@</span>
@@ -597,6 +676,92 @@ export default function Home() {
           </span>
         </div>
       </footer>
+
+      {/* Save New Job Description Modal */}
+      {showRoleModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-xl border border-edge bg-[#0c0b0e] p-6 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-edge/60 pb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-lg text-signal">📋</span>
+                <h3 className="font-mono text-sm font-semibold uppercase tracking-wider text-ece9f0">
+                  Save Job Requisition
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowRoleModal(false)}
+                className="font-mono text-xs text-muted hover:text-signal"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="mt-2 text-xs text-muted">
+              Save your open role once. DevScope will automatically score every candidate against these requirements and generate targeted phone-screen interview questions.
+            </p>
+
+            <form onSubmit={handleCreateRole} className="mt-4 space-y-3.5">
+              <div>
+                <label className="block font-mono text-[11px] uppercase tracking-wider text-muted">
+                  Role Title *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Staff Distributed Systems Engineer"
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  className="mt-1 w-full rounded-lg border border-edge/60 bg-surface px-3 py-2 font-mono text-xs text-ece9f0 outline-none focus:border-signal"
+                />
+              </div>
+
+              <div>
+                <label className="block font-mono text-[11px] uppercase tracking-wider text-muted">
+                  Company / Team (Optional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Core Infrastructure or Stealth AI"
+                  value={newCompany}
+                  onChange={(e) => setNewCompany(e.target.value)}
+                  className="mt-1 w-full rounded-lg border border-edge/60 bg-surface px-3 py-2 font-mono text-xs text-ece9f0 outline-none focus:border-signal"
+                />
+              </div>
+
+              <div>
+                <label className="block font-mono text-[11px] uppercase tracking-wider text-muted">
+                  Job Description / Requirements Text *
+                </label>
+                <textarea
+                  required
+                  rows={5}
+                  placeholder="Paste the requirements, tech stack (e.g. Go, Rust, Kafka, Kubernetes), and qualifications from your job posting..."
+                  value={newJdText}
+                  onChange={(e) => setNewJdText(e.target.value)}
+                  className="mt-1 w-full rounded-lg border border-edge/60 bg-surface px-3 py-2 font-mono text-xs text-ece9f0 outline-none focus:border-signal placeholder:text-muted/40"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowRoleModal(false)}
+                  className="rounded-lg border border-edge/60 px-4 py-2 font-mono text-xs text-muted hover:text-ece9f0"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-lg bg-signal px-5 py-2 font-mono text-xs font-semibold uppercase tracking-wider text-ink hover:bg-signal/90"
+                >
+                  Save & Select Role
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

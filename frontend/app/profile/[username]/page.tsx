@@ -7,18 +7,33 @@ import { useDevScopeStream } from '@/hooks/useDevScopeStream';
 import { AgentTrace } from '@/components/AgentTrace';
 import { AgentProgress } from '@/components/AgentProgress';
 import { ProfileView } from '@/components/ProfileView';
+import { getRequisitionById } from '@/lib/requisitions';
 
 export default function ProfilePage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const username = String(params.username || '');
   const liveUrl = searchParams.get('liveUrl') || undefined;
+  const roleId = searchParams.get('roleId') || undefined;
+  const rawJd = searchParams.get('jd') || undefined;
+
+  let activeJd = rawJd;
+  let activeTitle = searchParams.get('roleTitle') || undefined;
+
+  if (roleId) {
+    const saved = getRequisitionById(roleId);
+    if (saved) {
+      activeJd = saved.rawJdText;
+      activeTitle = saved.title;
+    }
+  }
+
   const { status, trace, profile, cached, error, generate, reset } = useDevScopeStream();
 
   useEffect(() => {
-    if (username) generate(username, false, liveUrl);
+    if (username) generate(username, false, liveUrl, activeJd, activeTitle);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [username, liveUrl]);
+  }, [username, liveUrl, roleId, rawJd]);
 
   const isWorking = status === 'connecting' || status === 'streaming';
 
@@ -36,7 +51,7 @@ export default function ProfilePage() {
           <div className="flex items-center gap-5">
             {status === 'complete' && (
               <button
-                onClick={() => generate(username, true, liveUrl)}
+                onClick={() => generate(username, true, liveUrl, activeJd, activeTitle)}
                 className="font-mono text-[11px] uppercase tracking-wider text-muted transition-colors hover:text-signal"
               >
                 ↻ regenerate
@@ -66,7 +81,7 @@ export default function ProfilePage() {
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <button
-                onClick={() => generate(username, true, liveUrl)}
+                onClick={() => generate(username, true, liveUrl, activeJd, activeTitle)}
                 className="rounded-lg bg-signal px-5 py-2.5 font-mono text-xs font-semibold uppercase tracking-wider text-ink shadow transition-all hover:bg-signal/90 active:scale-95"
               >
                 ↻ Retry Analysis
@@ -102,7 +117,7 @@ export default function ProfilePage() {
                   before, so we served it from cache instead of running the agent again.
                 </p>
                 <button
-                  onClick={() => generate(username, true)}
+                  onClick={() => generate(username, true, liveUrl, activeJd, activeTitle)}
                   className="flex-none rounded-md border border-edge px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-muted transition-colors hover:border-signal/50 hover:text-signal"
                 >
                   ↻ run a fresh analysis

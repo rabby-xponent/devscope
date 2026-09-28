@@ -10,7 +10,9 @@ const agent = new AgentService();
 router.get('/generate', async (req: Request, res: Response) => {
   const username = String(req.query.username || '').trim();
   const liveUrl = req.query.liveUrl ? String(req.query.liveUrl).trim() : undefined;
-  const force = req.query.force === 'true' || Boolean(liveUrl);
+  const roleTitle = req.query.roleTitle ? String(req.query.roleTitle).trim() : undefined;
+  const jobDescription = req.query.jd ? String(req.query.jd).trim() : undefined;
+  const force = req.query.force === 'true' || Boolean(liveUrl) || Boolean(jobDescription);
 
   if (!username || !/^[a-zA-Z0-9_-]+$/.test(username)) {
     res.status(400).json({ error: 'Valid username required' });
@@ -51,7 +53,7 @@ router.get('/generate', async (req: Request, res: Response) => {
       }
     }
 
-    const profile = await agent.buildProfile(username, send, liveUrl);
+    const profile = await agent.buildProfile(username, send, liveUrl, jobDescription, roleTitle);
     await writeCache(username, profile);
 
     clearInterval(heartbeat);

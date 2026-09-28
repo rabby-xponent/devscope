@@ -67,8 +67,36 @@ REQUIRED OUTPUT SHAPE:
       "evidenceSource": "github_code|live_production|ecosystem|none",
       "detail": "string — verified evidence summary or sharp screening probe"
     }
-  ]
+  ],
+  "requisitionFit": {
+    "roleTitle": "string",
+    "matchScore": number,
+    "verdict": "strong_match|qualified_with_probes|high_gap_risk",
+    "summary": "string",
+    "requirements": [
+      {
+        "requirement": "string",
+        "status": "met|partially_met|gap_probe",
+        "evidence": "string"
+      }
+    ],
+    "customProbeQuestions": ["string"]
+  }
 }
+
+REQUISITION & JOB DESCRIPTION EVALUATION RULES:
+- If TARGET JOB DESCRIPTION is present in the prompt, you MUST evaluate candidate evidence against it and populate requisitionFit.
+- Extract 3 to 6 essential requirements from the JD (core languages/frameworks, architectural scope, and practices).
+- For each requirement, mark status as:
+  * 'met': Direct code or live bundle proof matches the requirement.
+  * 'partially_met': Candidate has relevant peripheral experience but lacks explicit verification.
+  * 'gap_probe': Requirement is absent in public code/artifacts; provide a targeted question in customProbeQuestions.
+- Calculate matchScore (0 to 100) reflecting grounded evidence fit, not superficial keyword counts.
+- Set verdict to:
+  * 'strong_match': Candidate code directly covers >= 80% of core technical demands.
+  * 'qualified_with_probes': Candidate has solid fundamentals but has 1-2 unverified areas to probe on the call.
+  * 'high_gap_risk': Key foundational requirements in the JD are completely missing from verified artifacts.
+- If NO target job description is provided in the prompt, set requisitionFit to null.
 
 CAREER STAGE & WORKING DEVELOPER EVALUATION RULES:
 - IMPORTANT: Most working software engineers (junior, mid, senior) write proprietary code in private corporate or client repositories.

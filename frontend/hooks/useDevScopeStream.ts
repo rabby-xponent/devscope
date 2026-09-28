@@ -37,22 +37,31 @@ export function useDevScopeStream() {
     setError(null);
   }, []);
 
-  const generate = useCallback((username: string, force = false, liveUrl?: string) => {
-    clearWatchdog();
-    sourceRef.current?.close();
-    setStatus('connecting');
-    setTrace([]);
-    setProfile(null);
-    setCached(false);
-    setError(null);
+  const generate = useCallback(
+    (
+      username: string,
+      force = false,
+      liveUrl?: string,
+      jobDescription?: string,
+      roleTitle?: string
+    ) => {
+      clearWatchdog();
+      sourceRef.current?.close();
+      setStatus('connecting');
+      setTrace([]);
+      setProfile(null);
+      setCached(false);
+      setError(null);
 
-    const params = new URLSearchParams({ username });
-    if (force) params.set('force', 'true');
-    if (liveUrl && liveUrl.trim()) params.set('liveUrl', liveUrl.trim());
+      const params = new URLSearchParams({ username });
+      if (force) params.set('force', 'true');
+      if (liveUrl && liveUrl.trim()) params.set('liveUrl', liveUrl.trim());
+      if (jobDescription && jobDescription.trim()) params.set('jd', jobDescription.trim());
+      if (roleTitle && roleTitle.trim()) params.set('roleTitle', roleTitle.trim());
 
-    const url = `${API_URL}/api/generate?${params.toString()}`;
-    const source = new EventSource(url);
-    sourceRef.current = source;
+      const url = `${API_URL}/api/generate?${params.toString()}`;
+      const source = new EventSource(url);
+      sourceRef.current = source;
 
     // Safety watchdog: if after 50s no complete/error is received, fail gracefully
     watchdogRef.current = setTimeout(() => {

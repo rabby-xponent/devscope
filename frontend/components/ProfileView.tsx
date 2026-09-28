@@ -212,6 +212,16 @@ export function ProfileView({ profile }: { profile: DevProfile }) {
             ),
           ]
         : []),
+      ...(profile.requisitionFit
+        ? [
+            '',
+            `TARGET REQUISITION FIT: ${profile.requisitionFit.roleTitle} (${profile.requisitionFit.matchScore}% Match · ${profile.requisitionFit.verdict.toUpperCase().replace(/_/g, ' ')})`,
+            profile.requisitionFit.summary,
+            ...profile.requisitionFit.requirements.map(
+              (r) => `• [${r.status.toUpperCase()}] ${r.requirement}: ${r.evidence}`
+            ),
+          ]
+        : []),
       ...(rp?.phoneScreenGuide && rp.phoneScreenGuide.length > 0
         ? [
             '',
@@ -425,6 +435,93 @@ export function ProfileView({ profile }: { profile: DevProfile }) {
           </div>
         )}
       </div>
+
+      {/* REQUISITION FIT SCORECARD (Rendered if candidate was benchmarked against a target role) */}
+      {profile.requisitionFit && (
+        <div className="mb-6 rounded-xl border border-signal/40 bg-gradient-to-br from-signal/10 via-surface/80 to-surface p-5 shadow-xl print:border-amber-400 print:bg-amber-50/20 print:p-3.5 print-avoid-break">
+          <div className="flex flex-wrap items-start justify-between gap-4 border-b border-edge/60 pb-3.5 print:border-zinc-300 print:pb-2">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-[10px] uppercase tracking-widest text-signal print:text-amber-800 font-bold">
+                  🎯 Target Requisition Match
+                </span>
+                <span className="rounded bg-surface px-2 py-0.5 font-mono text-[10px] text-muted border border-edge print:bg-white print:border-zinc-300">
+                  Role Benchmark
+                </span>
+              </div>
+              <h3 className="mt-1 font-mono text-base font-bold text-ece9f0 print:text-zinc-900">
+                {profile.requisitionFit.roleTitle}
+              </h3>
+            </div>
+            <div className="flex items-center gap-3">
+              <span
+                className={`rounded-full border px-3 py-1 font-mono text-xs font-semibold uppercase tracking-wider ${
+                  profile.requisitionFit.verdict === 'strong_match'
+                    ? 'border-emerald-500/50 bg-emerald-950/40 text-emerald-400 print:border-emerald-300 print:bg-emerald-50 print:text-emerald-800'
+                    : profile.requisitionFit.verdict === 'qualified_with_probes'
+                      ? 'border-blue-500/50 bg-blue-950/40 text-blue-300 print:border-blue-300 print:bg-blue-50 print:text-blue-800'
+                      : 'border-amber-500/50 bg-amber-950/40 text-amber-300 print:border-amber-300 print:bg-amber-50 print:text-amber-800'
+                }`}
+              >
+                {profile.requisitionFit.verdict.replace(/_/g, ' ')}
+              </span>
+              <div className="rounded-lg border border-edge bg-surface/90 px-3 py-1.5 font-mono text-right print:bg-white print:border-zinc-300">
+                <div className="text-base font-bold text-signal print:text-amber-800">
+                  {profile.requisitionFit.matchScore}%
+                </div>
+                <div className="text-[9px] uppercase tracking-wider text-muted">Fit Score</div>
+              </div>
+            </div>
+          </div>
+
+          <p className="mt-3 font-mono text-xs leading-relaxed text-muted print:text-zinc-700">
+            {profile.requisitionFit.summary}
+          </p>
+
+          <div className="mt-4 space-y-2">
+            <div className="font-mono text-[10px] uppercase tracking-wider text-muted font-bold">
+              Must-Have Requirements vs. Verified Evidence:
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {profile.requisitionFit.requirements.map((req, i) => (
+                <div
+                  key={i}
+                  className="rounded-lg border border-edge/60 bg-surface/50 p-2.5 font-mono text-xs print:bg-white print:border-zinc-300"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-semibold text-ece9f0 print:text-zinc-900">{req.requirement}</span>
+                    <span
+                      className={`flex-none rounded px-1.5 py-0.5 text-[9px] uppercase tracking-wider font-bold ${
+                        req.status === 'met'
+                          ? 'bg-emerald-950/50 text-emerald-400 border border-emerald-500/30'
+                          : req.status === 'partially_met'
+                            ? 'bg-blue-950/50 text-blue-300 border border-blue-500/30'
+                            : 'bg-amber-950/50 text-amber-300 border border-amber-500/30'
+                      }`}
+                    >
+                      {req.status === 'met' ? '✓ Met' : req.status === 'partially_met' ? '⚡ Partial' : '⚠️ Gap Probe'}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-[11px] leading-relaxed text-muted print:text-zinc-600">
+                    {req.evidence}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {profile.requisitionFit.customProbeQuestions && profile.requisitionFit.customProbeQuestions.length > 0 && (
+            <div className="mt-3.5 rounded border border-edge/60 bg-surface/30 p-2.5 font-mono text-[11px] print:bg-white print:border-zinc-300">
+              <span className="font-bold text-signal print:text-amber-800">Role-Specific Phone Screen Probes: </span>
+              <ul className="mt-1 list-disc list-inside space-y-0.5 text-muted print:text-zinc-700">
+                {profile.requisitionFit.customProbeQuestions.map((q, i) => (
+                  <li key={i}>{q}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Recruiter Navigation Bar (Web Only) */}
       <div className="sticky top-[57px] z-10 -mx-2 mb-8 flex items-center justify-between border-y border-edge bg-ink/90 px-2 py-2.5 backdrop-blur print:hidden">
