@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { AgentService } from '../agent/agent.service';
 import { readCache, writeCache } from '../cache/cache.service';
 import { TraceEvent } from '../types/profile';
+import { sanitizeErrorMessage } from '../utils/error-formatter';
 
 const router = Router();
 const agent = new AgentService();
@@ -17,11 +18,24 @@ router.get('/generate', async (req: Request, res: Response) => {
   }
 
   res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
   res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
   res.flushHeaders();
 
+  // Send periodic SSE keepalive comment every 4 seconds to prevent proxy / Vercel timeouts
+  const heartbeat = setInterval(() => {
+    if (!res.writableEnded) {
+      res.write(': keepalive\n\n');
+    }
+  }, 4000);
+
+  req.on('close', () => {
+    clearInterval(heartbeat);
+  });
+
   const send = (event: TraceEvent) => {
+    if (res.writableEnded) return;
     res.write(`event: ${event.type}\n`);
     res.write(`data: ${JSON.stringify(event)}\n\n`);
   };
@@ -30,6 +44,7 @@ router.get('/generate', async (req: Request, res: Response) => {
     if (!force) {
       const cached = await readCache(username);
       if (cached) {
+        clearInterval(heartbeat);
         send({ type: 'complete', timestamp: new Date().toISOString(), profile: cached, cached: true });
         res.end();
         return;
@@ -39,13 +54,17 @@ router.get('/generate', async (req: Request, res: Response) => {
     const profile = await agent.buildProfile(username, send, liveUrl);
     await writeCache(username, profile);
 
+    clearInterval(heartbeat);
     send({ type: 'complete', timestamp: new Date().toISOString(), profile, cached: false });
     res.end();
   } catch (err: any) {
+    clearInterval(heartbeat);
+    const sanitized = sanitizeErrorMessage(err, username);
     send({
       type: 'error',
       timestamp: new Date().toISOString(),
-      message: err.message || 'Generation failed',
+      message: sanitized.userMessage,
+      technicalDetails: sanitized.technicalDetails,
     });
     res.end();
   }

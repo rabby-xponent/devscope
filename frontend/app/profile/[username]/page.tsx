@@ -54,23 +54,40 @@ export default function ProfilePage() {
 
       <div className="mx-auto max-w-5xl px-6 py-10 print:max-w-none print:p-0">
         {error && (
-          <div className="fade-up rounded-lg border border-edge bg-surface p-8 text-center print:hidden">
-            <p className="font-mono text-sm text-signal">analysis failed</p>
-            <p className="mt-2 text-muted">{error}</p>
-            <div className="mt-6 flex justify-center gap-3">
+          <div className="fade-up mx-auto max-w-xl rounded-xl border border-edge/80 bg-surface/90 p-8 text-center shadow-2xl print:hidden">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-signal/10 text-xl text-signal">
+              ⚠️
+            </div>
+            <h3 className="font-mono text-sm font-semibold uppercase tracking-wider text-signal">
+              Analysis Temporarily Paused
+            </h3>
+            <p className="mt-2 text-sm leading-relaxed text-ece9f0/90">
+              {error.message}
+            </p>
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
               <button
                 onClick={() => generate(username, true, liveUrl)}
-                className="rounded-md bg-signal px-4 py-2 font-mono text-xs uppercase tracking-wider text-ink"
+                className="rounded-lg bg-signal px-5 py-2.5 font-mono text-xs font-semibold uppercase tracking-wider text-ink shadow transition-all hover:bg-signal/90 active:scale-95"
               >
-                retry
+                ↻ Retry Analysis
               </button>
               <Link
                 href="/"
-                className="rounded-md border border-edge px-4 py-2 font-mono text-xs uppercase tracking-wider text-muted"
+                className="rounded-lg border border-edge bg-surface/60 px-5 py-2.5 font-mono text-xs font-medium uppercase tracking-wider text-muted transition-all hover:border-signal/50 hover:text-ece9f0"
               >
-                home
+                ← Analyze Another Candidate
               </Link>
             </div>
+            {error.technicalDetails && (
+              <details className="mt-6 text-left border-t border-edge/60 pt-4">
+                <summary className="cursor-pointer font-mono text-[11px] text-muted hover:text-signal">
+                  Technical Diagnostics (Admin / Developer)
+                </summary>
+                <div className="mt-2 max-h-36 overflow-y-auto rounded bg-ink/70 p-3 font-mono text-[11px] leading-relaxed text-zinc-400 border border-edge/40 break-all select-all">
+                  {error.technicalDetails}
+                </div>
+              </details>
+            )}
           </div>
         )}
 

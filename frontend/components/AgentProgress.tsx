@@ -23,6 +23,7 @@ const TOOL_META: Record<string, ToolMeta> = {
   search_hackernews: { label: 'Searching Hacker News', description: 'Finding community mentions', phase: 'presence' },
   search_devto: { label: 'Checking DEV.to', description: 'Looking for articles', phase: 'presence' },
   web_search: { label: 'Searching the web', description: 'Finding public presence', phase: 'presence' },
+  inspect_live_url: { label: 'Auditing live application', description: 'Inspecting deployed production bundle', phase: 'code' },
 };
 
 const PHASES: Array<{ key: Phase; label: string }> = [
@@ -42,6 +43,7 @@ const DISCOVERY_META: Record<string, { icon: string; label: string }> = {
   get_repos: { icon: '⭐', label: 'Repositories' },
   get_aggregated_languages: { icon: '💻', label: 'Languages' },
   get_commit_activity: { icon: '🔥', label: 'Activity' },
+  inspect_live_url: { icon: '🌐', label: 'Live App' },
 };
 const DISCOVERY_TOOLS = Object.keys(DISCOVERY_META);
 
@@ -338,7 +340,18 @@ export function AgentProgress({ username, trace }: { username: string; trace: Tr
 
           <div className="thin-scroll relative min-h-0 flex-1 overflow-y-auto p-3">
             {grouped.length === 0 && !synthesizing && (
-              <p className="px-2 py-4 font-mono text-xs text-muted">Waiting for the agent to start…</p>
+              <div className="px-2 py-4">
+                {elapsedSeconds < 10 ? (
+                  <p className="font-mono text-xs text-muted">Waiting for the agent to start…</p>
+                ) : (
+                  <div>
+                    <p className="font-mono text-xs text-signal">Initiating upstream inspection…</p>
+                    <p className="mt-1.5 font-mono text-[11px] leading-relaxed text-muted">
+                      Connecting to GitHub API and waking up cloud synthesis engines. Free-tier instances may take a few moments on cold start.
+                    </p>
+                  </div>
+                )}
+              </div>
             )}
 
             {grouped.map((group) => (

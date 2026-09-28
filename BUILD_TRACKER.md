@@ -151,6 +151,32 @@
 
 ---
 
+### Milestone 8: Resilient Error Boundaries, Cold-Start Handling, and Human-Friendly Sanitization
+* **Problem Addressed:** 
+  1. Low-level internal diagnostics (e.g. `All LLM providers exhausted: groq:llama-3.3-70b-versatile:non_retryable | ...`) were exposed directly to end-users instead of human-friendly messages.
+  2. GitHub API errors (401 Bad credentials, 403 rate limits, 409 empty repo conflicts) showed raw HTTP status codes that recruiters could not act on.
+  3. Free-tier backend servers (Render/Vercel) sleeping or taking >15s caused silent connection timeouts, leaving the UI hanging indefinitely at "Waiting for the agent to start...".
+* **Backend Hardening:**
+  - **Error Sanitizer Engine ([`error-formatter.ts`](./backend/src/utils/error-formatter.ts)):**
+    * Translates LLM quota/capacity errors, GitHub PAT expirations, rate limits, 404s, and network timeouts into empathetic, clear English messages with actionable steps.
+    * Separates user-facing messages from raw technical diagnostics.
+  - **SSE Keepalive Heartbeat ([`api.ts`](./backend/src/routes/api.ts)):**
+    * Injected periodic `: keepalive\n\n` comments every 4 seconds, preventing Vercel, Cloudflare, and browser proxies from cutting connections during LLM synthesis.
+  - **Deterministic Fallback Dossier Generation ([`agent.service.ts`](./backend/src/agent/agent.service.ts)):**
+    * If all free AI providers are exhausted or rate-limited during the final synthesis step, the agent automatically falls back to synthesizing a complete candidate dossier from the 11 deterministic tools that already succeeded, preventing total failure.
+* **Frontend Resilience & UX:**
+  - **Watchdog Timers & Activity Tracking ([`useDevScopeStream.ts`](./frontend/hooks/useDevScopeStream.ts)):**
+    * Added 50s connection timeout watchdog with automatic reset on active tool events.
+    * Parses structured error events (`message` and `technicalDetails`).
+  - **Human-Friendly Error Screen ([`page.tsx`](./frontend/app/profile/[username]/page.tsx)):**
+    * Clear status badge ("Analysis Temporarily Paused"), empathetic message, Retry button, and collapsible `<details>` section for technical diagnostics.
+  - **Cold-Start Pacing Feedback ([`AgentProgress.tsx`](./frontend/components/AgentProgress.tsx)):**
+    * Added `inspect_live_url` to tool discovery.
+    * Reassures the user after 10s of silence that free-tier cloud instances and GitHub API connections are initiating.
+* **Verification:** `tsc` (backend) and `next build` (frontend) both passed with 0 errors.
+
+---
+
 ## 3. Build & Test Verification Record
 
 | Test | Target | Result | Latency / Notes |

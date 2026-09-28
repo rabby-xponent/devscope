@@ -121,5 +121,6 @@ export interface TraceEvent {
   thinking?: string;
   profile?: DevProfile;
   message?: string;
+  technicalDetails?: string;
   cached?: boolean;
 }
