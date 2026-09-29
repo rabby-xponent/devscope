@@ -303,13 +303,35 @@
 
 ---
 
+### Milestone 15.5: Architectural Uncluttering & Dedicated RecruiterOS Portal (`/recruiter`)
+* **Problem Addressed:** The landing page hero section had become cluttered by cramming recruiter multi-job management, guardrails dialogs, mini-pipeline tables, and mode switches into a single small hero card.
+* **Architecture & Separation Implemented:**
+  - **Clean & Uncluttered Landing Page ([`frontend/app/page.tsx`](./frontend/app/page.tsx)):**
+    * Stripped away all heavy recruiter job management, guardrail settings, and pipeline previews from the hero card.
+    * Crisp, focused hero section: Headline ("Verify engineering depth without the guesswork"), single clean `@candidate-username` audit bar with optional live URL, and live demo archetype chips (`@gaearon`, `@tj`, `@shadcn`).
+    * Clear dual-entry portal cards: **🏢 RecruiterOS Workspace** (leads to `/recruiter`) and **💻 Developer Career Suite** (toggleable pre-flight benchmark).
+    * Prominent `[🏢 Recruiter Portal ↗]` button added to the sticky top navigation.
+  - **Dedicated RecruiterOS Workspace Portal ([`frontend/app/recruiter/page.tsx`](./frontend/app/recruiter/page.tsx)):**
+    * Full-page, spacious, dark-mode command center specifically designed for talent acquisition teams.
+    * **Recruiter Profile & Account System ([`frontend/lib/recruiter-auth.ts`](./frontend/lib/recruiter-auth.ts) & [`frontend/components/RecruiterAccountModal.tsx`](./frontend/components/RecruiterAccountModal.tsx)):**
+      - Recruiter identity (e.g. *Sarah Chen, Lead Technical Talent Partner*), company workspace, department, plan tier (`Pro Seat`), and default screening guardrails.
+      - Edit profile modal allowing recruiters to set default minimum fit scores, private repo shields, and auto-advancement preferences.
+    * **Spacious Open Job Searches Grid:** Interactive cards for each open requisition showing pipeline counts, target seniority, and dealbreaker stacks.
+    * **Direct Candidate Screening Console:** Clean, focused screening input calibrated to the active job project's requirements.
+    * **Full Candidate Pipeline Leaderboard:** Directly embedded with stage filters, fit scores, inline star ratings, recruiter notes, and floating side-by-side comparison.
+* **Verification:**
+  - `devscope-frontend` (`next build`) compiled 6 routes with 0 errors (`/`, `/recruiter`, `/pipeline`, `/profile/[username]`, `/_not-found`).
+  - `devscope-backend` (`tsc --noEmit`) verified with 0 errors.
+
+---
+
 ## 3. Build & Test Verification Record
 
 | Test | Target | Result | Latency / Notes |
 |---|---|---|---|
 | **Live Agent Test** | `torvalds` | ✅ **PASS** | 14.3s total (synthesis via Gemini 3.8 Flash). Full profile + screen guide generated. |
 | **Backend TypeScript Build** | `devscope-backend` | ✅ **PASS** | `tsc` completed with 0 errors (`CACHE_VERSION = 5` + `RequisitionFit`). |
-| **Frontend Production Build** | `devscope-frontend` | ✅ **PASS** | `next build` completed with 0 errors. RecruiterOS Pipeline & Leaderboard active (`/pipeline`). |
+| **Frontend Production Build** | `devscope-frontend` | ✅ **PASS** | `next build` completed with 0 errors across 6 routes including `/` and `/recruiter`. |
 
 ---
 
@@ -317,7 +339,7 @@
 
 ```mermaid
 pie title Roadmap Milestone Status
-    "Completed (Core Intelligence & RecruiterOS Pipeline)" : 15
+    "Completed (Core Intelligence & RecruiterOS Portal)" : 16
     "Phase 3: RecruiterOS (Batch & Ingestion)" : 3
     "Phase 4: Developer Space Expansion" : 2
 ```
@@ -335,6 +357,9 @@ pie title Roadmap Milestone Status
   * Side-by-side 2-3 candidate comparison matrix modal.
   * 1-click Slack brief and printable 1-pager for Engineering Managers & Hiring Committees.
   * Dedicated full-screen `/pipeline` command center page.
+- [x] **Milestone 15.5 — Architectural Uncluttering & Dedicated RecruiterOS Portal (`/recruiter`):**
+  * Clean, uncluttered landing page with quick audit bar and dedicated portal cards.
+  * Standalone `/recruiter` portal with recruiter account profile management, multi-role search grid, and spacious pipeline command center.
 - [ ] **Milestone 16 — Batch Candidate Screener:**
   * Ingest 10–50 candidate GitHub handles (or upload CSV).
   * Concurrent agent evaluation against active job guardrails.
