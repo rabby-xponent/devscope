@@ -360,6 +360,12 @@ pie title Roadmap Milestone Status
 - [x] **Milestone 15.5 — Architectural Uncluttering & Dedicated RecruiterOS Portal (`/recruiter`):**
   * Clean, uncluttered landing page with quick audit bar and dedicated portal cards.
   * Standalone `/recruiter` portal with recruiter account profile management, multi-role search grid, and spacious pipeline command center.
+- [x] **Milestone 15.6 — Dageno-Inspired Industry-Grade Light Mode & Visual Decluttering:**
+  * **Theme Engine & Toggle (`frontend/lib/theme.tsx`):** Added `ThemeProvider` and `<ThemeToggle />` supporting clean light/dark transitions with LocalStorage persistence (`devscope_theme_v2`), defaulting to light mode for immediate eye relief.
+  * **Warm Editorial Aesthetic (Inspired by Dageno.ai):** Built subtle warm hairline grid (`#eceae2`), warm eggshell canvas (`#faf9f5`), crisp white cards (`#ffffff`) with hairline borders (`#e8e6df`), high-contrast slate-900 typography, and vivid warm orange accents (`#ea580c`).
+  * **Landing Page & Hero Decluttering (`frontend/app/page.tsx`):** Redesigned the top navigation, value proposition, search audit box, live preview card, metric strip, "The Reality" section, and feature cards to ensure generous whitespace and zero visual fatigue.
+  * **Comprehensive Modal Upgrades:** All interactive modals (`JobGuardrailsModal`, `NewJobModal`, `CandidateCompareModal`, `HiringCommitteeBriefModal`, `RecruiterAccountModal`, `RequisitionSelect`) styled with crisp light and dark mode classes.
+  * **Production Build Verification:** Passed full Next.js 14 static and dynamic build with zero errors.
 - [ ] **Milestone 16 — Batch Candidate Screener:**
   * Ingest 10–50 candidate GitHub handles (or upload CSV).
   * Concurrent agent evaluation against active job guardrails.

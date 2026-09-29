@@ -7,6 +7,13 @@
 :root {
   --font-sans: 'Sora', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+  --bg-primary: #faf9f5;
+  --text-primary: #0f172a;
+}
+
+html.dark {
+  --bg-primary: #0d0c0f;
+  --text-primary: #ece9f0;
 }
 
 * {
@@ -17,13 +24,19 @@ html,
 body {
   padding: 0;
   margin: 0;
-  background: #0d0c0f;
-  color: #ece9f0;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 ::selection {
+  background: #f97316;
+  color: #ffffff;
+}
+
+html.dark ::selection {
   background: #f0a04b;
   color: #0d0c0f;
 }
@@ -65,7 +78,16 @@ body {
   animation: pulse-dot 1.2s ease-in-out infinite;
 }
 
+/* Light mode Dageno-inspired subtle warm grid */
 .grid-bg {
+  background-image:
+    linear-gradient(#eceae2 1px, transparent 1px),
+    linear-gradient(90deg, #eceae2 1px, transparent 1px);
+  background-size: 48px 48px;
+  background-position: center;
+}
+
+html.dark .grid-bg {
   background-image:
     linear-gradient(#1a1820 1px, transparent 1px),
     linear-gradient(90deg, #1a1820 1px, transparent 1px);
