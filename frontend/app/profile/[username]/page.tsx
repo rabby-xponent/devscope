@@ -8,6 +8,7 @@ import { AgentTrace } from '@/components/AgentTrace';
 import { AgentProgress } from '@/components/AgentProgress';
 import { ProfileView } from '@/components/ProfileView';
 import { getRequisitionById } from '@/lib/requisitions';
+import { getJobProjectById, addCandidateToProject } from '@/lib/job-projects';
 
 export default function ProfilePage() {
   const params = useParams();
@@ -15,13 +16,21 @@ export default function ProfilePage() {
   const username = String(params.username || '');
   const liveUrl = searchParams.get('liveUrl') || undefined;
   const roleId = searchParams.get('roleId') || undefined;
+  const jobId = searchParams.get('jobId') || undefined;
   const rawJd = searchParams.get('jd') || undefined;
   const mode = searchParams.get('mode') === 'developer' ? 'developer' : 'recruiter';
 
   let activeJd = rawJd;
   let activeTitle = searchParams.get('roleTitle') || undefined;
 
-  if (roleId) {
+  // Resolve from JobProject if jobId is supplied (RecruiterOS Engine)
+  if (jobId) {
+    const project = getJobProjectById(jobId);
+    if (project) {
+      activeJd = project.requisition.rawJdText;
+      activeTitle = project.title;
+    }
+  } else if (roleId) {
     const saved = getRequisitionById(roleId);
     if (saved) {
       activeJd = saved.rawJdText;
@@ -34,7 +43,36 @@ export default function ProfilePage() {
   useEffect(() => {
     if (username) generate(username, false, liveUrl, activeJd, activeTitle);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [username, liveUrl, roleId, rawJd]);
+  }, [username, liveUrl, roleId, jobId, rawJd]);
+
+  // Auto-record assessed candidate into Job Project pipeline upon completion
+  useEffect(() => {
+    if (status === 'complete' && profile && jobId) {
+      const fit = profile.requisitionFit;
+      try {
+        addCandidateToProject(jobId, {
+          username: profile.username,
+          fullName: profile.github.name || profile.username,
+          avatarUrl: profile.github.avatarUrl,
+          liveUrl: profile.liveAppAudit?.url || liveUrl,
+          fitScore: fit?.matchScore || 75,
+          verdict: fit?.verdict || 'strong_match',
+          seniorityEstimate: (profile.recruiterPanel?.seniorityEstimate as any) || 'senior',
+          persona: profile.recruiterPanel?.developerPersona || 'working_professional',
+          signalConfidence: 94,
+          requirementsSummary: {
+            metCount: fit?.requirements.filter((r) => r.status === 'met').length || 0,
+            partialCount: fit?.requirements.filter((r) => r.status === 'partially_met').length || 0,
+            missingCount: fit?.requirements.filter((r) => r.status === 'gap_probe').length || 0,
+          },
+          recruiterNotes: profile.headline || 'Automated screening assessment',
+          pipelineStage: 'new_assessed',
+        });
+      } catch {
+        /* ignore */
+      }
+    }
+  }, [status, profile, jobId, liveUrl]);
 
   const isWorking = status === 'connecting' || status === 'streaming';
 

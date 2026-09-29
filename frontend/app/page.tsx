@@ -4,6 +4,17 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import RequisitionSelect from '@/components/RequisitionSelect';
+import JobProjectBar from '@/components/JobProjectBar';
+import JobGuardrailsModal from '@/components/JobGuardrailsModal';
+import NewJobModal from '@/components/NewJobModal';
+import JobCandidatePipelineModal from '@/components/JobCandidatePipelineModal';
+import {
+  getJobProjects,
+  saveJobProject,
+  getActiveJobProjectId,
+  setActiveJobProjectId,
+  JobProject,
+} from '@/lib/job-projects';
 import {
   getSavedRequisitions,
   saveRequisition,
@@ -49,6 +60,13 @@ export default function Home() {
   // Workspace Mode (Recruiter vs Developer)
   const [workspaceMode, setWorkspaceMode] = useState<WorkspaceMode>('recruiter');
 
+  // Job Projects (RecruiterOS Engine)
+  const [jobProjects, setJobProjects] = useState<JobProject[]>([]);
+  const [activeJobId, setActiveJobId] = useState<string>('job_staff_go_infra');
+  const [showGuardrailsModal, setShowGuardrailsModal] = useState(false);
+  const [showNewJobModal, setShowNewJobModal] = useState(false);
+  const [showPipelineModal, setShowPipelineModal] = useState(false);
+
   // Recruiter Workspace State
   const [recruiterCandidate, setRecruiterCandidate] = useState('');
   const [recruiterLiveUrl, setRecruiterLiveUrl] = useState('');
@@ -61,7 +79,7 @@ export default function Home() {
   const [showDevLiveUrl, setShowDevLiveUrl] = useState(false);
   const [devProfile, setDevProfile] = useState<DeveloperWorkspaceProfile | null>(null);
 
-  // Requisitions State
+  // Requisitions State (Developer Space Benchmark)
   const [requisitions, setRequisitions] = useState<SavedRequisition[]>([]);
   const [activeRoleId, setActiveRoleId] = useState<string>('req_senior_fullstack');
   const [showRoleModal, setShowRoleModal] = useState(false);
@@ -76,7 +94,13 @@ export default function Home() {
     const mode = getActiveWorkspaceMode();
     setWorkspaceMode(mode);
 
-    // Load requisitions
+    // Load Job Projects for RecruiterOS
+    const projects = getJobProjects();
+    setJobProjects(projects);
+    const savedJobId = getActiveJobProjectId();
+    if (savedJobId) setActiveJobId(savedJobId);
+
+    // Load requisitions for developer benchmark
     const list = getSavedRequisitions();
     setRequisitions(list);
     const active = getActiveRequisitionId();
@@ -96,6 +120,23 @@ export default function Home() {
   const handleSwitchWorkspace = (mode: WorkspaceMode) => {
     setWorkspaceMode(mode);
     setActiveWorkspaceMode(mode);
+  };
+
+  const handleSelectJobProject = (projectId: string) => {
+    setActiveJobId(projectId);
+    setActiveJobProjectId(projectId);
+  };
+
+  const handleSaveGuardrails = (updated: JobProject) => {
+    saveJobProject(updated);
+    setJobProjects(getJobProjects());
+  };
+
+  const handleCreateJobProject = (projectData: Partial<JobProject> & { title: string }) => {
+    const created = saveJobProject(projectData);
+    setJobProjects(getJobProjects());
+    setActiveJobId(created.id);
+    setActiveJobProjectId(created.id);
   };
 
   const handleRoleChange = (id: string) => {
@@ -144,20 +185,30 @@ export default function Home() {
     const r = targetRole !== undefined ? targetRole : activeRoleId;
     if (!u) return;
 
-    const roleObj = requisitions.find((item) => item.id === r);
-    const roleTitle = roleObj?.title || 'General Engineering Audit';
+    const activeProject = jobProjects.find((p) => p.id === activeJobId);
+    const roleTitle = isDev
+      ? (requisitions.find((item) => item.id === r)?.title || 'General Engineering Audit')
+      : (activeProject?.title || 'Engineering Role');
 
     if (isDev) {
       recordDeveloperAudit(u, roleTitle);
       setDevProfile(getDeveloperProfile());
     } else {
-      recordCandidateScreening(u, r, roleTitle);
+      recordCandidateScreening(u, activeJobId, roleTitle);
       setRecruiterProfile(getRecruiterProfile());
     }
 
     const params = new URLSearchParams();
     if (l) params.set('liveUrl', l);
-    if (r) params.set('roleId', r);
+
+    if (isDev) {
+      if (r) params.set('roleId', r);
+    } else {
+      if (activeProject) {
+        params.set('jobId', activeProject.id);
+        params.set('roleTitle', activeProject.title);
+      }
+    }
     params.set('mode', workspaceMode);
 
     const qs = params.toString() ? `?${params.toString()}` : '';
@@ -277,15 +328,15 @@ export default function Home() {
                   {workspaceMode === 'recruiter' ? (
                     /* RECRUITER WORKSPACE CONTENT */
                     <div className="space-y-4">
-                      {/* Active Requisition Picker (Bespoke Dropdown) */}
+                      {/* Active Job Project Bar & Guardrails Access */}
                       <div>
-                        <RequisitionSelect
-                          requisitions={requisitions}
-                          activeRoleId={activeRoleId}
-                          onSelectRole={handleRoleChange}
-                          onOpenCreateModal={() => setShowRoleModal(true)}
-                          onDeleteRole={handleDeleteRole}
-                          label="Candidate Evaluated For:"
+                        <JobProjectBar
+                          projects={jobProjects}
+                          activeProjectId={activeJobId}
+                          onSelectProject={handleSelectJobProject}
+                          onOpenGuardrails={() => setShowGuardrailsModal(true)}
+                          onOpenNewJobModal={() => setShowNewJobModal(true)}
+                          onOpenPipeline={() => setShowPipelineModal(true)}
                         />
                       </div>
 
@@ -353,28 +404,53 @@ export default function Home() {
                         )}
                       </div>
 
-                      {/* Recent Screenings in Recruiter Profile */}
-                      {recruiterProfile && recruiterProfile.recentScreenings.length > 0 && (
-                        <div className="pt-2 border-t border-edge/40">
-                          <div className="font-mono text-[10px] uppercase tracking-wider text-muted/60 mb-1.5">
-                            Recently Screened Candidates:
-                          </div>
-                          <div className="flex flex-wrap gap-1.5">
-                            {recruiterProfile.recentScreenings.slice(0, 4).map((item) => (
+                      {/* Active Project Candidate Pipeline Mini-Leaderboard */}
+                      {(() => {
+                        const currentProj = jobProjects.find((p) => p.id === activeJobId);
+                        if (!currentProj || currentProj.candidates.length === 0) return null;
+                        return (
+                          <div className="pt-2.5 border-t border-edge/40">
+                            <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-wider text-muted/70 mb-1.5">
+                              <div className="flex items-center gap-2">
+                                <span>Pipeline for this role ({currentProj.candidates.length}):</span>
+                                <span className="text-emerald-400 font-normal">Ranked by Fit</span>
+                              </div>
                               <button
-                                key={item.username}
-                                onClick={() => handleAnalyze(item.username, undefined, item.roleId)}
-                                className="inline-flex items-center gap-1.5 rounded-lg border border-edge/60 bg-[#0c0b0e] px-2.5 py-1 font-mono text-xs text-muted hover:border-signal/50 hover:text-signal transition-colors"
+                                type="button"
+                                onClick={() => setShowPipelineModal(true)}
+                                className="font-mono text-[10px] text-signal hover:underline flex items-center gap-1 font-semibold cursor-pointer"
                               >
-                                <span>@{item.username}</span>
-                                {item.roleTitle && (
-                                  <span className="text-[10px] text-muted/60">· {item.roleTitle}</span>
-                                )}
+                                <span>Open Full Pipeline & Compare</span>
+                                <span>↗</span>
                               </button>
-                            ))}
+                            </div>
+                            <div className="flex flex-wrap gap-1.5">
+                              {currentProj.candidates.slice(0, 5).map((cand) => (
+                                <button
+                                  key={cand.id}
+                                  onClick={() => handleAnalyze(cand.username, cand.liveUrl)}
+                                  className="inline-flex items-center gap-2 rounded-lg border border-edge/60 bg-[#0c0b0e] px-2.5 py-1.5 font-mono text-xs text-muted hover:border-signal/50 hover:text-signal transition-colors"
+                                  title={`Notes: ${cand.recruiterNotes || 'Evaluated for this role'}`}
+                                >
+                                  <span className="font-semibold text-ece9f0">@{cand.username}</span>
+                                  <span
+                                    className={`rounded px-1.5 py-0.2 text-[10px] font-bold ${
+                                      cand.fitScore >= 80
+                                        ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-500/30'
+                                        : 'bg-blue-950/40 text-blue-300 border border-blue-500/30'
+                                    }`}
+                                  >
+                                    {cand.fitScore}%
+                                  </span>
+                                  <span className="text-[10px] text-muted/60 capitalize">
+                                    {cand.verdict.replace(/_/g, ' ')}
+                                  </span>
+                                </button>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        );
+                      })()}
                     </div>
                   ) : (
                     /* DEVELOPER PRE-FLIGHT SPACE CONTENT */
@@ -1012,6 +1088,51 @@ export default function Home() {
           </div>
         </div>
       )}
+
+      {/* Job Guardrails Modal */}
+      {(() => {
+        const activeProj = jobProjects.find((p) => p.id === activeJobId) || jobProjects[0];
+        if (!activeProj) return null;
+        return (
+          <JobGuardrailsModal
+            project={activeProj}
+            isOpen={showGuardrailsModal}
+            onClose={() => setShowGuardrailsModal(false)}
+            onSave={handleSaveGuardrails}
+          />
+        );
+      })()}
+
+      {/* New Job Project Modal */}
+      <NewJobModal
+        isOpen={showNewJobModal}
+        onClose={() => setShowNewJobModal(false)}
+        onCreate={handleCreateJobProject}
+      />
+
+      {/* Job Candidate Pipeline & Leaderboard Modal */}
+      {(() => {
+        const activeProj = jobProjects.find((p) => p.id === activeJobId) || jobProjects[0];
+        if (!activeProj) return null;
+        return (
+          <JobCandidatePipelineModal
+            isOpen={showPipelineModal}
+            onClose={() => setShowPipelineModal(false)}
+            project={activeProj}
+            projects={jobProjects}
+            onSelectProject={handleSelectJobProject}
+            onOpenGuardrails={() => {
+              setShowPipelineModal(false);
+              setShowGuardrailsModal(true);
+            }}
+            onRefreshProjects={() => setJobProjects(getJobProjects())}
+            onScreenCandidate={(username) => {
+              setShowPipelineModal(false);
+              handleAnalyze(username);
+            }}
+          />
+        );
+      })()}
     </main>
   );
 }

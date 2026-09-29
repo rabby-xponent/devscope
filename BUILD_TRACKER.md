@@ -256,7 +256,50 @@
     * Added `print:bg-none print:bg-white print:border-amber-400/80` to the Target Requisition Match Card.
     * Ensured callout blocks (`print:bg-zinc-50`, `print:border-zinc-200`) and sub-requirement cards render with crisp slate text (`print:text-zinc-700`).
 * **Verification:**
-  - `next build` completed with 0 errors. Verified clean paper-white PDF generation across all pages.
+### Milestone 14: Multi-Job Projects & Guardrails Engine (RecruiterOS Phase 1)
+* **Goal:** Enable recruiters to manage multiple concurrent engineering openings as dedicated projects, each with tailored hiring guardrails, dealbreaker skill filters, and an auto-recording candidate pipeline.
+* **Architecture & Additions:**
+  - **Job Projects Persistence Store ([`frontend/lib/job-projects.ts`](./frontend/lib/job-projects.ts)):**
+    * Multi-job workspace model (`JobProject`) with requisition details, custom guardrails, and persistent candidate pipeline (`JobCandidateRecord[]`).
+    * Pre-seeded with 3 high-demand technical archetypes (*Staff Distributed Systems Go Engineer*, *Senior Full-Stack Product Engineer*, *Frontend UI/UX Architect*).
+    * Storage utilities: `getJobProjects()`, `saveJobProject()`, `getActiveJobProjectId()`, `setActiveJobProjectId()`, `addCandidateToProject()`, `updateCandidateInProject()`.
+  - **Active Job Project Bar ([`frontend/components/JobProjectBar.tsx`](./frontend/components/JobProjectBar.tsx)):**
+    * Replaces simple role picker with project dashboard bar: Active title, department, dealbreaker tech stack chips, pipeline count badge, "Switch Project" popover, and "⚙️ Guardrails" trigger.
+  - **Hiring Guardrails & Rubric Modal ([`frontend/components/JobGuardrailsModal.tsx`](./frontend/components/JobGuardrailsModal.tsx)):**
+    * Recruiter modal allowing interactive editing of Must-Have technical dealbreakers (interactive tag chip editor), Seniority target floor, Minimum fit score slider (50–95%), Private enterprise repo bias shield toggle, and custom hiring manager interview probes.
+  - **New Job Project Modal ([`frontend/components/NewJobModal.tsx`](./frontend/components/NewJobModal.tsx)):**
+    * Clean modal enabling recruiters to spin up new job workspaces with role title, department, seniority target, dealbreaker tags, and full raw JD text.
+  - **Auto-Pipeline Synchronization ([`frontend/app/profile/[username]/page.tsx`](./frontend/app/profile/[username]/page.tsx)):**
+    * Evaluated candidates against any active `jobId` are automatically stored into that job's dedicated pipeline history (`addCandidateToProject`) with fit score, rubric match breakdown, verdict, and recruiter notes.
+* **Verification:**
+  - `next build` executed on `frontend/`: Compiled successfully with 0 errors across all routes.
+
+---
+
+### Milestone 15: Job Candidate Pipeline & Comparison Leaderboard (RecruiterOS Phase 2)
+* **Goal:** Deliver an enterprise-grade candidate pipeline management console and side-by-side candidate comparison leaderboard per job requisition.
+* **Key Components & Implementations:**
+  - **Interactive Candidate Pipeline Leaderboard ([`frontend/components/JobCandidatePipelineModal.tsx`](./frontend/components/JobCandidatePipelineModal.tsx)):**
+    * Real-time ranked candidate table sorted by fit score, star ratings, or evaluation date.
+    * Stage filtering tabs: `All`, `New Assessed`, `Phone Screen Scheduled`, `Interviewing`, `Offer`, `Archived`.
+    * Instant-edit capabilities: 1-click stage dropdown, 1-to-5 star rating selector, and inline editable recruiter notes.
+    * Search bar filtering by candidate `@username`, full name, or recruiter evaluation notes.
+    * Export Leaderboard to Markdown: 1-click copy formatted table for Notion / team wikis.
+  - **Side-by-Side Candidate Calibration Matrix ([`frontend/components/CandidateCompareModal.tsx`](./frontend/components/CandidateCompareModal.tsx)):**
+    * Floating multi-select action bar triggered when 2 or 3 candidates are selected.
+    * Side-by-side comparative matrix inspecting relative fit scores, seniority targets, must-have skills met vs missing, persona classifications, signal confidence, and recruiter notes.
+    * Calibrated technical phone-screen probes side-by-side for hiring managers.
+  - **Engineering Manager 1-Pager Brief Modal ([`frontend/components/HiringCommitteeBriefModal.tsx`](./frontend/components/HiringCommitteeBriefModal.tsx)):**
+    * Executive 1-pager dossier designed for technical interviewers and hiring managers.
+    * Includes "📋 Copy Slack Brief" (copies emoji-rich, markdown-formatted brief ready for Slack / email).
+    * Includes "🖨️ Print" button with high-contrast, paper-optimized light styling.
+  - **Dedicated `/pipeline` Command Center Route ([`frontend/app/pipeline/page.tsx`](./frontend/app/pipeline/page.tsx)):**
+    * Full-page command center for recruiters, supporting query param deep-linking (`/pipeline?jobId=...`), job switching, guardrail editing, and candidate screening.
+  - **Enriched Persistence & Batch Operations ([`frontend/lib/job-projects.ts`](./frontend/lib/job-projects.ts)):**
+    * Added `batchUpdateCandidatesStage`, `exportPipelineToMarkdown`, and `generateCandidateSlackBrief`.
+    * Pre-seeded realistic candidate pools across all default roles (`@mitchellh`, `@tj`, `@antirez`, `@jesseduffield`, `@shadcn`, `@leerob`, `@gaearon`, `@developit`).
+* **Verification:**
+  - Both `devscope-frontend` (`next build`) and `devscope-backend` (`tsc --noEmit`) compiled with 0 errors.
 
 ---
 
@@ -266,18 +309,46 @@
 |---|---|---|---|
 | **Live Agent Test** | `torvalds` | ✅ **PASS** | 14.3s total (synthesis via Gemini 3.8 Flash). Full profile + screen guide generated. |
 | **Backend TypeScript Build** | `devscope-backend` | ✅ **PASS** | `tsc` completed with 0 errors (`CACHE_VERSION = 5` + `RequisitionFit`). |
-| **Frontend Production Build** | `devscope-frontend` | ✅ **PASS** | `next build` completed with 0 errors. PDF print normalized to pure white. |
+| **Frontend Production Build** | `devscope-frontend` | ✅ **PASS** | `next build` completed with 0 errors. RecruiterOS Pipeline & Leaderboard active (`/pipeline`). |
 
 ---
 
-## 4. Upcoming Roadmap Tracker
+## 4. Upcoming Roadmap Tracker: The Recruiter Operating System (RecruiterOS)
 
 ```mermaid
 pie title Roadmap Milestone Status
-    "Completed (Phase 1 & Phase 2)" : 5
-    "Future Expansion (Phase 3)" : 2
+    "Completed (Core Intelligence & RecruiterOS Pipeline)" : 15
+    "Phase 3: RecruiterOS (Batch & Ingestion)" : 3
+    "Phase 4: Developer Space Expansion" : 2
 ```
 
-### Phase 3: Enterprise & ATS Integration
+### Phase 3: The AI-Native Recruiter Operating System (RecruiterOS)
+*Vision Document: [`recruiter_operating_system_spec.md`](../.gemini/antigravity-ide/brain/ef2042c3-a50e-41db-a1fe-0d5e8f449925/recruiter_operating_system_spec.md)*
+
+- [x] **Milestone 14 — Multi-Job Projects & Guardrails Engine:**
+  * Support multiple concurrent Job Requisition projects (e.g. *Staff Backend Go*, *Senior Frontend UI/UX*).
+  * Per-project custom screening guardrails: Seniority floor, must-have dealbreakers, minimum fit score threshold, and hiring manager custom interview probes.
+  * Local-first persistence with instant session resumption.
+- [x] **Milestone 15 — Job Candidate Pipeline & Comparison Leaderboard:**
+  * Dedicated candidate pool per job project with fit score ranking (0-100%).
+  * Stage management: `New Assessed`, `Phone Screen`, `Interviewing`, `Offer`, `Archived`, with star ratings and recruiter notes.
+  * Side-by-side 2-3 candidate comparison matrix modal.
+  * 1-click Slack brief and printable 1-pager for Engineering Managers & Hiring Committees.
+  * Dedicated full-screen `/pipeline` command center page.
+- [ ] **Milestone 16 — Batch Candidate Screener:**
+  * Ingest 10–50 candidate GitHub handles (or upload CSV).
+  * Concurrent agent evaluation against active job guardrails.
+  * Instant auto-population of the job's candidate pipeline leaderboard.
+- [ ] **Milestone 17 — Shareable Candidate Application Portal (`/apply/:jobId`):**
+  * Branded public ingestion page for candidates to submit handle & live demo.
+  * Instant candidate pre-flight deliverable + automatic recruiter pipeline ingestion.
+- [ ] **Milestone 18 — Recruiter Accounts & Cloud Session Sync:**
+  * Recruiter signup / magic link login.
+  * Cloud persistence syncing local job projects across devices and team members.
+
+---
+
+### Phase 4: Developer Career Suite Expansion
+- [ ] **Developer Pre-Flight Defense Simulator:** Interactive interview rehearsal against target job gaps.
 - [ ] **GitHub OAuth Private Contribution Proof:** Querying GraphQL `includePrivateContributions: true` for zero-code aggregate commit counts.
-- [ ] **ATS Integration:** 1-click webhook/plugin for systems like HireJudge, Greenhouse, and Lever.
+- [ ] **Embeddable Verified Talent Badge:** Dynamic markdown/SVG badge for candidate GitHub READMEs and portfolios.
