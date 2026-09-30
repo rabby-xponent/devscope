@@ -9,6 +9,7 @@ import { Icon } from '@/components/icons';
 import { Select, SearchInput } from '@/components/ui';
 import type { SelectOption } from '@/components/ui';
 import NewTargetRoleModal from '@/components/NewTargetRoleModal';
+import DefenseHub from '@/components/DefenseHub';
 import {
   TargetRole,
   ApplicationStatus,
@@ -23,6 +24,8 @@ import {
   aggregateGaps,
   aggregateUnverified,
   generateEvidenceTasks,
+  syncDefenseCards,
+  DefenseCard,
   APPLICATION_STATUS_META,
 } from '@/lib/target-roles';
 
@@ -40,11 +43,13 @@ function DeveloperCareerContent() {
   const [showNewRoleModal, setShowNewRoleModal] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [defenseCards, setDefenseCards] = useState<DefenseCard[]>([]);
 
   useEffect(() => {
     setDevProfile(getDeveloperProfile());
     const list = getTargetRoles();
     setRoles(list);
+    setDefenseCards(syncDefenseCards(list));
 
     const queryRole = searchParams.get('roleId');
     if (queryRole && list.some((r) => r.id === queryRole)) {
@@ -55,7 +60,11 @@ function DeveloperCareerContent() {
     }
   }, [searchParams]);
 
-  const refreshRoles = () => setRoles(getTargetRoles());
+  const refreshRoles = () => {
+    const list = getTargetRoles();
+    setRoles(list);
+    setDefenseCards(syncDefenseCards(list));
+  };
 
   const activeRole = roles.find((r) => r.id === activeRoleId) || roles[0];
   const proof = useMemo(() => computeProofStrength(roles), [roles]);
@@ -398,7 +407,7 @@ function DeveloperCareerContent() {
           )}
         </div>
 
-        {/* Skill Gap Radar + Evidence Tasks */}
+        {/* Skill Gap Radar + Unverified Claims */}
         <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-2">
           <div className="rounded-2xl border border-edge bg-card p-6 shadow-card">
             <div className="flex items-center justify-between border-b border-edge pb-3">
@@ -426,8 +435,8 @@ function DeveloperCareerContent() {
 
           <div className="rounded-2xl border border-edge bg-card p-6 shadow-card">
             <div className="flex items-center justify-between border-b border-edge pb-3">
-              <h2 className="font-mono text-base font-bold text-content">Interview Defense</h2>
-              <span className="font-mono text-[10px] text-muted">unverified claims queue</span>
+              <h2 className="font-mono text-base font-bold text-content">Unverified Claims</h2>
+              <span className="font-mono text-[10px] text-muted">probe-ready skills</span>
             </div>
             {unverified.length === 0 ? (
               <p className="mt-4 font-sans text-xs leading-relaxed text-muted">
@@ -446,6 +455,9 @@ function DeveloperCareerContent() {
             )}
           </div>
         </div>
+
+        {/* Interview Defense Hub (practice deck) */}
+        <DefenseHub cards={defenseCards} />
 
         {/* Evidence-Building Tasks */}
         {tasks.length > 0 && (

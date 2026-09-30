@@ -33,8 +33,8 @@ export interface TargetRoleAuditEntry {
   gaps: string[];
   /** Unverified claim skills (drives the defense hub) */
   unverified: string[];
-  /** Phone-screen questions produced by the agent */
-  screenQuestions: string[];
+  /** Phone-screen guide produced by the agent (question + grading rubric) */
+  screenGuide: { question: string; whatToListenFor: string; redFlagSignal: string }[];
 }
 
 export interface TargetRole {
@@ -142,7 +142,11 @@ export function recordAuditForRole(
     };
     claimEvidenceMatrix?: { skill: string; status: string }[];
     recruiterPanel?: {
-      phoneScreenGuide?: { question: string }[];
+      phoneScreenGuide?: {
+        question: string;
+        whatToListenFor: string;
+        redFlagSignal: string;
+      }[];
     };
   } | null
 ): TargetRole | undefined {
@@ -166,8 +170,8 @@ export function recordAuditForRole(
     unverified: matrix
       .filter((m) => m.status === 'unverified_probe')
       .map((m) => m.skill),
-    screenQuestions: (profile.recruiterPanel?.phoneScreenGuide || []).map(
-      (q) => q.question
+    screenGuide: (profile.recruiterPanel?.phoneScreenGuide || []).filter(
+      (q) => q && q.question
     ),
   };
 
@@ -282,6 +286,130 @@ export function aggregateUnverified(roles: TargetRole[]): { skill: string; count
   return [...map.entries()]
     .map(([skill, count]) => ({ skill, count }))
     .sort((a, b) => b.count - a.count);
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Interview Defense: practice cards & spaced resurfacing                     */
+/* -------------------------------------------------------------------------- */
+
+export interface DefenseCard {
+  /** Stable key: role + question text hash */
+  id: string;
+  roleId: string;
+  roleTitle: string;
+  question: string;
+  whatToListenFor: string;
+  redFlagSignal: string;
+  /** never_seen | shaky | solid — user self-grade */
+  confidence: 'never_seen' | 'shaky' | 'solid';
+  /** Unix ms when the card should next resurface (spaced repetition) */
+  nextReviewAt: number;
+  /** Times practiced */
+  reviews: number;
+}
+
+const DEFENSE_KEY = 'devscope_defense_cards_v1';
+
+/** Interval ladder (days) per confidence tier. */
+const REVIEW_INTERVALS: Record<DefenseCard['confidence'], number> = {
+  never_seen: 0,
+  shaky: 2,
+  solid: 7,
+};
+
+export function getDefenseCards(): DefenseCard[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(DEFENSE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveDefenseCards(cards: DefenseCard[]): void {
+  try {
+    localStorage.setItem(DEFENSE_KEY, JSON.stringify(cards));
+  } catch {
+    /* ignore */
+  }
+}
+
+function hashKey(input: string): string {
+  let h = 0;
+  for (let i = 0; i < input.length; i++) {
+    h = (Math.imul(31, h) + input.charCodeAt(i)) | 0;
+  }
+  return Math.abs(h).toString(36);
+}
+
+/**
+ * Sync the question bank with accumulated audit ledgers: adds new questions
+ * from every role's latest screen guide, preserves user confidence state for
+ * questions already graded, and keeps cards whose role was removed (orphan
+ * retention: the preparation value outlives the application).
+ */
+export function syncDefenseCards(roles: TargetRole[]): DefenseCard[] {
+  const existing = getDefenseCards();
+  const byKey = new Map(existing.map((c) => [c.id, c]));
+
+  for (const role of roles) {
+    const audit = latestAudit(role);
+    if (!audit) continue;
+    for (const item of audit.screenGuide) {
+      if (!item.question) continue;
+      const id = `dc_${hashKey(role.id + item.question)}`;
+      if (!byKey.has(id)) {
+        byKey.set(id, {
+          id,
+          roleId: role.id,
+          roleTitle: role.title,
+          question: item.question,
+          whatToListenFor: item.whatToListenFor || '',
+          redFlagSignal: item.redFlagSignal || '',
+          confidence: 'never_seen',
+          nextReviewAt: 0,
+          reviews: 0,
+        });
+      }
+    }
+  }
+
+  const cards = [...byKey.values()];
+  saveDefenseCards(cards);
+  return cards;
+}
+
+/** Cards due for practice: graded cards past their review date, plus unseen. */
+export function dueDefenseCards(cards: DefenseCard[]): DefenseCard[] {
+  const now = Date.now();
+  return cards
+    .filter((c) => c.confidence === 'never_seen' || c.nextReviewAt <= now)
+    .sort((a, b) => {
+      // Unseen first, then most-overdue.
+      if (a.confidence === 'never_seen' && b.confidence !== 'never_seen') return -1;
+      if (b.confidence === 'never_seen' && a.confidence !== 'never_seen') return 1;
+      return a.nextReviewAt - b.nextReviewAt;
+    });
+}
+
+/** Record a self-graded practice rep and schedule the next resurfacing. */
+export function gradeDefenseCard(cardId: string, confidence: DefenseCard['confidence']): DefenseCard[] {
+  const cards = getDefenseCards();
+  const idx = cards.findIndex((c) => c.id === cardId);
+  if (idx === -1) return cards;
+  const intervalDays = REVIEW_INTERVALS[confidence];
+  cards[idx] = {
+    ...cards[idx],
+    confidence,
+    reviews: cards[idx].reviews + 1,
+    nextReviewAt:
+      intervalDays === 0 ? 0 : Date.now() + intervalDays * 24 * 3600 * 1000,
+  };
+  saveDefenseCards(cards);
+  return cards;
 }
 
 /**
