@@ -410,9 +410,16 @@ pie title Roadmap Milestone Status
   * Aggregated gap analysis across recent audits, ranked by recurrence.
   * Concrete evidence-building tasks per gap (ship demo / README rewrite / OSS PR / blog post).
   * Signal maintenance nudges (stale portfolio URLs, missing flagship README, inactive demo).
-- [ ] **Milestone 22 — Interview Defense Hub v1:**
+- [x] **Milestone 22 — Interview Defense Hub v1:**
   * Personal question bank accumulated from audit gap probes, per target role.
   * Self-grade confidence marking + spaced-repetition resurfacing.
+
+> **Build note (Milestone 22):** `components/DefenseHub.tsx` — flashcard practice over the
+> accumulated deck: rubric (what to listen for / red flag) hidden until the developer answers
+> aloud, then self-graded (`never_seen` / `shaky` / `solid`) with 2d/7d resurfacing intervals.
+> `syncDefenseCards` merges new questions from each role's latest ledger entry while preserving
+> graded state; cards persist after their role is deleted. Ledger schema now stores the full
+> rubric (`screenGuide`) instead of question strings.
 - [ ] **Milestone 23 — Public Proof Page (`/proof/:username/:roleId`):**
   * Recruiter-legible, shareable evidence page: verified matrix, live app audit, role fit card,
     DevScope attestation.
