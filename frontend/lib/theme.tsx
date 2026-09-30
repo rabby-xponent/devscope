@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { Icon } from '@/components/icons';
 
 type Theme = 'light' | 'dark';
 
@@ -23,7 +24,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Default to light mode (as requested for crisp, readable, eye-friendly UI)
     const saved = localStorage.getItem(THEME_STORAGE_KEY) as Theme | null;
     const initialTheme: Theme = saved === 'dark' ? 'dark' : 'light';
     setThemeState(initialTheme);
@@ -70,20 +70,22 @@ export function useTheme() {
 
 export function ThemeToggle({ className = '' }: { className?: string }) {
   const { theme, toggleTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
+
+  const isDark = theme === 'dark';
 
   return (
     <button
       type="button"
       onClick={toggleTheme}
-      className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 font-mono text-xs font-medium transition-all ${
-        theme === 'dark'
-          ? 'border-edge bg-surface/80 text-muted hover:text-signal hover:border-signal/40'
-          : 'border-slate-300 bg-white text-slate-700 shadow-sm hover:border-orange-500 hover:text-orange-600'
-      } ${className}`}
-      title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
+      aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+      title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+      className={`inline-flex items-center gap-1.5 rounded-lg border border-edge bg-card px-2.5 py-1.5 font-mono text-xs font-medium text-muted shadow-xs outline-none transition-all hover:border-signal/50 hover:text-signal focus-visible:ring-2 focus-visible:ring-signal/40 ${className}`}
     >
-      <span>{theme === 'light' ? '🌙' : '☀️'}</span>
-      <span>{theme === 'light' ? 'Dark' : 'Light'}</span>
+      {mounted && (isDark ? <Icon.Moon className="h-3.5 w-3.5" /> : <Icon.Sun className="h-3.5 w-3.5" />)}
+      <span aria-hidden>{mounted ? (isDark ? 'Dark' : 'Light') : ''}</span>
     </button>
   );
 }

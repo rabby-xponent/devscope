@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { JobProject } from '@/lib/job-projects';
+import { Icon } from '@/components/icons';
 
 interface JobProjectBarProps {
   projects: JobProject[];
@@ -38,23 +39,23 @@ export default function JobProjectBar({
   return (
     <div ref={containerRef} className="relative w-full">
       {/* Active Project Card / Trigger */}
-      <div className="flex flex-col gap-2 rounded-xl border border-slate-200 dark:border-edge/80 bg-white dark:bg-[#09080b] p-3 transition-all hover:border-[#ea580c]/50 dark:hover:border-signal/50 shadow-xs">
+      <div className="flex flex-col gap-2 rounded-xl border border-edge bg-card p-3 transition-all hover:border-signal/50 shadow-xs">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
-            <span className="flex h-7 w-7 flex-none items-center justify-center rounded-lg bg-orange-50 dark:bg-signal/15 border border-orange-200 dark:border-signal/30 text-sm">
-              📁
+            <span className="flex h-7 w-7 flex-none items-center justify-center rounded-lg border border-edge bg-well text-muted">
+              <Icon.Folder className="h-3.5 w-3.5" />
             </span>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <span className="font-mono text-[10px] uppercase tracking-wider text-[#ea580c] dark:text-signal font-semibold">
+                <span className="font-mono text-[10px] uppercase tracking-wider text-signal font-semibold">
                   Active Job Project
                 </span>
-                <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-muted/60" />
-                <span className="font-mono text-[10px] text-slate-500 dark:text-muted truncate">
+                <span className="h-1 w-1 rounded-full bg-muted/60" />
+                <span className="font-mono text-[10px] text-muted truncate">
                   {activeProject ? activeProject.department : 'General'}
                 </span>
               </div>
-              <h3 className="font-mono text-xs font-bold text-slate-900 dark:text-[#ece9f0] truncate">
+              <h3 className="font-mono text-xs font-bold text-content truncate">
                 {activeProject ? activeProject.title : 'Select a Job Project'}
               </h3>
             </div>
@@ -67,10 +68,10 @@ export default function JobProjectBar({
               <button
                 type="button"
                 onClick={onOpenPipeline}
-                className="flex items-center gap-1 rounded-lg border border-emerald-300 dark:border-emerald-500/40 bg-emerald-50 dark:bg-emerald-950/25 px-2.5 py-1.5 font-mono text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 hover:border-emerald-500 hover:bg-emerald-100 dark:hover:bg-emerald-950/50 transition-colors"
+                className="flex items-center gap-1 rounded-lg border border-edge bg-well px-2.5 py-1.5 font-mono text-[11px] font-semibold text-content transition-colors hover:border-signal/60 hover:text-signal"
                 title="Open Candidate Pipeline & Comparison Leaderboard"
               >
-                <span>👥</span>
+                <Icon.Users className="h-3.5 w-3.5 text-muted" />
                 <span>Pipeline ({activeProject ? activeProject.candidates.length : 0})</span>
               </button>
             )}
@@ -79,10 +80,10 @@ export default function JobProjectBar({
             <button
               type="button"
               onClick={onOpenGuardrails}
-              className="flex items-center gap-1 rounded-lg border border-slate-200 dark:border-edge/80 bg-slate-50 dark:bg-surface/60 px-2.5 py-1.5 font-mono text-[11px] text-slate-600 dark:text-muted hover:border-[#ea580c]/60 hover:text-[#ea580c] dark:hover:border-signal/60 dark:hover:text-signal transition-colors"
+              className="flex items-center gap-1 rounded-lg border border-edge bg-well px-2.5 py-1.5 font-mono text-[11px] text-muted transition-colors hover:border-signal/60 hover:text-signal"
               title="Configure hiring guardrails & dealbreakers for this job"
             >
-              <span>⚙️</span>
+              <Icon.Settings className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Guardrails</span>
             </button>
 
@@ -90,52 +91,54 @@ export default function JobProjectBar({
             <button
               type="button"
               onClick={() => setIsOpen(!isOpen)}
-              className="flex items-center gap-1 rounded-lg border border-slate-200 dark:border-edge/80 bg-slate-50 dark:bg-surface/80 px-2.5 py-1.5 font-mono text-[11px] font-medium text-slate-700 dark:text-[#ece9f0] hover:border-[#ea580c] hover:text-[#ea580c] dark:hover:border-signal dark:hover:text-signal transition-colors"
+              aria-expanded={isOpen}
+              className="flex items-center gap-1 rounded-lg border border-edge bg-well px-2.5 py-1.5 font-mono text-[11px] font-medium text-content transition-colors hover:border-signal/60 hover:text-signal outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
             >
               <span>Switch</span>
-              <span
-                className={`text-[10px] transition-transform duration-200 ${
-                  isOpen ? 'rotate-180 text-[#ea580c] dark:text-signal' : 'text-slate-400 dark:text-muted'
+              <Icon.ChevronDown
+                className={`h-3 w-3 transition-transform duration-200 ${
+                  isOpen ? 'rotate-180 text-signal' : 'text-muted'
                 }`}
-              >
-                ▾
-              </span>
+              />
             </button>
           </div>
         </div>
 
         {/* Must-Have Tech & Stats Summary Bar */}
         {activeProject && (
-          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 dark:border-edge/40 pt-2 font-mono text-[10px]">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-edge pt-2 font-mono text-[10px]">
             <div className="flex flex-wrap items-center gap-1.5 min-w-0">
-              <span className="text-slate-400 dark:text-muted/70">Must-Have:</span>
+              <span className="text-muted/80">Must-Have:</span>
               {activeProject.requisition.mustHaveSkills.slice(0, 3).map((skill) => (
                 <span
                   key={skill}
-                  className="rounded bg-slate-100 dark:bg-surface px-1.5 py-0.5 text-slate-700 dark:text-[#ece9f0] border border-slate-200 dark:border-edge/60"
+                  className="rounded border border-edge bg-well px-1.5 py-0.5 text-content"
                 >
                   {skill}
                 </span>
               ))}
               {activeProject.requisition.mustHaveSkills.length > 3 && (
-                <span className="text-slate-400 dark:text-muted/60">
+                <span className="text-muted/70">
                   +{activeProject.requisition.mustHaveSkills.length - 3} more
                 </span>
               )}
             </div>
 
-            <div className="flex items-center gap-2 text-slate-500 dark:text-muted">
+            <div className="flex items-center gap-2 text-muted">
               {onOpenPipeline ? (
                 <button
                   type="button"
                   onClick={onOpenPipeline}
-                  className="text-emerald-600 dark:text-emerald-400 font-semibold hover:underline cursor-pointer"
+                  className="inline-flex items-center gap-1 text-content font-semibold hover:text-signal cursor-pointer"
                 >
-                  👥 {activeProject.candidates.length} in pipeline ↗
+                  <Icon.Users className="h-3 w-3" />
+                  {activeProject.candidates.length} in pipeline
+                  <Icon.ArrowUpRight className="h-3 w-3" />
                 </button>
               ) : (
-                <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
-                  👥 {activeProject.candidates.length} evaluated
+                <span className="inline-flex items-center gap-1 text-content font-semibold">
+                  <Icon.Users className="h-3 w-3" />
+                  {activeProject.candidates.length} evaluated
                 </span>
               )}
               <span>·</span>
@@ -147,9 +150,9 @@ export default function JobProjectBar({
 
       {/* Projects Dropdown Menu */}
       {isOpen && (
-        <div className="absolute left-0 right-0 top-full z-50 mt-2 max-h-80 overflow-y-auto rounded-xl border border-slate-200 dark:border-edge bg-white dark:bg-[#121116] p-2 shadow-2xl backdrop-blur-xl thin-scroll">
-          <div className="flex items-center justify-between px-2.5 py-1.5 border-b border-slate-100 dark:border-edge/40">
-            <span className="font-mono text-[10px] uppercase tracking-wider text-slate-500 dark:text-muted font-bold">
+        <div className="absolute left-0 right-0 top-full z-50 mt-2 max-h-80 overflow-y-auto rounded-xl border border-edge bg-card p-2 shadow-pop thin-scroll animate-in">
+          <div className="flex items-center justify-between px-2.5 py-1.5 border-b border-edge">
+            <span className="font-mono text-[10px] uppercase tracking-wider text-muted font-bold">
               Your Open Job Projects ({projects.length})
             </span>
           </div>
@@ -165,21 +168,24 @@ export default function JobProjectBar({
                     onSelectProject(proj.id);
                     setIsOpen(false);
                   }}
-                  className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left transition-colors ${
+                  className={`flex w-full items-center justify-between rounded-lg border px-3 py-2 text-left transition-colors ${
                     isSelected
-                      ? 'bg-orange-50 dark:bg-signal/15 text-[#ea580c] dark:text-signal border border-orange-200 dark:border-signal/30'
-                      : 'hover:bg-slate-50 dark:hover:bg-surface/80 text-slate-900 dark:text-[#ece9f0]'
+                      ? 'bg-signal/10 text-signal border-signal/30'
+                      : 'border-transparent text-content hover:bg-well'
                   }`}
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-xs font-bold truncate">{proj.title}</span>
-                      <span className="rounded bg-slate-100 dark:bg-[#0c0b0e] px-1.5 py-0.2 font-mono text-[9px] text-slate-500 dark:text-muted border border-slate-200 dark:border-edge/50">
+                      <span className="rounded border border-edge bg-well px-1.5 py-0.5 font-mono text-[9px] text-muted">
                         {proj.department}
                       </span>
                     </div>
-                    <div className="mt-1 flex items-center gap-2 font-mono text-[10px] text-slate-500 dark:text-muted">
-                      <span>👥 {proj.candidates.length} in pipeline</span>
+                    <div className="mt-1 flex items-center gap-2 font-mono text-[10px] text-muted">
+                      <span className="inline-flex items-center gap-1">
+                        <Icon.Users className="h-3 w-3" />
+                        {proj.candidates.length} in pipeline
+                      </span>
                       <span>·</span>
                       <span className="truncate">
                         {proj.requisition.mustHaveSkills.slice(0, 3).join(', ')}
@@ -187,13 +193,13 @@ export default function JobProjectBar({
                     </div>
                   </div>
 
-                  {isSelected && <span className="text-[#ea580c] dark:text-signal text-sm pl-2">✓</span>}
+                  {isSelected && <Icon.Check className="h-3.5 w-3.5 flex-none text-signal pl-2" />}
                 </button>
               );
             })}
           </div>
 
-          <div className="my-1.5 border-t border-slate-100 dark:border-edge/40" />
+          <div className="my-1.5 border-t border-edge" />
 
           {/* Create New Job Project Action */}
           <button
@@ -202,9 +208,9 @@ export default function JobProjectBar({
               setIsOpen(false);
               onOpenNewJobModal();
             }}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-orange-50 dark:bg-surface/60 py-2.5 font-mono text-xs font-semibold text-[#ea580c] dark:text-signal transition-colors hover:bg-[#ea580c] hover:text-white dark:hover:bg-signal dark:hover:text-ink"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-signal/10 py-2.5 font-mono text-xs font-semibold text-signal transition-colors hover:bg-signal hover:text-[#0c0b0e]"
           >
-            <span>＋</span>
+            <Icon.Plus className="h-3.5 w-3.5" />
             <span>Create New Job Project</span>
           </button>
         </div>

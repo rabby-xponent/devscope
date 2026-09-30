@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import { JobProject, SeniorityTarget } from '@/lib/job-projects';
+import { Icon } from '@/components/icons';
+import { Select, Switch } from '@/components/ui';
 
 interface JobGuardrailsModalProps {
   project: JobProject;
@@ -9,6 +11,14 @@ interface JobGuardrailsModalProps {
   onClose: () => void;
   onSave: (updated: JobProject) => void;
 }
+
+const SENIORITY_OPTIONS = [
+  { value: 'junior', label: 'Junior (0-2 yrs)' },
+  { value: 'mid', label: 'Mid-Level (2-5 yrs)' },
+  { value: 'senior', label: 'Senior (5-8 yrs)' },
+  { value: 'staff', label: 'Staff (8+ yrs)' },
+  { value: 'principal', label: 'Principal (10+ yrs)' },
+];
 
 export default function JobGuardrailsModal({
   project,
@@ -91,27 +101,35 @@ export default function JobGuardrailsModal({
     onClose();
   };
 
+  const inputClass =
+    'mt-1 w-full rounded-xl border border-edge bg-well px-3 py-2 font-mono text-xs text-content outline-none transition-colors focus:border-signal focus:ring-2 focus:ring-signal/15 placeholder:text-muted/60';
+  const labelClass =
+    'block font-mono text-[11px] uppercase tracking-wider text-muted';
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 dark:bg-black/85 p-4 backdrop-blur-md">
-      <div className="flex max-h-[90vh] w-full max-w-2xl flex-col rounded-2xl border border-slate-200 dark:border-edge bg-white dark:bg-[#0e0d12] text-slate-900 dark:text-[#ece9f0] shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-md animate-in">
+      <div className="flex max-h-[90vh] w-full max-w-2xl flex-col rounded-2xl border border-edge bg-card text-content shadow-pop overflow-hidden">
         {/* Modal Header */}
-        <div className="flex items-center justify-between border-b border-slate-100 dark:border-edge/80 px-6 py-4 bg-slate-50/50 dark:bg-[#121118]">
+        <div className="flex items-center justify-between border-b border-edge px-6 py-4 bg-well">
           <div className="flex items-center gap-2.5">
-            <span className="text-xl">⚙️</span>
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-edge bg-card text-muted">
+              <Icon.Settings className="h-4.5 w-4.5" />
+            </span>
             <div>
-              <h2 className="font-mono text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-[#ece9f0]">
+              <h2 className="font-mono text-sm font-bold uppercase tracking-wider text-content">
                 Hiring Guardrails & Rubric Calibration
               </h2>
-              <p className="text-[11px] text-slate-500 dark:text-muted font-sans">
+              <p className="text-[11px] text-muted font-sans">
                 Calibrate specific screening rules, dealbreaker skills, and interview questions for this job.
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 font-mono text-xs text-slate-400 hover:text-slate-700 dark:text-muted dark:hover:text-signal hover:bg-slate-100 dark:hover:bg-surface"
+            aria-label="Close"
+            className="rounded-lg p-1.5 text-muted transition-colors hover:bg-card hover:text-content"
           >
-            ✕
+            <Icon.X className="h-4 w-4" />
           </button>
         </div>
 
@@ -120,27 +138,23 @@ export default function JobGuardrailsModal({
           {/* Job Overview */}
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="block font-mono text-[11px] uppercase tracking-wider text-slate-500 dark:text-muted">
-                Job Title
-              </label>
+              <label className={labelClass}>Job Title</label>
               <input
                 type="text"
                 required
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="mt-1 w-full rounded-xl border border-slate-300 dark:border-edge/80 bg-slate-50 dark:bg-surface px-3 py-2 font-mono text-xs text-slate-900 dark:text-[#ece9f0] outline-none focus:border-[#ea580c] dark:focus:border-signal"
+                className={inputClass}
               />
             </div>
             <div>
-              <label className="block font-mono text-[11px] uppercase tracking-wider text-slate-500 dark:text-muted">
-                Department / Team
-              </label>
+              <label className={labelClass}>Department / Team</label>
               <input
                 type="text"
                 required
                 value={department}
                 onChange={(e) => setDepartment(e.target.value)}
-                className="mt-1 w-full rounded-xl border border-slate-300 dark:border-edge/80 bg-slate-50 dark:bg-surface px-3 py-2 font-mono text-xs text-slate-900 dark:text-[#ece9f0] outline-none focus:border-[#ea580c] dark:focus:border-signal"
+                className={inputClass}
               />
             </div>
           </div>
@@ -148,40 +162,32 @@ export default function JobGuardrailsModal({
           {/* Seniority & Experience Floor */}
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
-              <label className="block font-mono text-[11px] uppercase tracking-wider text-slate-500 dark:text-muted">
-                Seniority Target
-              </label>
-              <select
-                value={seniorityTarget}
-                onChange={(e) => setSeniorityTarget(e.target.value as SeniorityTarget)}
-                className="mt-1 w-full rounded-xl border border-slate-300 dark:border-edge/80 bg-slate-50 dark:bg-surface px-3 py-2 font-mono text-xs text-slate-900 dark:text-[#ece9f0] outline-none focus:border-[#ea580c] dark:focus:border-signal"
-              >
-                <option value="junior">Junior (0-2 yrs)</option>
-                <option value="mid">Mid-Level (2-5 yrs)</option>
-                <option value="senior">Senior (5-8 yrs)</option>
-                <option value="staff">Staff (8+ yrs)</option>
-                <option value="principal">Principal (10+ yrs)</option>
-              </select>
+              <label className={labelClass}>Seniority Target</label>
+              <div className="mt-1">
+                <Select
+                  value={seniorityTarget}
+                  onChange={(v) => setSeniorityTarget(v as SeniorityTarget)}
+                  options={SENIORITY_OPTIONS}
+                  className="w-full"
+                  buttonClassName="py-2 rounded-xl"
+                />
+              </div>
             </div>
 
             <div>
-              <label className="block font-mono text-[11px] uppercase tracking-wider text-slate-500 dark:text-muted">
-                Min. Years Experience
-              </label>
+              <label className={labelClass}>Min. Years Experience</label>
               <input
                 type="number"
                 min={0}
                 max={25}
                 value={minYears}
                 onChange={(e) => setMinYears(Number(e.target.value))}
-                className="mt-1 w-full rounded-xl border border-slate-300 dark:border-edge/80 bg-slate-50 dark:bg-surface px-3 py-2 font-mono text-xs text-slate-900 dark:text-[#ece9f0] outline-none focus:border-[#ea580c] dark:focus:border-signal"
+                className={inputClass}
               />
             </div>
 
             <div>
-              <label className="block font-mono text-[11px] uppercase tracking-wider text-slate-500 dark:text-muted">
-                Shortlist Fit Threshold ({minFitScore}%)
-              </label>
+              <label className={labelClass}>Shortlist Fit Threshold ({minFitScore}%)</label>
               <input
                 type="range"
                 min={50}
@@ -189,46 +195,47 @@ export default function JobGuardrailsModal({
                 step={5}
                 value={minFitScore}
                 onChange={(e) => setMinFitScore(Number(e.target.value))}
-                className="mt-2 w-full accent-[#ea580c] dark:accent-signal"
+                className="mt-3 w-full"
               />
             </div>
           </div>
 
           {/* Must-Have Skills / Dealbreaker Stack */}
           <div>
-            <label className="block font-mono text-[11px] uppercase tracking-wider text-slate-500 dark:text-muted">
+            <label className={labelClass}>
               Must-Have Technical Dealbreakers (Candidates without these get flagged)
             </label>
-            <div className="mt-1.5 flex flex-wrap gap-1.5 rounded-xl border border-slate-300 dark:border-edge/80 bg-slate-50 dark:bg-surface/50 p-2">
+            <div className="mt-1.5 flex flex-wrap gap-1.5 rounded-xl border border-edge bg-well p-2 transition-colors focus-within:border-signal/70">
               {mustHaveSkills.map((skill) => (
                 <span
                   key={skill}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-orange-50 dark:bg-signal/15 border border-orange-200 dark:border-signal/30 px-2.5 py-1 font-mono text-xs font-semibold text-[#ea580c] dark:text-signal"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-signal/30 bg-signal/10 px-2.5 py-1 font-mono text-xs font-semibold text-signal"
                 >
                   <span>{skill}</span>
                   <button
                     type="button"
                     onClick={() => handleRemoveSkill(skill)}
-                    className="text-slate-400 hover:text-rose-500 font-bold"
+                    aria-label={`Remove ${skill}`}
+                    className="text-muted transition-colors hover:text-content"
                   >
-                    ✕
+                    <Icon.X className="h-3 w-3" />
                   </button>
                 </span>
               ))}
               <div className="flex items-center gap-1 flex-1 min-w-[120px]">
                 <input
                   type="text"
-                  placeholder="Type skill & press Enter..."
+                  placeholder="Type skill & press Enter…"
                   value={skillInput}
                   onChange={(e) => setSkillInput(e.target.value)}
                   onKeyDown={handleAddSkill}
-                  className="w-full bg-transparent font-mono text-xs text-slate-900 dark:text-[#ece9f0] outline-none placeholder:text-slate-400 dark:placeholder:text-muted/40 px-1 py-1"
+                  className="w-full bg-transparent font-mono text-xs text-content outline-none placeholder:text-muted/60 px-1 py-1"
                 />
                 {skillInput.trim() && (
                   <button
                     type="button"
                     onClick={handleAddSkill}
-                    className="rounded-lg bg-[#ea580c] dark:bg-signal px-2 py-0.5 font-mono text-[10px] text-white dark:text-ink font-bold"
+                    className="rounded-lg bg-signal px-2 py-0.5 font-mono text-[10px] text-[#0c0b0e] font-bold"
                   >
                     Add
                   </button>
@@ -238,71 +245,74 @@ export default function JobGuardrailsModal({
           </div>
 
           {/* Hiring Guardrail Toggles */}
-          <div className="space-y-3 rounded-xl border border-slate-200 dark:border-edge/60 bg-slate-50/70 dark:bg-surface/30 p-4">
-            <div className="font-mono text-[11px] uppercase tracking-wider text-slate-500 dark:text-muted font-bold">
+          <div className="space-y-3 rounded-xl border border-edge bg-well p-4">
+            <div className="font-mono text-[11px] uppercase tracking-wider text-muted font-bold">
               Automated Screening Guardrails
             </div>
 
-            <label className="flex items-start gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={allowPrivate}
-                onChange={(e) => setAllowPrivate(e.target.checked)}
-                className="mt-0.5 rounded accent-[#ea580c] dark:accent-signal"
-              />
-              <div>
-                <span className="font-mono text-xs font-medium text-slate-900 dark:text-[#ece9f0] block">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <span className="font-mono text-xs font-medium text-content block">
                   Private Enterprise Repo Bias Shield (Recommended)
                 </span>
-                <span className="text-[11px] text-slate-500 dark:text-muted font-sans block leading-tight">
+                <span className="mt-0.5 text-[11px] text-muted font-sans block leading-tight">
                   Do not penalize working developers for lack of public hobby commits if enterprise employment or live demo proof exists.
                 </span>
               </div>
-            </label>
-
-            <label className="flex items-start gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={flagAI}
-                onChange={(e) => setFlagAI(e.target.checked)}
-                className="mt-0.5 rounded accent-[#ea580c] dark:accent-signal"
+              <Switch
+                checked={allowPrivate}
+                onChange={setAllowPrivate}
+                ariaLabel="Private enterprise repo bias shield"
+                className="mt-0.5"
               />
-              <div>
-                <span className="font-mono text-xs font-medium text-slate-900 dark:text-[#ece9f0] block">
+            </div>
+
+            <div className="border-t border-edge" />
+
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <span className="font-mono text-xs font-medium text-content block">
                   Flag AI-Generated / Boilerplate Repositories
                 </span>
-                <span className="text-[11px] text-slate-500 dark:text-muted font-sans block leading-tight">
+                <span className="mt-0.5 text-[11px] text-muted font-sans block leading-tight">
                   Detect low-effort template clones, cookie-cutter CRUD apps, and automated repository spam.
                 </span>
               </div>
-            </label>
+              <Switch
+                checked={flagAI}
+                onChange={setFlagAI}
+                ariaLabel="Flag AI-generated repositories"
+                className="mt-0.5"
+              />
+            </div>
           </div>
 
           {/* Custom Interview Probe Questions */}
           <div>
             <div className="flex items-center justify-between">
-              <label className="block font-mono text-[11px] uppercase tracking-wider text-slate-500 dark:text-muted">
+              <label className={labelClass}>
                 Hiring Manager Custom Phone-Screen Probes
               </label>
-              <span className="font-mono text-[10px] text-slate-400 dark:text-muted">{probes.length} questions</span>
+              <span className="font-mono text-[10px] text-muted">{probes.length} questions</span>
             </div>
 
             <div className="mt-1.5 space-y-2">
               {probes.map((probe, i) => (
                 <div
                   key={i}
-                  className="flex items-start justify-between gap-3 rounded-xl border border-slate-200 dark:border-edge/60 bg-slate-50 dark:bg-surface/40 p-2.5 font-mono text-xs text-slate-900 dark:text-[#ece9f0]"
+                  className="flex items-start justify-between gap-3 rounded-xl border border-edge bg-well p-2.5 font-mono text-xs text-content"
                 >
                   <div className="flex items-start gap-2">
-                    <span className="text-[#ea580c] dark:text-signal font-bold">{i + 1}.</span>
+                    <span className="text-signal font-bold">{i + 1}.</span>
                     <span className="leading-snug">{probe}</span>
                   </div>
                   <button
                     type="button"
                     onClick={() => handleRemoveProbe(i)}
-                    className="text-slate-400 hover:text-rose-500 font-bold"
+                    aria-label="Remove probe"
+                    className="text-muted transition-colors hover:text-content"
                   >
-                    ✕
+                    <Icon.X className="h-3.5 w-3.5" />
                   </button>
                 </div>
               ))}
@@ -310,35 +320,36 @@ export default function JobGuardrailsModal({
               <div className="flex gap-2">
                 <input
                   type="text"
-                  placeholder="e.g. Ask how they handle database migration rollbacks in production zero-downtime environments..."
+                  placeholder="e.g. Ask how they handle database migration rollbacks in production zero-downtime environments…"
                   value={probeInput}
                   onChange={(e) => setProbeInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddProbe())}
-                  className="flex-1 rounded-xl border border-slate-300 dark:border-edge/80 bg-slate-50 dark:bg-surface px-3 py-2 font-mono text-xs text-slate-900 dark:text-[#ece9f0] outline-none focus:border-[#ea580c] dark:focus:border-signal placeholder:text-slate-400 dark:placeholder:text-muted/40"
+                  className={`${inputClass} mt-0 flex-1`}
                 />
                 <button
                   type="button"
                   onClick={handleAddProbe}
-                  className="rounded-xl border border-slate-300 dark:border-edge/80 bg-slate-100 dark:bg-surface px-4 py-2 font-mono text-xs font-semibold text-[#ea580c] dark:text-signal hover:bg-[#ea580c] hover:text-white dark:hover:bg-signal dark:hover:text-ink transition-colors"
+                  className="flex items-center gap-1.5 rounded-xl border border-edge bg-card px-4 py-2 font-mono text-xs font-semibold text-content transition-colors hover:border-signal/50 hover:text-signal outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
                 >
-                  ＋ Add Probe
+                  <Icon.Plus className="h-3.5 w-3.5" />
+                  Add Probe
                 </button>
               </div>
             </div>
           </div>
 
           {/* Modal Footer */}
-          <div className="flex items-center justify-end gap-3 border-t border-slate-100 dark:border-edge/80 pt-4">
+          <div className="flex items-center justify-end gap-3 border-t border-edge pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border border-slate-200 dark:border-edge/80 px-4 py-2 font-mono text-xs text-slate-600 dark:text-muted hover:text-slate-900 dark:hover:text-[#ece9f0]"
+              className="rounded-xl border border-edge bg-card px-4 py-2 font-mono text-xs text-muted transition-colors hover:border-signal/50 hover:text-content outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="rounded-xl bg-[#ea580c] hover:bg-[#c2410c] dark:bg-signal dark:hover:bg-signal/90 px-6 py-2.5 font-mono text-xs font-semibold uppercase tracking-wider text-white dark:text-ink shadow-sm"
+              className="rounded-xl bg-signal px-6 py-2.5 font-mono text-xs font-semibold uppercase tracking-wider text-[#0c0b0e] shadow-xs transition-colors hover:bg-signal/90 outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
             >
               Save Guardrails & Rubric
             </button>

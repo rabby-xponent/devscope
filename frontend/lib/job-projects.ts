@@ -552,13 +552,11 @@ export function generateCandidateSlackBrief(
     archived: 'Archived',
   };
 
-  const stars = candidate.starRating ? '⭐'.repeat(candidate.starRating) : 'Not rated';
-  const verdictEmoji =
-    candidate.verdict === 'strong_match' ? '🟢' : candidate.verdict === 'qualified_with_probes' ? '🟡' : '🔴';
+  const stars = candidate.starRating ? '★'.repeat(candidate.starRating) : 'Not rated';
 
   return `*DevScope Candidate Brief: @${candidate.username}*
 *Role:* ${project.title} (${project.department})
-*Match Score:* ${candidate.fitScore}% ${verdictEmoji} (${candidate.verdict.replace(/_/g, ' ').toUpperCase()})
+*Match Score:* ${candidate.fitScore}% (${candidate.verdict.replace(/_/g, ' ').toUpperCase()})
 *Seniority:* ${candidate.seniorityEstimate.toUpperCase()} (Target: ${project.requisition.seniorityTarget.toUpperCase()})
 *Pipeline Stage:* ${stageLabels[candidate.pipelineStage]} | *Rating:* ${stars}
 *Requirements:* ${candidate.requirementsSummary.metCount} Met · ${candidate.requirementsSummary.partialCount} Partial · ${candidate.requirementsSummary.missingCount} Missing
@@ -586,7 +584,7 @@ export function exportPipelineToMarkdown(project: JobProject): string {
 
   const sorted = [...project.candidates].sort((a, b) => b.fitScore - a.fitScore);
   sorted.forEach((cand, idx) => {
-    const stars = cand.starRating ? '★'.repeat(cand.starRating) : '-';
+    const stars = cand.starRating ? '★'.repeat(cand.starRating) : '—';
     lines.push(
       `| #${idx + 1} | [@${cand.username}](https://github.com/${cand.username}) | **${cand.fitScore}%** | ${cand.seniorityEstimate} | ${cand.pipelineStage} | ${stars} | ${cand.recruiterNotes || '-'} |`
     );

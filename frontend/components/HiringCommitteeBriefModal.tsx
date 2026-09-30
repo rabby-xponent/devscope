@@ -7,6 +7,8 @@ import {
   JobProject,
   generateCandidateSlackBrief,
 } from '@/lib/job-projects';
+import { Icon } from '@/components/icons';
+import { StarRating } from '@/components/ui';
 
 interface HiringCommitteeBriefModalProps {
   isOpen: boolean;
@@ -45,19 +47,19 @@ export default function HiringCommitteeBriefModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 dark:bg-black/80 p-4 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative flex max-h-[92vh] w-full max-w-3xl flex-col rounded-2xl border border-slate-200 dark:border-edge bg-white dark:bg-[#0e0d12] text-slate-900 dark:text-[#ece9f0] shadow-2xl overflow-hidden print:max-h-none print:w-full print:border-none print:bg-white print:text-black">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-md animate-in">
+      <div className="relative flex max-h-[92vh] w-full max-w-3xl flex-col rounded-2xl border border-edge bg-card text-content shadow-pop overflow-hidden print:max-h-none print:w-full print:border-none print:bg-white print:text-black">
         {/* Modal Top Bar */}
-        <div className="flex items-center justify-between border-b border-slate-100 dark:border-edge/80 bg-slate-50 dark:bg-[#121118] px-6 py-4 print:hidden">
+        <div className="flex items-center justify-between border-b border-edge bg-well px-6 py-4 print:hidden">
           <div className="flex items-center gap-3">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-500/15 border border-emerald-200 dark:border-emerald-500/30 text-base">
-              📄
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-edge bg-card text-muted">
+              <Icon.FileText className="h-4 w-4" />
             </span>
             <div>
-              <span className="font-mono text-[10px] uppercase tracking-wider text-emerald-700 dark:text-emerald-400 font-bold">
+              <span className="font-mono text-[10px] uppercase tracking-wider text-signal font-bold">
                 Engineering Manager Briefing
               </span>
-              <h2 className="font-mono text-sm font-bold text-slate-900 dark:text-[#ece9f0]">
+              <h2 className="font-mono text-sm font-bold text-content">
                 Candidate Dossier 1-Pager: @{candidate.username}
               </h2>
             </div>
@@ -67,26 +69,30 @@ export default function HiringCommitteeBriefModal({
             <button
               type="button"
               onClick={handleCopySlack}
-              className="flex items-center gap-1.5 rounded-xl border border-slate-300 dark:border-edge bg-white dark:bg-surface/80 px-3 py-1.5 font-mono text-xs font-semibold text-slate-800 dark:text-[#ece9f0] transition-colors hover:border-[#ea580c] hover:text-[#ea580c] dark:hover:border-signal dark:hover:text-signal shadow-xs"
+              className="flex items-center gap-1.5 rounded-xl border border-edge bg-card px-3 py-1.5 font-mono text-xs font-semibold text-content transition-colors hover:border-signal/60 hover:text-signal shadow-xs outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
             >
-              <span>{copied ? '✓ Copied to Clipboard!' : '📋 Copy Slack Brief'}</span>
+              <Icon.Clipboard className="h-3.5 w-3.5 text-muted" />
+              <span>{copied ? 'Copied to Clipboard' : 'Copy Slack Brief'}</span>
+              {copied && <Icon.Check className="h-3 w-3 text-signal" />}
             </button>
 
             <button
               type="button"
               onClick={handlePrint}
-              className="flex items-center gap-1.5 rounded-xl border border-slate-300 dark:border-edge bg-white dark:bg-surface/80 px-3 py-1.5 font-mono text-xs font-semibold text-slate-600 dark:text-muted transition-colors hover:text-slate-900 dark:hover:text-[#ece9f0] shadow-xs"
+              className="flex items-center gap-1.5 rounded-xl border border-edge bg-card px-3 py-1.5 font-mono text-xs font-semibold text-content transition-colors hover:border-signal/60 hover:text-signal shadow-xs outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
               title="Print or save as PDF"
             >
-              <span>🖨️ Print</span>
+              <Icon.Printer className="h-3.5 w-3.5 text-muted" />
+              <span>Print</span>
             </button>
 
             <button
               type="button"
               onClick={onClose}
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 dark:border-edge/80 bg-white dark:bg-surface/60 font-mono text-sm text-slate-500 hover:text-slate-900 dark:text-muted dark:hover:text-signal transition-colors ml-2"
+              aria-label="Close brief"
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-edge bg-card text-muted transition-colors hover:text-content ml-2"
             >
-              ✕
+              <Icon.X className="h-4 w-4" />
             </button>
           </div>
         </div>
@@ -94,9 +100,9 @@ export default function HiringCommitteeBriefModal({
         {/* Brief Printable Body */}
         <div className="flex-1 overflow-y-auto p-6 thin-scroll space-y-6 print:p-0 print:space-y-4">
           {/* Header Card */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-slate-200 dark:border-edge/80 bg-slate-50 dark:bg-[#121118] p-5 print:border print:border-neutral-300 print:bg-neutral-50">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-edge bg-well p-5 print:border print:border-neutral-300 print:bg-neutral-50">
             <div className="flex items-center gap-4">
-              <div className="h-16 w-16 rounded-full border border-slate-200 dark:border-edge bg-white dark:bg-surface overflow-hidden flex-none flex items-center justify-center">
+              <div className="h-16 w-16 rounded-full border border-edge bg-card overflow-hidden flex-none flex items-center justify-center">
                 {candidate.avatarUrl ? (
                   <img
                     src={candidate.avatarUrl}
@@ -104,72 +110,73 @@ export default function HiringCommitteeBriefModal({
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <span className="font-mono text-xl font-bold text-slate-400 dark:text-muted">
+                  <span className="font-mono text-xl font-bold text-muted">
                     {candidate.username.slice(0, 2).toUpperCase()}
                   </span>
                 )}
               </div>
               <div>
-                <h1 className="font-mono text-lg font-bold text-slate-900 dark:text-[#ece9f0] print:text-black">
+                <h1 className="font-mono text-lg font-bold text-content print:text-black">
                   {candidate.fullName || `@${candidate.username}`}
                 </h1>
-                <div className="flex items-center gap-2 font-mono text-xs text-slate-500 dark:text-muted print:text-neutral-700">
-                  <span className="text-[#ea580c] dark:text-signal font-semibold">@{candidate.username}</span>
+                <div className="flex items-center gap-2 font-mono text-xs text-muted print:text-neutral-700">
+                  <span className="text-signal font-semibold">@{candidate.username}</span>
                   <span>·</span>
                   <span className="capitalize">{candidate.persona.replace(/_/g, ' ')}</span>
                   <span>·</span>
-                  <span className="capitalize text-emerald-700 dark:text-emerald-400 font-bold">
+                  <span className="capitalize text-signal font-bold">
                     {candidate.seniorityEstimate} Level
                   </span>
                 </div>
-                <div className="mt-1 font-mono text-[11px] text-slate-500 dark:text-muted/70 print:text-neutral-600">
-                  Target Role: <strong className="text-slate-900 dark:text-[#ece9f0] print:text-black">{project.title}</strong> ({project.department})
+                <div className="mt-1 font-mono text-[11px] text-muted/80 print:text-neutral-600">
+                  Target Role: <strong className="text-content print:text-black">{project.title}</strong> ({project.department})
                 </div>
               </div>
             </div>
 
-            <div className="flex sm:flex-col items-center sm:items-end justify-between border-t border-slate-200 dark:border-edge/60 pt-3 sm:border-0 sm:pt-0">
+            <div className="flex sm:flex-col items-center sm:items-end justify-between border-t border-edge pt-3 sm:border-0 sm:pt-0">
               <div className="flex items-baseline gap-1.5">
-                <span className="font-mono text-3xl font-black text-slate-900 dark:text-[#ece9f0] print:text-black">
+                <span className="font-mono text-3xl font-black text-content print:text-black">
                   {candidate.fitScore}%
                 </span>
-                <span className="font-mono text-[10px] uppercase font-bold text-[#ea580c] dark:text-signal">
+                <span className="font-mono text-[10px] uppercase font-bold text-signal">
                   Fit Match
                 </span>
               </div>
               <span
-                className={`rounded-full px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider ${
+                className={`rounded-full px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider border ${
                   candidate.fitScore >= 85
-                    ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30'
-                    : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-500/30'
+                    ? 'border-signal/35 bg-signal/10 text-signal'
+                    : 'border-edge bg-card text-muted'
                 }`}
               >
                 {candidate.verdict.replace(/_/g, ' ')}
               </span>
-              <div className="mt-1 font-mono text-xs text-slate-500 dark:text-muted print:text-neutral-700">
-                {candidate.starRating ? '★'.repeat(candidate.starRating) : 'Not rated'} · {stageLabels[candidate.pipelineStage]}
+              <div className="mt-1 flex items-center gap-2 font-mono text-xs text-muted print:text-neutral-700">
+                <StarRating value={candidate.starRating || 0} size="sm" />
+                <span>· {stageLabels[candidate.pipelineStage]}</span>
               </div>
             </div>
           </div>
 
           {/* Executive Summary & Recruiter Assessment */}
-          <div className="rounded-2xl border border-slate-200 dark:border-edge/80 bg-slate-50 dark:bg-[#121118] p-5 space-y-2 print:border print:border-neutral-300 print:bg-neutral-50">
-            <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#ea580c] dark:text-signal print:text-neutral-900">
+          <div className="rounded-2xl border border-edge bg-well p-5 space-y-2 print:border print:border-neutral-300 print:bg-neutral-50">
+            <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-signal print:text-neutral-900">
               1. Recruiter Executive Assessment
             </h3>
-            <p className="font-sans text-xs leading-relaxed text-slate-700 dark:text-[#ece9f0]/90 print:text-neutral-800">
+            <p className="font-sans text-xs leading-relaxed text-content/90 print:text-neutral-800">
               {candidate.recruiterNotes ||
                 `Candidate demonstrates strong technical signals aligned with ${project.title}. Public contributions and private engineering history corroborate seniority expectations.`}
             </p>
           </div>
 
           {/* Core Requisition Skills Matrix */}
-          <div className="rounded-2xl border border-slate-200 dark:border-edge/80 bg-slate-50 dark:bg-[#121118] p-5 space-y-3 print:border print:border-neutral-300 print:bg-neutral-50">
+          <div className="rounded-2xl border border-edge bg-well p-5 space-y-3 print:border print:border-neutral-300 print:bg-neutral-50">
             <div className="flex items-center justify-between">
-              <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#ea580c] dark:text-signal print:text-neutral-900">
+              <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-signal print:text-neutral-900">
                 2. Must-Have Dealbreaker Stack Verification
               </h3>
-              <span className="font-mono text-xs text-emerald-700 dark:text-emerald-400 font-bold">
+              <span className="font-mono text-xs text-signal font-bold">
                 {candidate.requirementsSummary.metCount} of {project.requisition.mustHaveSkills.length} Verified
               </span>
             </div>
@@ -178,21 +185,21 @@ export default function HiringCommitteeBriefModal({
               {project.requisition.mustHaveSkills.map((skill) => (
                 <div
                   key={skill}
-                  className="flex items-center gap-2 rounded-xl border border-slate-200 dark:border-edge/60 bg-white dark:bg-[#0c0b0e] p-2.5 font-mono text-xs print:border-neutral-300 print:bg-white"
+                  className="flex items-center gap-2 rounded-xl border border-edge bg-card p-2.5 font-mono text-xs print:border-neutral-300 print:bg-white"
                 >
-                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">✓</span>
-                  <span className="font-semibold text-slate-800 dark:text-[#ece9f0] print:text-black">{skill}</span>
+                  <Icon.Check className="h-3.5 w-3.5 flex-none text-signal" />
+                  <span className="font-semibold text-content print:text-black">{skill}</span>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Interview Probes for Hiring Committee */}
-          <div className="rounded-2xl border border-slate-200 dark:border-edge/80 bg-slate-50 dark:bg-[#121118] p-5 space-y-3 print:border print:border-neutral-300 print:bg-neutral-50">
-            <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#ea580c] dark:text-signal print:text-neutral-900">
+          <div className="rounded-2xl border border-edge bg-well p-5 space-y-3 print:border print:border-neutral-300 print:bg-neutral-50">
+            <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-signal print:text-neutral-900">
               3. Recommended Technical Phone-Screen Probes
             </h3>
-            <p className="font-sans text-xs text-slate-500 dark:text-muted print:text-neutral-600">
+            <p className="font-sans text-xs text-muted print:text-neutral-600">
               Direct questions for the hiring manager or technical interviewer to validate depth and eliminate gap risks:
             </p>
 
@@ -200,41 +207,47 @@ export default function HiringCommitteeBriefModal({
               {project.guardrails.customInterviewProbes.map((probe, i) => (
                 <div
                   key={i}
-                  className="rounded-xl border border-slate-200 dark:border-edge/60 bg-white dark:bg-[#0c0b0e] p-3 space-y-1 print:border-neutral-300 print:bg-white"
+                  className="rounded-xl border border-edge bg-card p-3 space-y-1 print:border-neutral-300 print:bg-white"
                 >
-                  <div className="font-mono text-xs font-bold text-[#ea580c] dark:text-signal print:text-neutral-900">
+                  <div className="font-mono text-xs font-bold text-signal print:text-neutral-900">
                     Question #{i + 1}:
                   </div>
-                  <p className="font-mono text-xs text-slate-800 dark:text-[#ece9f0] print:text-black leading-relaxed">
+                  <p className="font-mono text-xs text-content print:text-black leading-relaxed">
                     {probe}
                   </p>
                 </div>
               ))}
+              {project.guardrails.customInterviewProbes.length === 0 && (
+                <p className="font-mono text-[11px] text-muted print:text-neutral-600">
+                  No custom probes configured for this requisition yet.
+                </p>
+              )}
             </div>
           </div>
 
           {/* Live Links */}
-          <div className="flex items-center justify-between font-mono text-xs text-slate-500 dark:text-muted print:text-neutral-600">
+          <div className="flex items-center justify-between font-mono text-xs text-muted print:text-neutral-600">
             <span>Evaluated via DevScope RecruiterOS on {new Date(candidate.evaluatedAt).toLocaleDateString()}</span>
             <Link
               href={`/profile/${candidate.username}?jobId=${project.id}`}
               target="_blank"
-              className="text-[#ea580c] dark:text-signal hover:underline print:hidden"
+              className="inline-flex items-center gap-1 text-signal hover:underline print:hidden"
             >
-              Open Interactive Full Audit Dossier ↗
+              Open Interactive Full Audit Dossier
+              <Icon.ArrowUpRight className="h-3 w-3" />
             </Link>
           </div>
         </div>
 
         {/* Footer Actions */}
-        <div className="flex items-center justify-between border-t border-slate-100 dark:border-edge/80 bg-slate-50 dark:bg-[#121118] px-6 py-4 print:hidden">
-          <span className="font-mono text-xs text-slate-500 dark:text-muted">
+        <div className="flex items-center justify-between border-t border-edge bg-well px-6 py-4 print:hidden">
+          <span className="font-mono text-xs text-muted">
             Share this 1-pager directly with your Engineering Manager before the phone screen.
           </span>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl bg-white dark:bg-surface px-5 py-2 font-mono text-xs font-semibold text-slate-800 dark:text-[#ece9f0] border border-slate-200 dark:border-edge hover:border-[#ea580c] dark:hover:border-signal/50 transition-colors shadow-xs"
+            className="rounded-xl border border-edge bg-card px-5 py-2 font-mono text-xs font-semibold text-content transition-colors hover:border-signal/60 hover:text-signal shadow-xs outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
           >
             Close
           </button>

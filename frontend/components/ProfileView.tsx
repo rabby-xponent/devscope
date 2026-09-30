@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { DevProfile } from '@/types/profile';
+import { Icon } from '@/components/icons';
 
 function Stat({ label, value }: { label: string; value: string | number }) {
   return (
@@ -52,7 +53,7 @@ function Pill({
   label,
   className,
 }: {
-  icon: string;
+  icon: React.ReactNode;
   label: string;
   className: string;
 }) {
@@ -60,7 +61,7 @@ function Pill({
     <span
       className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-mono text-[11px] uppercase tracking-wide print:px-2 print:py-0.5 print:text-[10px] ${className}`}
     >
-      <span>{icon}</span>
+      <span className="flex-none flex items-center">{icon}</span>
       <span>{label}</span>
     </span>
   );
@@ -104,34 +105,39 @@ const CONSISTENCY_STYLES: Record<string, string> = {
 
 const PERSONA_CONFIG: Record<string, { icon: string; label: string; style: string; badge: string; desc: string }> = {
   working_professional: {
-    icon: '💼',
+    icon: 'briefcase',
     label: 'Working Professional',
-    style: 'border-blue-500/50 bg-blue-900/30 text-blue-300 print:border-blue-300 print:bg-blue-50 print:text-blue-800',
+    style: 'border-signal/35 bg-signal/10 text-signal print:border-amber-300 print:bg-amber-50 print:text-amber-900',
     badge: 'Enterprise & Private Repos',
     desc: 'Primary engineering output is in private/corporate repositories. Evaluated through architectural tenure, live demos, and technical depth rather than public hobby commits.',
   },
   fresher_builder: {
-    icon: '🌱',
+    icon: 'zap',
     label: 'Active Builder',
-    style: 'border-emerald-500/50 bg-emerald-900/30 text-emerald-300 print:border-emerald-300 print:bg-emerald-50 print:text-emerald-800',
+    style: 'border-signal/35 bg-signal/10 text-signal print:border-amber-300 print:bg-amber-50 print:text-amber-900',
     badge: 'High Public Velocity',
     desc: 'Demonstrates strong self-driven momentum with active public repositories, personal projects, and continuous learning patterns.',
   },
   open_source_contributor: {
-    icon: '🌐',
+    icon: 'globe',
     label: 'OSS Contributor',
-    style: 'border-purple-500/50 bg-purple-900/30 text-purple-300 print:border-purple-300 print:bg-purple-50 print:text-purple-800',
+    style: 'border-signal/35 bg-signal/10 text-signal print:border-amber-300 print:bg-amber-50 print:text-amber-900',
     badge: 'Community Code Author',
     desc: 'Proven track record of public pull requests, community package maintenance, and peer-reviewed open-source contributions.',
   },
   specialist: {
-    icon: '⚡',
+    icon: 'target',
     label: 'Domain Specialist',
-    style: 'border-amber-500/50 bg-amber-900/30 text-amber-300 print:border-amber-300 print:bg-amber-50 print:text-amber-800',
+    style: 'border-signal/35 bg-signal/10 text-signal print:border-amber-300 print:bg-amber-50 print:text-amber-900',
     badge: 'Deep Niche Mastery',
     desc: 'Focused technical mastery in a specialized ecosystem with concentrated contributions, custom tooling, and high architectural depth.',
   },
 };
+
+function PersonaIcon({ name, className = 'h-3.5 w-3.5' }: { name: string; className?: string }) {
+  const Cmp = (Icon as Record<string, (p: React.SVGProps<SVGSVGElement>) => JSX.Element>)[name] || Icon.Briefcase;
+  return <Cmp className={className} />;
+}
 
 function isUrl(value: string): boolean {
   return /^https?:\/\//i.test(value.trim());
@@ -148,7 +154,7 @@ function WebChip({
   href,
   sublabel,
 }: {
-  icon: string;
+  icon: React.ReactNode;
   label: string;
   href: string;
   sublabel?: string;
@@ -158,9 +164,9 @@ function WebChip({
       href={href}
       target="_blank"
       rel="noreferrer"
-      className="inline-flex items-center gap-2 rounded-full border border-edge bg-surface/60 px-4 py-2 font-mono text-xs text-ece9f0 transition-colors hover:border-signal/50 hover:text-signal print:border-zinc-300 print:bg-white print:text-zinc-800"
+      className="inline-flex items-center gap-2 rounded-full border border-edge bg-card px-4 py-2 font-mono text-xs text-content transition-colors hover:border-signal/50 hover:text-signal print:border-zinc-300 print:bg-white print:text-zinc-800"
     >
-      <span>{icon}</span>
+      <span className="flex-none text-muted">{icon}</span>
       <span>{label}</span>
       {sublabel && <span className="text-muted print:text-zinc-500">· {sublabel}</span>}
     </a>
@@ -250,10 +256,10 @@ export function ProfileView({
 
   const activeColor =
     rp && rp.daysSinceLastCommit <= 30
-      ? 'border-emerald-600/50 bg-emerald-900/30 text-emerald-300'
+      ? 'border-signal/40 bg-signal/10 text-signal print:border-emerald-300 print:bg-emerald-50 print:text-emerald-800'
       : rp && rp.daysSinceLastCommit <= 90
-        ? 'border-yellow-600/50 bg-yellow-900/30 text-yellow-300'
-        : 'border-zinc-600 bg-zinc-800/60 text-zinc-400';
+        ? 'border-signal/30 bg-signal/[0.06] text-signal/90 print:border-amber-300 print:bg-amber-50 print:text-amber-800'
+        : 'border-edge bg-well text-muted print:border-zinc-300 print:bg-zinc-100 print:text-zinc-700';
 
   const activeLabel = rp
     ? rp.daysSinceLastCommit <= 30
@@ -333,8 +339,9 @@ export function ProfileView({
             </span>
             {g.location && <span>· {g.location}</span>}
             {g.company && (
-              <span className="rounded-full border border-edge bg-surface/60 px-2.5 py-0.5 text-[11px] text-ece9f0/90 print:border-zinc-300 print:bg-zinc-100 print:text-zinc-800">
-                🏢 {g.company.replace('@', '')}
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-edge bg-card px-2.5 py-0.5 text-[11px] text-content/90 print:border-zinc-300 print:bg-zinc-100 print:text-zinc-800">
+                <Icon.Building className="h-3 w-3 text-muted" />
+                {g.company.replace('@', '')}
               </span>
             )}
           </div>
@@ -349,7 +356,7 @@ export function ProfileView({
                 onClick={copyRecruiterBrief}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-edge bg-surface/90 px-3.5 py-2 font-mono text-[11px] font-medium uppercase tracking-wider text-ece9f0 shadow-sm transition-all hover:border-signal/50 hover:bg-surface hover:text-signal active:scale-95"
               >
-                <span>{copied ? '✓' : '📋'}</span>
+                <span>{copied ? <Icon.Check className="h-3.5 w-3.5" /> : <Icon.Clipboard className="h-3.5 w-3.5" />}</span>
                 <span>
                   {copied
                     ? isDev
@@ -364,7 +371,7 @@ export function ProfileView({
                 onClick={() => window.print()}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-signal/40 bg-signal/10 px-3.5 py-2 font-mono text-[11px] font-medium uppercase tracking-wider text-signal shadow-sm transition-all hover:bg-signal/20 active:scale-95"
               >
-                <span>🖨️</span>
+                <Icon.Printer className="h-3.5 w-3.5" />
                 <span>Export PDF</span>
               </button>
             </div>
@@ -390,11 +397,13 @@ export function ProfileView({
               <span className="font-mono text-lg font-bold text-ece9f0 print:text-base print:text-zinc-900">
                 {rp?.seniorityEstimate?.toUpperCase() || 'ENGINEER'} LEVEL
               </span>
-              <span className="rounded-full border border-signal/30 bg-signal/10 px-3 py-0.5 font-mono text-[11px] font-semibold text-signal print:border-amber-300 print:bg-amber-100 print:text-amber-900">
-                {persona.icon} {persona.label}
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-signal/30 bg-signal/10 px-3 py-0.5 font-mono text-[11px] font-semibold text-signal print:border-amber-300 print:bg-amber-100 print:text-amber-900">
+                <PersonaIcon name={persona.icon} />
+                {persona.label}
               </span>
-              <span className="rounded-full border border-emerald-500/30 bg-emerald-950/30 px-3 py-0.5 font-mono text-[11px] font-semibold text-emerald-400 print:border-emerald-300 print:bg-emerald-50 print:text-emerald-800">
-                ★ Shortlist Recommendation
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-signal/30 bg-signal/10 px-3 py-0.5 font-mono text-[11px] font-semibold text-signal print:border-amber-300 print:bg-amber-100 print:text-amber-900">
+                <Icon.Star className="h-3 w-3" />
+                Shortlist Recommendation
               </span>
             </div>
           </div>
@@ -410,10 +419,10 @@ export function ProfileView({
         </div>
 
         {/* Persona & Working Context Explainer */}
-        <div className="mt-3.5 flex items-start gap-3 rounded-lg border border-edge/60 bg-ink/40 p-3 print:border-zinc-200 print:bg-zinc-50 print:p-2.5">
-          <span className="text-lg leading-none print:text-sm">💡</span>
+        <div className="mt-3.5 flex items-start gap-3 rounded-lg border border-edge bg-card p-3 print:border-zinc-200 print:bg-zinc-50 print:p-2.5">
+          <Icon.Info className="mt-0.5 h-4 w-4 flex-none text-muted print:text-zinc-500" />
           <div className="min-w-0 flex-1 font-mono text-xs leading-relaxed text-muted print:text-[10.5px] print:text-zinc-700">
-            <strong className="text-ece9f0 print:text-zinc-900">{persona.badge}: </strong>
+            <strong className="text-content print:text-zinc-900">{persona.badge}: </strong>
             {rp?.privateWorkContext || persona.desc}
           </div>
         </div>
@@ -423,31 +432,39 @@ export function ProfileView({
           <div className="mt-4 flex flex-wrap items-center gap-2 print:mt-2.5 print:gap-1.5">
             {activeLabel && (
               <Pill
-                icon={rp.recentlyActive ? '🟢' : rp.daysSinceLastCommit <= 90 ? '🟡' : '🏢'}
+                icon={
+                  rp.recentlyActive ? (
+                    <span className="block h-1.5 w-1.5 rounded-full bg-current" />
+                  ) : rp.daysSinceLastCommit <= 90 ? (
+                    <span className="block h-1.5 w-1.5 rounded-full border border-current" />
+                  ) : (
+                    <Icon.Building className="h-3 w-3" />
+                  )
+                }
                 label={activeLabel}
                 className={activeColor}
               />
             )}
             <Pill
-              icon="✓"
+              icon={<Icon.Check className="h-3 w-3" />}
               label={`Commits: ${rp.commitQuality}`}
               className={QUALITY_STYLES[rp.commitQuality] || QUALITY_STYLES.average}
             />
             <Pill
-              icon="🤝"
+              icon={<Icon.Users className="h-3 w-3" />}
               label={`Collaboration: ${rp.collaborationLevel}`}
               className={COLLAB_STYLES[rp.collaborationLevel] || COLLAB_STYLES.medium}
             />
             <Pill
-              icon="📅"
+              icon={<Icon.Calendar className="h-3 w-3" />}
               label={`Pacing: ${rp.consistencyPattern}`}
               className={CONSISTENCY_STYLES[rp.consistencyPattern] || CONSISTENCY_STYLES.regular}
             />
             {profile.liveAppAudit && profile.liveAppAudit.isLive && (
               <Pill
-                icon="🌐"
+                icon={<Icon.Globe className="h-3 w-3" />}
                 label={`Live App: ${profile.liveAppAudit.detectedStack.framework || 'Shipped'} (${profile.liveAppAudit.responseTimeMs}ms)`}
-                className="border-emerald-600/50 bg-emerald-950/30 text-emerald-400 print:border-emerald-300 print:bg-emerald-50 print:text-emerald-800"
+                className="border-signal/35 bg-signal/10 text-signal print:border-amber-300 print:bg-amber-50 print:text-amber-900"
               />
             )}
           </div>
@@ -460,8 +477,9 @@ export function ProfileView({
           <div className="flex flex-wrap items-start justify-between gap-4 border-b border-edge/60 pb-3.5 print:border-zinc-300 print:pb-2">
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-mono text-[10px] uppercase tracking-widest text-signal print:text-amber-800 font-bold">
-                  🎯 Target Requisition Match
+                <span className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-signal print:text-amber-800 font-bold">
+                  <Icon.Target className="h-3.5 w-3.5" />
+                  Target Requisition Match
                 </span>
                 <span className="rounded bg-surface px-2 py-0.5 font-mono text-[10px] text-muted border border-edge print:bg-white print:border-zinc-300">
                   Role Benchmark
@@ -517,7 +535,7 @@ export function ProfileView({
                             : 'bg-amber-950/50 text-amber-300 border border-amber-500/30'
                       }`}
                     >
-                      {req.status === 'met' ? '✓ Met' : req.status === 'partially_met' ? '⚡ Partial' : '⚠️ Gap Probe'}
+                      {req.status === 'met' ? 'Met' : req.status === 'partially_met' ? 'Partial' : 'Gap Probe'}
                     </span>
                   </div>
                   <p className="mt-1 text-[11px] leading-relaxed text-muted print:text-zinc-600">
@@ -616,7 +634,7 @@ export function ProfileView({
                     key={i}
                     className="flex items-start gap-3 text-[15px] font-medium leading-relaxed text-ece9f0/95 print:text-[12px] print:leading-snug print:text-zinc-800"
                   >
-                    <span className="flex-none font-mono text-signal print:text-amber-800">✦</span>
+                    <span className="flex-none font-mono text-signal print:text-amber-800">+</span>
                     <span>{fact}</span>
                   </li>
                 ))}
@@ -653,7 +671,9 @@ export function ProfileView({
             <div className="rounded-xl border border-edge bg-surface/70 p-5 shadow-lg print:border-zinc-400 print:bg-white print:p-3.5 print-card">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-edge/60 pb-3 print:border-zinc-300 print:pb-2">
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl print:text-lg">🌐</span>
+                  <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-edge bg-card text-muted print:border-zinc-300">
+                    <Icon.Globe className="h-5 w-5" />
+                  </span>
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-xs font-bold uppercase tracking-wider text-signal print:text-amber-800">
@@ -686,7 +706,9 @@ export function ProfileView({
                         : 'border-rose-600/50 bg-rose-950/30 text-rose-400 print:border-rose-300 print:bg-rose-50 print:text-rose-800'
                     }`}
                   >
-                    <span>{profile.liveAppAudit.isLive ? '🟢' : '🔴'}</span>
+                    <span className="flex-none flex items-center">
+                      <span className={`block h-2 w-2 rounded-full bg-current ${profile.liveAppAudit.isLive ? 'animate-pulse' : ''}`} />
+                    </span>
                     <span>
                       {profile.liveAppAudit.isLive
                         ? `Live Shipped (${profile.liveAppAudit.responseTimeMs}ms · ${profile.liveAppAudit.speedRating})`
@@ -739,17 +761,17 @@ export function ProfileView({
                     Production Standards Checklist
                   </div>
                   <div className="mt-2 grid grid-cols-2 gap-1.5 text-[11px]">
-                    <span className={profile.liveAppAudit.productionStandards.httpsEnforced ? 'text-emerald-400 print:text-emerald-800 font-semibold' : 'text-zinc-500'}>
-                      {profile.liveAppAudit.productionStandards.httpsEnforced ? '✓' : '✗'} HTTPS Enforced
+                    <span className={`inline-flex items-center gap-1 ${profile.liveAppAudit.productionStandards.httpsEnforced ? 'text-signal print:text-emerald-800 font-semibold' : 'text-muted/70 print:text-zinc-500'}`}>
+                      {profile.liveAppAudit.productionStandards.httpsEnforced ? <Icon.Check className="h-3 w-3" /> : <Icon.X className="h-3 w-3" />} HTTPS Enforced
                     </span>
-                    <span className={profile.liveAppAudit.productionStandards.mobileResponsive ? 'text-emerald-400 print:text-emerald-800 font-semibold' : 'text-zinc-500'}>
-                      {profile.liveAppAudit.productionStandards.mobileResponsive ? '✓' : '✗'} Mobile Responsive
+                    <span className={`inline-flex items-center gap-1 ${profile.liveAppAudit.productionStandards.mobileResponsive ? 'text-signal print:text-emerald-800 font-semibold' : 'text-muted/70 print:text-zinc-500'}`}>
+                      {profile.liveAppAudit.productionStandards.mobileResponsive ? <Icon.Check className="h-3 w-3" /> : <Icon.X className="h-3 w-3" />} Mobile Responsive
                     </span>
-                    <span className={profile.liveAppAudit.productionStandards.hasSeoMeta ? 'text-emerald-400 print:text-emerald-800 font-semibold' : 'text-zinc-500'}>
-                      {profile.liveAppAudit.productionStandards.hasSeoMeta ? '✓' : '✗'} SEO Meta Present
+                    <span className={`inline-flex items-center gap-1 ${profile.liveAppAudit.productionStandards.hasSeoMeta ? 'text-signal print:text-emerald-800 font-semibold' : 'text-muted/70 print:text-zinc-500'}`}>
+                      {profile.liveAppAudit.productionStandards.hasSeoMeta ? <Icon.Check className="h-3 w-3" /> : <Icon.X className="h-3 w-3" />} SEO Meta Present
                     </span>
-                    <span className={profile.liveAppAudit.productionStandards.hasSecurityHeaders ? 'text-emerald-400 print:text-emerald-800 font-semibold' : 'text-zinc-500'}>
-                      {profile.liveAppAudit.productionStandards.hasSecurityHeaders ? '✓' : '✗'} Security Headers
+                    <span className={`inline-flex items-center gap-1 ${profile.liveAppAudit.productionStandards.hasSecurityHeaders ? 'text-signal print:text-emerald-800 font-semibold' : 'text-muted/70 print:text-zinc-500'}`}>
+                      {profile.liveAppAudit.productionStandards.hasSecurityHeaders ? <Icon.Check className="h-3 w-3" /> : <Icon.X className="h-3 w-3" />} Security Headers
                     </span>
                   </div>
                 </div>
@@ -794,7 +816,21 @@ export function ProfileView({
                                 : 'border border-amber-500/30 bg-amber-950/40 text-amber-300 print:border-amber-300 print:bg-amber-50 print:text-amber-800'
                           }`}
                         >
-                          <span>{isVerified ? '✓ Code Verified' : isObserved ? '🌐 Live Shipped' : '🔍 Unverified Claim'}</span>
+                          <span className="inline-flex items-center gap-1">
+                            {isVerified ? (
+                              <>
+                                <Icon.Check className="h-3 w-3" /> Code Verified
+                              </>
+                            ) : isObserved ? (
+                              <>
+                                <Icon.Globe className="h-3 w-3" /> Live Shipped
+                              </>
+                            ) : (
+                              <>
+                                <Icon.Search className="h-3 w-3" /> Unverified Claim
+                              </>
+                            )}
+                          </span>
                         </span>
                       </div>
                       <p className="mt-1.5 font-mono text-xs leading-relaxed text-muted print:text-[10.5px] print:text-zinc-700">
@@ -893,8 +929,9 @@ export function ProfileView({
               </div>
             </div>
             {rp.commitStyleInsight && (
-              <p className="mt-4 max-w-3xl text-[14px] italic leading-relaxed text-ece9f0/80 print:mt-2 print:text-[11px] print:text-zinc-700">
-                💬 {rp.commitStyleInsight}
+              <p className="mt-4 flex max-w-3xl items-start gap-2 text-[14px] italic leading-relaxed text-content/80 print:mt-2 print:text-[11px] print:text-zinc-700">
+                <Icon.Message className="mt-0.5 h-4 w-4 flex-none text-muted not-italic print:text-zinc-500" />
+                <span>{rp.commitStyleInsight}</span>
               </p>
             )}
           </Section>
@@ -922,7 +959,10 @@ export function ProfileView({
                   <span className="font-mono text-sm font-semibold text-ece9f0 group-hover:text-signal print:text-xs print:text-zinc-900">
                     {r.name}
                   </span>
-                  <span className="font-mono text-xs text-muted print:text-[10px] print:text-zinc-600">★ {r.stars.toLocaleString()}</span>
+                  <span className="inline-flex items-center gap-1 font-mono text-xs text-muted print:text-[10px] print:text-zinc-600">
+                    <Icon.Star className="h-3 w-3" />
+                    {r.stars.toLocaleString()}
+                  </span>
                 </div>
                 <p className="mt-2 text-sm leading-relaxed text-ece9f0/80 print:mt-1 print:text-[11px] print:leading-snug print:text-zinc-700">
                   {r.description}
@@ -998,18 +1038,18 @@ export function ProfileView({
             <div className="flex flex-wrap gap-3 print:gap-2">
               {(hnUrl || hnMentionCount) && (
                 <WebChip
-                  icon="🟠"
+                  icon={<Icon.Message className="h-3.5 w-3.5" />}
                   label="Hacker News"
                   href={hnUrl || `https://hn.algolia.com/?q=${encodeURIComponent(g.name || profile.username)}`}
                   sublabel={hnMentionCount ? `${hnMentionCount} mentions` : undefined}
                 />
               )}
-              {blogUrl && <WebChip icon="🌐" label="Tech Blog" href={blogUrl} />}
+              {blogUrl && <WebChip icon={<Icon.Globe className="h-3.5 w-3.5" />} label="Tech Blog" href={blogUrl} />}
               {otherUrl && isTwitter && (
-                <WebChip icon="🐦" label="Twitter/X" href={otherUrl} />
+                <WebChip icon={<Icon.Link className="h-3.5 w-3.5" />} label="Twitter/X" href={otherUrl} />
               )}
               {otherUrl && !isTwitter && (
-                <WebChip icon="🔗" label="Web Portfolio" href={otherUrl} />
+                <WebChip icon={<Icon.Link className="h-3.5 w-3.5" />} label="Web Portfolio" href={otherUrl} />
               )}
             </div>
           </Section>
@@ -1041,19 +1081,19 @@ export function ProfileView({
                         {item.question}
                       </h4>
                       <div className="mt-3 grid gap-2.5 sm:grid-cols-2 print:mt-1.5 print:gap-2">
-                        <div className="rounded-lg border border-emerald-500/20 bg-emerald-950/20 p-3 print:border-emerald-300 print:bg-emerald-50 print:p-2">
-                          <div className="flex items-center gap-1.5 font-mono text-[11px] font-bold text-emerald-400 print:text-emerald-800 print:text-[10px]">
-                            <span>✓</span> What to Listen For
+                        <div className="rounded-lg border border-signal/25 bg-signal/[0.06] p-3 print:border-emerald-300 print:bg-emerald-50 print:p-2">
+                          <div className="flex items-center gap-1.5 font-mono text-[11px] font-bold text-signal print:text-emerald-800 print:text-[10px]">
+                            <Icon.Check className="h-3 w-3" /> What to Listen For
                           </div>
-                          <p className="mt-1 font-sans text-xs leading-relaxed text-zinc-300 print:text-[10px] print:leading-snug print:text-zinc-700">
+                          <p className="mt-1 font-sans text-xs leading-relaxed text-content/90 print:text-[10px] print:leading-snug print:text-zinc-700">
                             {item.whatToListenFor}
                           </p>
                         </div>
-                        <div className="rounded-lg border border-rose-500/20 bg-rose-950/20 p-3 print:border-rose-300 print:bg-rose-50 print:p-2">
-                          <div className="flex items-center gap-1.5 font-mono text-[11px] font-bold text-rose-400 print:text-rose-800 print:text-[10px]">
-                            <span>⚠️</span> Red Flag Signal
+                        <div className="rounded-lg border border-edge bg-well p-3 print:border-rose-300 print:bg-rose-50 print:p-2">
+                          <div className="flex items-center gap-1.5 font-mono text-[11px] font-bold text-muted print:text-rose-800 print:text-[10px]">
+                            <Icon.Alert className="h-3 w-3" /> Red Flag Signal
                           </div>
-                          <p className="mt-1 font-sans text-xs leading-relaxed text-zinc-300 print:text-[10px] print:leading-snug print:text-zinc-700">
+                          <p className="mt-1 font-sans text-xs leading-relaxed text-content/90 print:text-[10px] print:leading-snug print:text-zinc-700">
                             {item.redFlagSignal}
                           </p>
                         </div>
@@ -1081,8 +1121,8 @@ export function ProfileView({
                 </h3>
                 <ul className="space-y-2 print:space-y-1">
                   {rp.interviewTopics.map((topic, i) => (
-                    <li key={i} className="flex gap-2 text-[15px] leading-relaxed text-ece9f0/90 print:text-[11.5px] print:leading-snug print:text-zinc-800">
-                      <span>🔍</span>
+                    <li key={i} className="flex gap-2 text-[15px] leading-relaxed text-content/90 print:text-[11.5px] print:leading-snug print:text-zinc-800">
+                      <Icon.Search className="mt-1 h-3.5 w-3.5 flex-none text-muted print:text-zinc-500" />
                       <span>{topic}</span>
                     </li>
                   ))}
@@ -1093,14 +1133,15 @@ export function ProfileView({
                   Gaps & Areas to Verify
                 </h3>
                 {rp.redFlags.length === 0 ? (
-                  <p className="text-[15px] leading-relaxed text-emerald-400 print:text-emerald-800 print:text-[11.5px]">
-                    ✅ No significant technical gaps identified in public code or artifacts.
+                  <p className="flex items-start gap-2 text-[15px] leading-relaxed text-content/80 print:text-emerald-800 print:text-[11.5px]">
+                    <Icon.CheckCircle className="mt-1 h-4 w-4 flex-none text-muted print:text-emerald-700" />
+                    No significant technical gaps identified in public code or artifacts.
                   </p>
                 ) : (
                   <ul className="space-y-2 print:space-y-1">
                     {rp.redFlags.map((flag, i) => (
-                      <li key={i} className="flex gap-2 text-[15px] leading-relaxed text-rose-300 print:text-rose-800 print:text-[11.5px] print:leading-snug">
-                        <span>⚠️</span>
+                      <li key={i} className="flex gap-2 text-[15px] leading-relaxed text-content/85 print:text-rose-800 print:text-[11.5px] print:leading-snug">
+                        <Icon.Alert className="mt-1 h-3.5 w-3.5 flex-none text-muted print:text-rose-700" />
                         <span>{flag}</span>
                       </li>
                     ))}

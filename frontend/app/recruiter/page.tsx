@@ -21,6 +21,9 @@ import {
   RecruiterAccount,
 } from '@/lib/recruiter-auth';
 import { ThemeToggle } from '@/lib/theme';
+import { Icon } from '@/components/icons';
+import { Select, Checkbox, StarRating, SearchInput, SegmentedTabs } from '@/components/ui';
+import type { SelectOption } from '@/components/ui';
 import JobGuardrailsModal from '@/components/JobGuardrailsModal';
 import NewJobModal from '@/components/NewJobModal';
 import RecruiterAccountModal from '@/components/RecruiterAccountModal';
@@ -155,6 +158,18 @@ function RecruiterPortalContent() {
     { value: 'archived', label: 'Archived' },
   ];
 
+  const stageSelectOptions: SelectOption[] = stageOptions.map((s) => ({
+    value: s.value,
+    label: s.label,
+  }));
+
+  const sortOptions: SelectOption[] = [
+    { value: 'fit_desc', label: 'Fit: High → Low' },
+    { value: 'fit_asc', label: 'Fit: Low → High' },
+    { value: 'rating_desc', label: 'Rating: Highest' },
+    { value: 'date_desc', label: 'Evaluated: Newest' },
+  ];
+
   // Candidates list filtered & sorted
   const filteredCandidates = useMemo(() => {
     if (!activeProject) return [];
@@ -192,30 +207,30 @@ function RecruiterPortalContent() {
 
   if (!activeProject || !account) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#faf9f5] dark:bg-[#0c0b0e] font-mono text-sm text-slate-500 dark:text-muted">
-        Loading RecruiterOS Workspace...
+      <div className="flex min-h-screen items-center justify-center bg-canvas font-mono text-sm text-muted">
+        Loading RecruiterOS Workspace…
       </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[#faf9f5] dark:bg-[#0c0b0e] text-slate-900 dark:text-[#ece9f0] pb-24 transition-colors">
+    <main className="page-texture min-h-screen bg-canvas text-content pb-24 transition-colors">
       {/* Top Navigation */}
-      <nav className="sticky top-0 z-30 border-b border-[#e8e6df] dark:border-edge/80 bg-white/90 dark:bg-[#0c0b0e]/95 backdrop-blur-md px-6 py-3.5 transition-colors">
+      <nav className="sticky top-0 z-30 border-b border-edge bg-card/90 backdrop-blur-md px-6 py-3.5 transition-colors">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <div className="flex items-center gap-4">
             <Link href="/" className="flex items-center gap-2.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-orange-600 dark:bg-signal shadow-[0_0_10px_#ea580c]" />
-              <span className="font-mono text-sm font-bold tracking-[0.25em] text-slate-900 dark:text-ece9f0">
+              <span className="h-2.5 w-2.5 rounded-full bg-signal shadow-[0_0_10px_rgb(var(--signal-rgb)/0.5)]" />
+              <span className="font-mono text-sm font-bold tracking-[0.25em] text-content">
                 DEVSCOPE
               </span>
             </Link>
-            <span className="text-slate-300 dark:text-edge">/</span>
+            <span className="text-edge">/</span>
             <div className="flex items-center gap-2">
-              <span className="rounded bg-orange-100/70 text-orange-700 border-orange-200/80 dark:bg-signal/15 dark:text-signal dark:border-signal/30 px-2 py-0.5 font-mono text-[10px] font-bold border uppercase">
+              <span className="rounded border border-signal/30 bg-signal/10 px-2 py-0.5 font-mono text-[10px] font-bold uppercase text-signal">
                 RecruiterOS
               </span>
-              <span className="hidden sm:inline font-mono text-xs text-slate-500 dark:text-muted">
+              <span className="hidden sm:inline font-mono text-xs text-muted">
                 Enterprise Talent Intelligence
               </span>
             </div>
@@ -223,40 +238,39 @@ function RecruiterPortalContent() {
 
           {/* Recruiter Identity & Actions */}
           <div className="flex items-center gap-2.5">
-            {/* Theme Toggle Button */}
             <ThemeToggle />
 
             {/* Recruiter Profile Card Trigger */}
             <button
               onClick={() => setShowAccountModal(true)}
-              className="flex items-center gap-2.5 rounded-xl border border-[#e8e6df] dark:border-edge/80 bg-white dark:bg-surface/80 px-3 py-1.5 hover:border-orange-500 dark:hover:border-signal/50 shadow-sm transition-colors cursor-pointer text-left"
+              className="flex items-center gap-2.5 rounded-xl border border-edge bg-card px-3 py-1.5 shadow-xs transition-colors hover:border-signal/50 cursor-pointer text-left outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
               title="Edit recruiter identity and default guardrails"
             >
-              <div className="h-7 w-7 rounded-full border border-orange-400/40 bg-orange-100 dark:bg-surface flex items-center justify-center overflow-hidden">
+              <div className="h-7 w-7 rounded-full border border-signal/30 bg-signal/10 flex items-center justify-center overflow-hidden">
                 {account.avatarUrl ? (
                   <img src={account.avatarUrl} alt={account.name} className="h-full w-full object-cover" />
                 ) : (
-                  <span className="font-mono text-xs font-bold text-orange-600 dark:text-signal">
+                  <span className="font-mono text-xs font-bold text-signal">
                     {account.name.slice(0, 2).toUpperCase()}
                   </span>
                 )}
               </div>
               <div className="hidden md:block">
-                <div className="font-mono text-xs font-bold text-slate-900 dark:text-ece9f0 leading-tight">
+                <div className="font-mono text-xs font-bold text-content leading-tight">
                   {account.name}
                 </div>
-                <div className="font-mono text-[10px] text-slate-500 dark:text-muted truncate max-w-[130px]">
+                <div className="font-mono text-[10px] text-muted truncate max-w-[130px]">
                   {account.company}
                 </div>
               </div>
-              <span className="rounded bg-orange-50 text-orange-700 border-orange-200 dark:bg-signal/10 dark:text-signal dark:border-signal/20 px-1.5 py-0.2 font-mono text-[9px] font-bold border uppercase">
+              <span className="rounded border border-signal/25 bg-signal/10 px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase text-signal">
                 {account.planTier}
               </span>
             </button>
 
             <Link
               href="/"
-              className="rounded-lg border border-[#e8e6df] dark:border-edge bg-white dark:bg-surface/60 px-3 py-1.5 font-mono text-xs text-slate-600 dark:text-muted hover:text-slate-900 dark:hover:text-ece9f0 shadow-sm transition-colors"
+              className="rounded-lg border border-edge bg-card px-3 py-1.5 font-mono text-xs text-muted shadow-xs transition-colors hover:border-signal/50 hover:text-signal"
             >
               ← Public Home
             </Link>
@@ -266,21 +280,22 @@ function RecruiterPortalContent() {
 
       {/* Main Workspace Container */}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 pt-8 space-y-8">
-        {/* Recruiter Welcome Header (Clean, Dageno-inspired White Card) */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 rounded-2xl border border-[#e8e6df] dark:border-edge/80 bg-white dark:bg-[#121118]/80 p-6 sm:p-7 shadow-sm dark:shadow-xl backdrop-blur-md">
+        {/* Recruiter Welcome Header */}
+        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-5 rounded-2xl border border-edge bg-card p-6 sm:p-7 shadow-card overflow-hidden">
+          <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-signal/50 to-transparent" />
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-100/70 text-orange-700 dark:bg-signal/15 dark:text-signal border border-orange-200/80 dark:border-signal/30 px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-wider font-bold">
-                <span className="h-1.5 w-1.5 rounded-full bg-orange-600 dark:bg-signal" />
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-signal/30 bg-signal/10 px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-wider font-bold text-signal">
+                <span className="h-1.5 w-1.5 rounded-full bg-signal" />
                 Welcome back, {account.name}
               </span>
-              <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-muted/60" />
-              <span className="font-mono text-xs text-slate-500 dark:text-muted">{account.department}</span>
+              <span className="h-1 w-1 rounded-full bg-muted/50" />
+              <span className="font-mono text-xs text-muted">{account.department}</span>
             </div>
-            <h1 className="font-sans text-2xl font-bold tracking-tight text-slate-900 dark:text-ece9f0 sm:text-3xl">
+            <h1 className="font-sans text-2xl font-bold tracking-tight text-content sm:text-3xl">
               Recruiter Talent Operating System
             </h1>
-            <p className="font-sans text-xs text-slate-600 dark:text-muted max-w-2xl leading-relaxed">
+            <p className="font-sans text-xs text-muted max-w-2xl leading-relaxed">
               Manage multi-role engineering searches, enforce technical guardrails, audit candidate codebases, and calibrate interview probes with zero guesswork.
             </p>
           </div>
@@ -288,17 +303,17 @@ function RecruiterPortalContent() {
           <div className="flex flex-wrap items-center gap-2.5">
             <button
               onClick={() => setShowNewJobModal(true)}
-              className="flex items-center gap-1.5 rounded-xl bg-orange-600 hover:bg-orange-700 dark:bg-signal dark:hover:bg-signal/90 px-4 py-2 font-mono text-xs font-bold text-white dark:text-ink transition-colors shadow-sm"
+              className="flex items-center gap-1.5 rounded-xl bg-signal px-4 py-2 font-mono text-xs font-bold text-[#0c0b0e] transition-colors hover:bg-signal/90 shadow-xs outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
             >
-              <span>＋</span>
+              <Icon.Plus className="h-3.5 w-3.5" />
               <span>Create New Job Project</span>
             </button>
 
             <button
               onClick={() => setShowGuardrailsModal(true)}
-              className="flex items-center gap-1.5 rounded-xl border border-[#e8e6df] dark:border-edge bg-white dark:bg-surface/80 px-3.5 py-2 font-mono text-xs font-semibold text-slate-700 dark:text-ece9f0 hover:border-orange-500 dark:hover:border-signal/50 shadow-sm transition-colors"
+              className="flex items-center gap-1.5 rounded-xl border border-edge bg-card px-3.5 py-2 font-mono text-xs font-semibold text-content shadow-xs transition-colors hover:border-signal/50 hover:text-signal outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
             >
-              <span>⚙️</span>
+              <Icon.Settings className="h-3.5 w-3.5 text-muted" />
               <span>Guardrails for Role</span>
             </button>
           </div>
@@ -306,9 +321,9 @@ function RecruiterPortalContent() {
 
         {/* Open Job Projects Selector Strip */}
         <div className="space-y-3">
-          <div className="flex items-center justify-between font-mono text-xs uppercase tracking-wider text-slate-500 dark:text-muted font-bold">
+          <div className="flex items-center justify-between font-mono text-xs uppercase tracking-wider text-muted font-bold">
             <span>Your Open Job Projects ({projects.length})</span>
-            <span className="text-[11px] text-orange-600 dark:text-signal font-normal">Click a card to switch active workspace</span>
+            <span className="text-[11px] text-signal font-normal">Click a card to switch active workspace</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
@@ -318,22 +333,23 @@ function RecruiterPortalContent() {
                 <div
                   key={proj.id}
                   onClick={() => handleSelectJobProject(proj.id)}
-                  className={`group relative rounded-xl p-4 border transition-all cursor-pointer ${
+                  className={`group relative rounded-xl p-4 border transition-all cursor-pointer outline-none ${
                     isSelected
-                      ? 'border-orange-500 ring-2 ring-orange-500/20 bg-orange-50/40 dark:bg-signal/10 dark:border-signal dark:ring-signal/40 shadow-sm'
-                      : 'border-[#e8e6df] dark:border-edge/80 bg-white dark:bg-[#121118]/60 hover:border-orange-400 dark:hover:border-signal/40 shadow-sm'
+                      ? 'border-signal ring-2 ring-signal/25 bg-signal/[0.06] shadow-card'
+                      : 'border-edge bg-card hover:border-signal/50 shadow-card'
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="rounded bg-slate-100 text-slate-700 border-slate-200 dark:bg-surface dark:text-muted dark:border-edge/60 px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider border">
+                    <span className="rounded border border-edge bg-well px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider text-muted">
                       {proj.department}
                     </span>
-                    <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                      👥 {proj.candidates.length} in pipeline
+                    <span className="inline-flex items-center gap-1.5 font-mono text-xs font-bold text-content">
+                      <Icon.Users className="h-3.5 w-3.5 text-muted" />
+                      {proj.candidates.length} in pipeline
                     </span>
                   </div>
 
-                  <h3 className="mt-2.5 font-mono text-sm font-bold text-slate-900 dark:text-ece9f0 group-hover:text-orange-600 dark:group-hover:text-signal transition-colors truncate">
+                  <h3 className={`mt-2.5 font-mono text-sm font-bold transition-colors truncate ${isSelected ? 'text-signal' : 'text-content group-hover:text-signal'}`}>
                     {proj.title}
                   </h3>
 
@@ -341,19 +357,19 @@ function RecruiterPortalContent() {
                     {proj.requisition.mustHaveSkills.slice(0, 3).map((skill) => (
                       <span
                         key={skill}
-                        className="rounded bg-slate-100 text-slate-700 border-slate-200 dark:bg-[#0c0b0e] dark:text-muted dark:border-edge/40 px-1.5 py-0.2 font-mono text-[9px] border"
+                        className="rounded border border-edge bg-well px-1.5 py-0.5 font-mono text-[9px] text-muted"
                       >
                         {skill}
                       </span>
                     ))}
                     {proj.requisition.mustHaveSkills.length > 3 && (
-                      <span className="font-mono text-[9px] text-slate-400 dark:text-muted/60 self-center">
+                      <span className="font-mono text-[9px] text-muted/70 self-center">
                         +{proj.requisition.mustHaveSkills.length - 3}
                       </span>
                     )}
                   </div>
 
-                  <div className="mt-3 flex items-center justify-between border-t border-[#e8e6df] dark:border-edge/40 pt-2 font-mono text-[10px] text-slate-500 dark:text-muted">
+                  <div className="mt-3 flex items-center justify-between border-t border-edge pt-2 font-mono text-[10px] text-muted">
                     <span className="uppercase font-semibold">Target: {proj.requisition.seniorityTarget}</span>
                     <span>Min {proj.guardrails.minimumFitScoreThreshold}% fit</span>
                   </div>
@@ -363,41 +379,41 @@ function RecruiterPortalContent() {
           </div>
         </div>
 
-        {/* Candidate Screening Console (Spacious & Clean) */}
-        <div className="rounded-2xl border border-[#e8e6df] dark:border-edge/80 bg-white dark:bg-[#121118] p-6 sm:p-7 shadow-sm dark:shadow-xl space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#e8e6df] dark:border-edge/60 pb-3">
+        {/* Candidate Screening Console */}
+        <div className="rounded-2xl border border-edge bg-card p-6 sm:p-7 shadow-card space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-edge pb-3">
             <div>
-              <span className="font-mono text-[10px] uppercase tracking-wider text-orange-600 dark:text-signal font-bold">
+              <span className="font-mono text-[10px] uppercase tracking-wider text-signal font-bold">
                 Direct Candidate Audit
               </span>
-              <h2 className="font-mono text-base font-bold text-slate-900 dark:text-ece9f0">
-                Screen Candidate Against: <span className="text-orange-600 dark:text-signal">{activeProject.title}</span>
+              <h2 className="font-mono text-base font-bold text-content">
+                Screen Candidate Against: <span className="text-signal">{activeProject.title}</span>
               </h2>
             </div>
-            <div className="flex items-center gap-2 font-mono text-xs text-slate-500 dark:text-muted">
-              <span>Target Seniority: <strong className="text-slate-900 dark:text-ece9f0 uppercase">{activeProject.requisition.seniorityTarget}</strong></span>
+            <div className="flex items-center gap-2 font-mono text-xs text-muted">
+              <span>Target Seniority: <strong className="text-content uppercase">{activeProject.requisition.seniorityTarget}</strong></span>
               <span>·</span>
-              <span>Threshold: <strong className="text-orange-600 dark:text-signal">{activeProject.guardrails.minimumFitScoreThreshold}%</strong></span>
+              <span>Threshold: <strong className="text-signal">{activeProject.guardrails.minimumFitScoreThreshold}%</strong></span>
             </div>
           </div>
 
           <form onSubmit={handleScreenCandidate} className="space-y-3.5">
             <div className="flex flex-col sm:flex-row gap-3">
-              <div className="flex flex-1 items-center gap-2 rounded-xl border border-[#e2e0d8] dark:border-edge/80 bg-[#fbfbfa] dark:bg-[#0c0b0e] px-4 py-3 focus-within:border-orange-500 dark:focus-within:border-signal transition-colors">
-                <span className="font-mono text-base text-orange-600 dark:text-signal font-bold">@</span>
+              <div className="flex flex-1 items-center gap-2 rounded-xl border border-edge bg-well px-4 py-3 transition-colors focus-within:border-signal focus-within:ring-2 focus-within:ring-signal/15">
+                <span className="font-mono text-base text-signal font-bold">@</span>
                 <input
                   type="text"
                   value={candidateHandle}
                   onChange={(e) => setCandidateHandle(e.target.value)}
                   placeholder="github-username (e.g. mitchellh, tj, gaearon, shadcn)"
-                  className="w-full bg-transparent font-mono text-sm text-slate-900 dark:text-ece9f0 outline-none placeholder:text-slate-400 dark:placeholder:text-muted/40"
+                  className="w-full bg-transparent font-mono text-sm text-content outline-none placeholder:text-muted/60"
                   autoFocus
                 />
               </div>
 
               <button
                 type="submit"
-                className="rounded-xl bg-orange-600 hover:bg-orange-700 dark:bg-signal dark:hover:bg-signal/90 px-7 py-3 font-mono text-xs font-bold uppercase tracking-wider text-white dark:text-ink transition-all shadow-sm flex-none"
+                className="rounded-xl bg-signal px-7 py-3 font-mono text-xs font-bold uppercase tracking-wider text-[#0c0b0e] transition-all shadow-xs flex-none hover:bg-signal/90 outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
               >
                 Screen Candidate
               </button>
@@ -406,14 +422,14 @@ function RecruiterPortalContent() {
             {/* Optional Live Demo URL Input */}
             <div>
               {showLiveUrlInput ? (
-                <div className="flex items-center gap-2 rounded-xl bg-[#fbfbfa] dark:bg-[#0c0b0e] px-3.5 py-2.5 border border-[#e2e0d8] dark:border-edge/80">
-                  <span className="text-sm">🌐</span>
+                <div className="flex items-center gap-2 rounded-xl border border-edge bg-well px-3.5 py-2.5 transition-colors focus-within:border-signal/70">
+                  <Icon.Globe className="h-3.5 w-3.5 flex-none text-muted" />
                   <input
                     type="url"
                     value={liveUrl}
                     onChange={(e) => setLiveUrl(e.target.value)}
                     placeholder="https://candidate-deployed-app.vercel.app (production demo / portfolio)"
-                    className="flex-1 bg-transparent font-mono text-xs text-slate-900 dark:text-ece9f0 outline-none placeholder:text-slate-400 dark:placeholder:text-muted/40"
+                    className="flex-1 bg-transparent font-mono text-xs text-content outline-none placeholder:text-muted/60"
                   />
                   <button
                     type="button"
@@ -421,18 +437,19 @@ function RecruiterPortalContent() {
                       setLiveUrl('');
                       setShowLiveUrlInput(false);
                     }}
-                    className="font-mono text-xs text-slate-400 hover:text-orange-600 dark:hover:text-signal"
+                    aria-label="Remove live URL"
+                    className="rounded p-0.5 text-muted transition-colors hover:text-signal"
                   >
-                    ✕
+                    <Icon.X className="h-3.5 w-3.5" />
                   </button>
                 </div>
               ) : (
                 <button
                   type="button"
                   onClick={() => setShowLiveUrlInput(true)}
-                  className="flex items-center gap-1.5 font-mono text-[11px] text-slate-500 dark:text-muted hover:text-orange-600 dark:hover:text-signal transition-colors"
+                  className="flex items-center gap-1.5 font-mono text-[11px] text-muted transition-colors hover:text-signal"
                 >
-                  <span className="text-orange-600 dark:text-signal font-bold">＋</span>
+                  <Icon.Plus className="h-3 w-3 text-signal" />
                   <span>Add live deployed application or portfolio URL (audits production bundle)</span>
                 </button>
               )}
@@ -440,11 +457,11 @@ function RecruiterPortalContent() {
 
             {/* Must-Have Stack Summary */}
             <div className="flex flex-wrap items-center gap-2 pt-1 font-mono text-xs">
-              <span className="text-slate-500 dark:text-muted/70">Evaluating for Dealbreakers:</span>
+              <span className="text-muted/80">Evaluating for Dealbreakers:</span>
               {activeProject.requisition.mustHaveSkills.map((skill) => (
                 <span
                   key={skill}
-                  className="rounded bg-slate-100 text-slate-800 border-slate-200 dark:bg-[#0c0b0e] dark:text-ece9f0 dark:border-edge/60 px-2 py-0.5 border text-[11px]"
+                  className="rounded border border-edge bg-well px-2 py-0.5 text-[11px] text-content"
                 >
                   {skill}
                 </span>
@@ -453,21 +470,21 @@ function RecruiterPortalContent() {
           </form>
         </div>
 
-        {/* Candidate Pipeline & Leaderboard Section (Spacious & Clean) */}
-        <div className="rounded-2xl border border-[#e8e6df] dark:border-edge/80 bg-white dark:bg-[#121118] p-6 sm:p-7 shadow-sm dark:shadow-xl space-y-5">
+        {/* Candidate Pipeline & Leaderboard Section */}
+        <div className="rounded-2xl border border-edge bg-card p-6 sm:p-7 shadow-card space-y-5">
           {/* Section Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#e8e6df] dark:border-edge/60 pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-edge pb-4">
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-mono text-[10px] uppercase tracking-wider text-orange-600 dark:text-signal font-bold">
+                <span className="font-mono text-[10px] uppercase tracking-wider text-signal font-bold">
                   Candidate Pool
                 </span>
-                <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-muted/60" />
-                <span className="font-mono text-xs text-slate-500 dark:text-muted">
+                <span className="h-1 w-1 rounded-full bg-muted/50" />
+                <span className="font-mono text-xs text-muted">
                   {activeProject.candidates.length} Evaluated
                 </span>
               </div>
-              <h2 className="font-mono text-lg font-bold text-slate-900 dark:text-ece9f0">
+              <h2 className="font-mono text-lg font-bold text-content">
                 Pipeline Leaderboard: {activeProject.title}
               </h2>
             </div>
@@ -476,114 +493,81 @@ function RecruiterPortalContent() {
               <button
                 type="button"
                 onClick={handleExportMarkdown}
-                className="flex items-center gap-1.5 rounded-lg border border-[#e8e6df] dark:border-edge bg-white dark:bg-surface/80 px-3 py-1.5 font-mono text-xs font-semibold text-slate-700 dark:text-ece9f0 hover:border-orange-500 dark:hover:border-signal hover:text-orange-600 dark:hover:text-signal shadow-sm transition-colors"
+                className="flex items-center gap-1.5 rounded-lg border border-edge bg-card px-3 py-1.5 font-mono text-xs font-semibold text-content shadow-xs transition-colors hover:border-signal/50 hover:text-signal outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
               >
-                <span>{copiedMd ? '✓ Copied Markdown!' : '📋 Export Leaderboard'}</span>
+                <Icon.Clipboard className="h-3.5 w-3.5 text-muted" />
+                <span>{copiedMd ? 'Copied' : 'Export Leaderboard'}</span>
+                {copiedMd && <Icon.Check className="h-3 w-3 text-signal" />}
               </button>
 
               <button
                 type="button"
                 onClick={() => setShowGuardrailsModal(true)}
-                className="flex items-center gap-1.5 rounded-lg border border-[#e8e6df] dark:border-edge bg-white dark:bg-surface/80 px-3 py-1.5 font-mono text-xs font-semibold text-slate-600 dark:text-muted hover:text-slate-900 dark:hover:text-ece9f0 shadow-sm transition-colors"
+                className="flex items-center gap-1.5 rounded-lg border border-edge bg-card px-3 py-1.5 font-mono text-xs font-semibold text-content shadow-xs transition-colors hover:border-signal/50 hover:text-signal outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
               >
-                <span>⚙️ Guardrails</span>
+                <Icon.Settings className="h-3.5 w-3.5 text-muted" />
+                <span>Guardrails</span>
               </button>
             </div>
           </div>
 
           {/* Filter, Search & Sort Bar */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-            {/* Stage Tabs */}
-            <div className="flex flex-wrap items-center gap-1.5 font-mono text-xs">
-              <button
-                type="button"
-                onClick={() => setSelectedStage('all')}
-                className={`rounded-lg px-2.5 py-1 transition-colors ${
-                  selectedStage === 'all'
-                    ? 'bg-orange-600 text-white font-bold shadow-sm dark:bg-signal dark:text-ink'
-                    : 'bg-slate-100 text-slate-600 hover:text-slate-900 dark:bg-surface/60 dark:text-muted dark:hover:text-ece9f0'
-                }`}
-              >
-                All ({activeProject.candidates.length})
-              </button>
-              {stageOptions.map((st) => {
-                const count = activeProject.candidates.filter((c) => c.pipelineStage === st.value).length;
-                return (
-                  <button
-                    key={st.value}
-                    type="button"
-                    onClick={() => setSelectedStage(st.value)}
-                    className={`rounded-lg px-2.5 py-1 transition-colors ${
-                      selectedStage === st.value
-                        ? 'bg-orange-600 text-white font-bold shadow-sm dark:bg-signal dark:text-ink'
-                        : 'bg-slate-100 text-slate-600 hover:text-slate-900 dark:bg-surface/60 dark:text-muted dark:hover:text-ece9f0'
-                    }`}
-                  >
-                    {st.label} ({count})
-                  </button>
-                );
-              })}
-            </div>
+            <SegmentedTabs
+              active={selectedStage}
+              onChange={setSelectedStage}
+              tabs={[
+                { value: 'all', label: 'All', count: activeProject.candidates.length },
+                ...stageOptions.map((st) => ({
+                  value: st.value,
+                  label: st.label,
+                  count: activeProject.candidates.filter((c) => c.pipelineStage === st.value).length,
+                })),
+              ]}
+            />
 
             {/* Search & Sort */}
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5 rounded-lg border border-[#e2e0d8] dark:border-edge/80 bg-[#fbfbfa] dark:bg-[#0c0b0e] px-2.5 py-1 text-xs">
-                <span className="text-slate-400">🔍</span>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search candidate..."
-                  className="w-32 sm:w-44 bg-transparent font-mono text-xs text-slate-900 dark:text-ece9f0 outline-none placeholder:text-slate-400 dark:placeholder:text-muted/50"
-                />
-                {searchQuery && (
-                  <button onClick={() => setSearchQuery('')} className="text-slate-400 hover:text-orange-600 dark:hover:text-signal text-[10px]">
-                    ✕
-                  </button>
-                )}
-              </div>
+              <SearchInput
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Search candidate…"
+                className="w-40 sm:w-52"
+              />
 
-              <select
+              <Select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
-                className="rounded-lg border border-[#e2e0d8] dark:border-edge/80 bg-white dark:bg-surface/80 px-2.5 py-1 font-mono text-xs text-slate-700 dark:text-muted outline-none hover:text-slate-900 dark:hover:text-ece9f0 cursor-pointer shadow-sm"
-              >
-                <option value="fit_desc">Fit: High → Low</option>
-                <option value="fit_asc">Fit: Low → High</option>
-                <option value="rating_desc">Rating: Highest</option>
-                <option value="date_desc">Evaluated: Newest</option>
-              </select>
+                onChange={(v) => setSortBy(v as typeof sortBy)}
+                options={sortOptions}
+                ariaLabel="Sort candidates"
+                className="w-44"
+              />
             </div>
           </div>
 
           {/* Table Container */}
-          <div className="overflow-x-auto rounded-xl border border-[#e8e6df] dark:border-edge/60 bg-white dark:bg-[#09080b]">
+          <div className="overflow-x-auto rounded-xl border border-edge bg-card">
             {filteredCandidates.length === 0 ? (
-              <div className="py-12 text-center font-mono text-xs text-slate-500 dark:text-muted space-y-2">
+              <div className="py-12 text-center font-mono text-xs text-muted space-y-2">
                 <div>No candidates found in this stage for {activeProject.title}.</div>
-                <div className="text-[11px] text-slate-400 dark:text-muted/60">
+                <div className="text-[11px] text-muted/70">
                   Screen a candidate using the console above to populate this pipeline.
                 </div>
               </div>
             ) : (
               <table className="w-full border-collapse font-mono text-xs">
                 <thead>
-                  <tr className="border-b border-[#e8e6df] dark:border-edge/60 text-left font-mono text-[10px] uppercase tracking-wider text-slate-500 dark:text-muted/70 bg-slate-50 dark:bg-[#121118]/50">
+                  <tr className="border-b border-edge text-left font-mono text-[10px] uppercase tracking-wider text-muted bg-well">
                     <th className="py-3 pl-3 pr-2 w-8">
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         checked={
                           filteredCandidates.length > 0 &&
                           selectedIds.length === filteredCandidates.length
                         }
-                        onChange={() => {
-                          if (selectedIds.length === filteredCandidates.length) {
-                            setSelectedIds([]);
-                          } else {
-                            setSelectedIds(filteredCandidates.map((c) => c.id));
-                          }
+                        onChange={(checked) => {
+                          setSelectedIds(checked ? filteredCandidates.map((c) => c.id) : []);
                         }}
-                        className="rounded border-[#e2e0d8] dark:border-edge bg-white dark:bg-surface text-orange-600 dark:text-signal focus:ring-0 cursor-pointer"
+                        ariaLabel="Select all candidates"
                       />
                     </th>
                     <th className="py-3 px-2 w-12 text-center">Rank</th>
@@ -597,30 +581,21 @@ function RecruiterPortalContent() {
                     <th className="py-3 pr-3 pl-2 text-right min-w-[140px]">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#e8e6df] dark:divide-edge/40">
+                <tbody className="divide-y divide-edge">
                   {filteredCandidates.map((cand, idx) => {
                     const isSelected = selectedIds.includes(cand.id);
-                    const rankBadgeColor =
-                      idx === 0
-                        ? 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-400/20 dark:text-amber-300 dark:border-amber-400/40'
-                        : idx === 1
-                        ? 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-300/20 dark:text-slate-200 dark:border-slate-300/40'
-                        : idx === 2
-                        ? 'bg-orange-100 text-orange-800 border-orange-300 dark:bg-amber-700/20 dark:text-amber-500 dark:border-amber-600/40'
-                        : 'bg-slate-50 text-slate-600 border-slate-200 dark:bg-surface dark:text-muted dark:border-edge/60';
 
                     return (
                       <tr
                         key={cand.id}
                         className={`transition-colors ${
                           isSelected
-                            ? 'bg-orange-50/60 dark:bg-signal/10 border-l-2 border-l-orange-500 dark:border-l-signal'
-                            : 'hover:bg-slate-50/70 dark:hover:bg-surface/40'
+                            ? 'bg-signal/[0.07] border-l-2 border-l-signal'
+                            : 'hover:bg-well/60'
                         }`}
                       >
                         <td className="py-3.5 pl-3 pr-2">
-                          <input
-                            type="checkbox"
+                          <Checkbox
                             checked={isSelected}
                             onChange={() =>
                               setSelectedIds((prev) =>
@@ -629,13 +604,21 @@ function RecruiterPortalContent() {
                                   : [...prev, cand.id]
                               )
                             }
-                            className="rounded border-[#e2e0d8] dark:border-edge bg-white dark:bg-surface text-orange-600 dark:text-signal focus:ring-0 cursor-pointer"
+                            ariaLabel={`Select ${cand.username}`}
                           />
                         </td>
 
                         <td className="py-3.5 px-2 text-center">
                           <span
-                            className={`inline-block rounded px-1.5 py-0.5 font-mono text-[10px] font-bold border ${rankBadgeColor}`}
+                            className={`inline-block rounded px-1.5 py-0.5 font-mono text-[10px] font-bold border ${
+                              idx === 0
+                                ? 'border-signal/40 bg-signal/15 text-signal'
+                                : idx === 1
+                                ? 'border-edge bg-well text-content'
+                                : idx === 2
+                                ? 'border-signal/25 bg-signal/[0.07] text-signal/90'
+                                : 'border-edge bg-card text-muted'
+                            }`}
                           >
                             #{idx + 1}
                           </span>
@@ -643,7 +626,7 @@ function RecruiterPortalContent() {
 
                         <td className="py-3.5 px-3">
                           <div className="flex items-center gap-2.5">
-                            <div className="h-8 w-8 rounded-full border border-[#e2e0d8] dark:border-edge bg-slate-100 dark:bg-surface overflow-hidden flex-none flex items-center justify-center">
+                            <div className="h-8 w-8 rounded-full border border-edge bg-well overflow-hidden flex-none flex items-center justify-center">
                               {cand.avatarUrl ? (
                                 <img
                                   src={cand.avatarUrl}
@@ -654,7 +637,7 @@ function RecruiterPortalContent() {
                                   }}
                                 />
                               ) : (
-                                <span className="font-mono text-xs font-bold text-slate-500 dark:text-muted">
+                                <span className="font-mono text-xs font-bold text-muted">
                                   {cand.username.slice(0, 2).toUpperCase()}
                                 </span>
                               )}
@@ -663,12 +646,12 @@ function RecruiterPortalContent() {
                               <Link
                                 href={`/profile/${cand.username}?jobId=${activeProject.id}`}
                                 target="_blank"
-                                className="font-mono text-xs font-bold text-slate-900 dark:text-ece9f0 hover:text-orange-600 dark:hover:text-signal transition-colors block truncate"
+                                className="font-mono text-xs font-bold text-content hover:text-signal transition-colors block truncate"
                               >
                                 {cand.fullName || `@${cand.username}`}
                               </Link>
-                              <div className="flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-muted">
-                                <span className="text-orange-600 dark:text-signal">@{cand.username}</span>
+                              <div className="flex items-center gap-1.5 text-[10px] text-muted">
+                                <span className="text-signal">@{cand.username}</span>
                                 <span>·</span>
                                 <span className="capitalize">{cand.persona.replace(/_/g, ' ')}</span>
                               </div>
@@ -679,17 +662,17 @@ function RecruiterPortalContent() {
                         <td className="py-3.5 px-3 text-center">
                           <div className="inline-flex flex-col items-center">
                             <span
-                              className={`rounded-lg px-2 py-0.5 font-mono text-xs font-bold border ${
+                              className={`rounded-lg border px-2 py-0.5 font-mono text-xs font-bold ${
                                 cand.fitScore >= 85
-                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-500/30'
+                                  ? 'border-signal/35 bg-signal/10 text-signal'
                                   : cand.fitScore >= 70
-                                  ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-500/30'
-                                  : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-500/30'
+                                  ? 'border-edge bg-well text-content'
+                                  : 'border-edge bg-well text-muted'
                               }`}
                             >
                               {cand.fitScore}%
                             </span>
-                            <span className="mt-0.5 text-[9px] text-slate-500 dark:text-muted capitalize truncate max-w-[100px]">
+                            <span className="mt-0.5 text-[9px] text-muted capitalize truncate max-w-[100px]">
                               {cand.verdict.replace(/_/g, ' ')}
                             </span>
                           </div>
@@ -697,10 +680,10 @@ function RecruiterPortalContent() {
 
                         <td className="py-3.5 px-3 text-center">
                           <div className="inline-flex flex-col items-center">
-                            <span className="capitalize font-semibold text-slate-900 dark:text-ece9f0">
+                            <span className="capitalize font-semibold text-content">
                               {cand.seniorityEstimate}
                             </span>
-                            <span className="text-[9px] text-slate-500 dark:text-muted">
+                            <span className="text-[9px] text-muted">
                               Target: {activeProject.requisition.seniorityTarget}
                             </span>
                           </div>
@@ -709,60 +692,38 @@ function RecruiterPortalContent() {
                         <td className="py-3.5 px-3">
                           <div className="flex flex-col gap-0.5">
                             <div className="flex items-center gap-1.5 text-[10px]">
-                              <span className="text-emerald-600 dark:text-emerald-400 font-bold">
-                                ✓ {cand.requirementsSummary.metCount} Met
+                              <span className="inline-flex items-center gap-1 text-signal font-bold">
+                                <Icon.Check className="h-3 w-3" />
+                                {cand.requirementsSummary.metCount} Met
                               </span>
                               {cand.requirementsSummary.missingCount > 0 && (
-                                <span className="text-rose-600 dark:text-rose-400">
-                                  ✕ {cand.requirementsSummary.missingCount}
+                                <span className="inline-flex items-center gap-1 text-muted">
+                                  <Icon.X className="h-3 w-3" />
+                                  {cand.requirementsSummary.missingCount}
                                 </span>
                               )}
                             </div>
-                            <div className="text-[9px] text-slate-500 dark:text-muted truncate max-w-[130px]">
+                            <div className="text-[9px] text-muted truncate max-w-[130px]">
                               {activeProject.requisition.mustHaveSkills.slice(0, 3).join(', ')}
                             </div>
                           </div>
                         </td>
 
                         <td className="py-3.5 px-3">
-                          <select
+                          <Select
                             value={cand.pipelineStage}
-                            onChange={(e) =>
-                              handleStageChange(cand.id, e.target.value as PipelineStage)
-                            }
-                            className="w-full rounded-lg border border-[#e2e0d8] dark:border-edge/80 bg-white dark:bg-[#0c0b0e] px-2 py-1 font-mono text-[11px] text-slate-800 dark:text-ece9f0 outline-none hover:border-orange-500 dark:hover:border-signal/50 cursor-pointer shadow-sm"
-                          >
-                            {stageOptions.map((st) => (
-                              <option key={st.value} value={st.value}>
-                                {st.label}
-                              </option>
-                            ))}
-                          </select>
+                            onChange={(v) => handleStageChange(cand.id, v as PipelineStage)}
+                            options={stageSelectOptions}
+                            ariaLabel={`Pipeline stage for ${cand.username}`}
+                            buttonClassName="py-1 text-[11px]"
+                          />
                         </td>
 
                         <td className="py-3.5 px-3">
-                          <div className="flex items-center gap-1">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <button
-                                key={star}
-                                type="button"
-                                onClick={() =>
-                                  handleRatingChange(
-                                    cand.id,
-                                    cand.starRating === star ? 0 : star
-                                  )
-                                }
-                                className={`text-sm transition-transform hover:scale-125 ${
-                                  cand.starRating && cand.starRating >= star
-                                    ? 'text-amber-500 dark:text-amber-400'
-                                    : 'text-slate-300 dark:text-muted/30 hover:text-amber-400'
-                                }`}
-                                title={`Rate ${star} star${star > 1 ? 's' : ''}`}
-                              >
-                                ★
-                              </button>
-                            ))}
-                          </div>
+                          <StarRating
+                            value={cand.starRating || 0}
+                            onChange={(rating) => handleRatingChange(cand.id, rating)}
+                          />
                         </td>
 
                         <td className="py-3.5 px-3">
@@ -777,11 +738,11 @@ function RecruiterPortalContent() {
                                   if (e.key === 'Escape') setEditingNoteId(null);
                                 }}
                                 autoFocus
-                                className="w-full rounded border border-orange-500 dark:border-signal bg-white dark:bg-[#0c0b0e] px-2 py-1 font-mono text-xs text-slate-900 dark:text-ece9f0 outline-none"
+                                className="w-full rounded border border-signal bg-card px-2 py-1 font-mono text-xs text-content outline-none ring-2 ring-signal/20"
                               />
                               <button
                                 onClick={() => handleSaveNote(cand.id)}
-                                className="rounded bg-orange-600 text-white dark:bg-signal dark:text-ink px-2 py-1 text-[10px] font-bold"
+                                className="rounded bg-signal px-2 py-1 text-[10px] font-bold text-[#0c0b0e]"
                               >
                                 Save
                               </button>
@@ -792,15 +753,13 @@ function RecruiterPortalContent() {
                                 setEditingNoteId(cand.id);
                                 setEditingNoteValue(cand.recruiterNotes || '');
                               }}
-                              className="group flex items-center justify-between gap-1 rounded p-1 hover:bg-slate-100 dark:hover:bg-surface/60 cursor-pointer"
+                              className="group flex items-center justify-between gap-1 rounded p-1 hover:bg-well cursor-pointer"
                               title="Click to edit recruiter notes"
                             >
-                              <span className="truncate text-slate-600 dark:text-muted text-[11px] italic font-sans max-w-[190px]">
-                                {cand.recruiterNotes || '+ Add note...'}
+                              <span className="truncate text-muted text-[11px] italic font-sans max-w-[190px]">
+                                {cand.recruiterNotes || '+ Add note…'}
                               </span>
-                              <span className="text-[10px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                                ✏️
-                              </span>
+                              <Icon.Pencil className="h-3 w-3 flex-none text-muted opacity-0 group-hover:opacity-100 transition-opacity" />
                             </div>
                           )}
                         </td>
@@ -810,7 +769,7 @@ function RecruiterPortalContent() {
                             <button
                               type="button"
                               onClick={() => setBriefCandidate(cand)}
-                              className="rounded border border-[#e2e0d8] dark:border-edge/80 bg-white dark:bg-surface/60 px-2 py-1 font-mono text-[10px] font-medium text-slate-700 dark:text-ece9f0 hover:border-orange-500 dark:hover:border-signal hover:text-orange-600 dark:hover:text-signal shadow-sm transition-colors"
+                              className="rounded border border-edge bg-card px-2 py-1 font-mono text-[10px] font-medium text-content shadow-xs transition-colors hover:border-signal/50 hover:text-signal"
                               title="View and print 1-pager brief for hiring manager"
                             >
                               EM Brief
@@ -819,19 +778,19 @@ function RecruiterPortalContent() {
                             <Link
                               href={`/profile/${cand.username}?jobId=${activeProject.id}`}
                               target="_blank"
-                              className="rounded border border-[#e2e0d8] dark:border-edge/80 bg-white dark:bg-surface/60 px-2 py-1 font-mono text-[10px] font-medium text-slate-500 dark:text-muted hover:border-orange-500 dark:hover:border-signal hover:text-orange-600 dark:hover:text-signal shadow-sm transition-colors"
+                              className="flex h-[26px] w-[26px] items-center justify-center rounded border border-edge bg-card text-muted shadow-xs transition-colors hover:border-signal/50 hover:text-signal"
                               title="Open full interactive audit dossier"
                             >
-                              ↗
+                              <Icon.ArrowUpRight className="h-3 w-3" />
                             </Link>
 
                             <button
                               type="button"
                               onClick={() => handleRemoveCandidate(cand.id, cand.username)}
-                              className="rounded border border-[#e2e0d8] dark:border-edge/80 bg-white dark:bg-surface/40 px-1.5 py-1 font-mono text-[10px] text-slate-400 dark:text-muted hover:border-rose-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
+                              className="flex h-[26px] w-[26px] items-center justify-center rounded border border-edge bg-card text-muted transition-colors hover:border-rose-400/60 hover:text-rose-500"
                               title="Remove candidate from this job"
                             >
-                              ✕
+                              <Icon.X className="h-3 w-3" />
                             </button>
                           </div>
                         </td>
@@ -845,14 +804,14 @@ function RecruiterPortalContent() {
         </div>
       </div>
 
-      {/* Floating Multi-Select Action Bar (Side-by-Side Comparison) */}
+      {/* Floating Multi-Select Action Bar */}
       {selectedIds.length > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 rounded-xl border border-orange-300 dark:border-signal/40 bg-white/95 dark:bg-[#121118]/95 px-5 py-3 shadow-2xl backdrop-blur-md animate-in slide-in-from-bottom-2">
-          <span className="font-mono text-xs font-bold text-orange-600 dark:text-signal">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 rounded-xl border border-signal/40 bg-card/95 px-5 py-3 shadow-pop backdrop-blur-md animate-in">
+          <span className="font-mono text-xs font-bold text-signal">
             {selectedIds.length} candidate{selectedIds.length > 1 ? 's' : ''} selected
           </span>
 
-          <span className="h-4 w-[1px] bg-slate-200 dark:bg-edge" />
+          <span className="h-4 w-[1px] bg-edge" />
 
           <button
             type="button"
@@ -860,38 +819,29 @@ function RecruiterPortalContent() {
             onClick={() => setCompareModalOpen(true)}
             className={`flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 font-mono text-xs font-bold transition-all ${
               selectedIds.length >= 2 && selectedIds.length <= 3
-                ? 'bg-orange-600 text-white dark:bg-signal dark:text-ink hover:opacity-90 shadow-lg'
-                : 'bg-slate-100 text-slate-400 dark:bg-surface/80 dark:text-muted/60 cursor-not-allowed border border-slate-200 dark:border-edge/40'
+                ? 'bg-signal text-[#0c0b0e] hover:bg-signal/90 shadow-xs'
+                : 'cursor-not-allowed border border-edge bg-well text-muted/60'
             }`}
           >
-            <span>⚖️</span>
+            <Icon.Scale className="h-3.5 w-3.5" />
             <span>Compare Side-by-Side</span>
           </button>
 
-          <select
-            onChange={(e) => {
-              if (e.target.value) {
-                handleBatchStageChange(e.target.value as PipelineStage);
-                e.target.value = '';
-              }
+          <Select
+            value=""
+            onChange={(v) => {
+              if (v) handleBatchStageChange(v as PipelineStage);
             }}
-            defaultValue=""
-            className="rounded-lg border border-[#e2e0d8] dark:border-edge bg-white dark:bg-surface px-2.5 py-1.5 font-mono text-xs text-slate-800 dark:text-ece9f0 outline-none hover:border-orange-500 cursor-pointer"
-          >
-            <option value="" disabled>
-              Move To Stage...
-            </option>
-            {stageOptions.map((st) => (
-              <option key={st.value} value={st.value}>
-                {st.label}
-              </option>
-            ))}
-          </select>
+            options={[{ value: '', label: 'Move To Stage…' }, ...stageSelectOptions]}
+            placeholder="Move To Stage…"
+            ariaLabel="Batch move selected candidates to stage"
+            className="w-44"
+          />
 
           <button
             type="button"
             onClick={() => setSelectedIds([])}
-            className="font-mono text-xs text-slate-500 dark:text-muted hover:text-slate-900 dark:hover:text-ece9f0 pl-1"
+            className="font-mono text-xs text-muted hover:text-content pl-1"
           >
             Clear
           </button>
@@ -958,8 +908,8 @@ export default function RecruiterPortalPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-[#faf9f5] dark:bg-[#0c0b0e] font-mono text-sm text-slate-500 dark:text-muted">
-          Loading RecruiterOS Workspace...
+        <div className="flex min-h-screen items-center justify-center bg-canvas font-mono text-sm text-muted">
+          Loading RecruiterOS Workspace…
         </div>
       }
     >

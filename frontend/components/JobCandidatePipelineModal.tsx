@@ -11,6 +11,9 @@ import {
   batchUpdateCandidatesStage,
   exportPipelineToMarkdown,
 } from '@/lib/job-projects';
+import { Icon } from '@/components/icons';
+import { Select, Checkbox, StarRating, SearchInput, SegmentedTabs } from '@/components/ui';
+import type { SelectOption } from '@/components/ui';
 import CandidateCompareModal from './CandidateCompareModal';
 import HiringCommitteeBriefModal from './HiringCommitteeBriefModal';
 
@@ -52,13 +55,30 @@ export default function JobCandidatePipelineModal({
 
   if (!isOpen) return null;
 
-  const stageOptions: { value: PipelineStage; label: string; color: string }[] = [
-    { value: 'new_assessed', label: 'New Assessed', color: 'text-blue-400 bg-blue-950/40 border-blue-500/30' },
-    { value: 'phone_screen_scheduled', label: 'Phone Screen', color: 'text-amber-400 bg-amber-950/40 border-amber-500/30' },
-    { value: 'interviewing', label: 'Interviewing', color: 'text-purple-400 bg-purple-950/40 border-purple-500/30' },
-    { value: 'offer', label: 'Offer Stage', color: 'text-emerald-400 bg-emerald-950/40 border-emerald-500/30' },
-    { value: 'archived', label: 'Archived', color: 'text-muted bg-surface/60 border-edge/60' },
+  const stageOptions: { value: PipelineStage; label: string }[] = [
+    { value: 'new_assessed', label: 'New Assessed' },
+    { value: 'phone_screen_scheduled', label: 'Phone Screen' },
+    { value: 'interviewing', label: 'Interviewing' },
+    { value: 'offer', label: 'Offer Stage' },
+    { value: 'archived', label: 'Archived' },
   ];
+
+  const stageSelectOptions: SelectOption[] = stageOptions.map((s) => ({
+    value: s.value,
+    label: s.label,
+  }));
+
+  const sortOptions: SelectOption[] = [
+    { value: 'fit_desc', label: 'Fit Score: High → Low' },
+    { value: 'fit_asc', label: 'Fit Score: Low → High' },
+    { value: 'rating_desc', label: 'Rating: Highest First' },
+    { value: 'date_desc', label: 'Evaluated: Newest First' },
+  ];
+
+  const projectSelectOptions: SelectOption[] = projects.map((p) => ({
+    value: p.id,
+    label: `${p.title} (${p.candidates.length} candidates)`,
+  }));
 
   // Filter & Sort
   const filteredCandidates = useMemo(() => {
@@ -103,12 +123,8 @@ export default function JobCandidatePipelineModal({
     );
   };
 
-  const handleSelectAll = () => {
-    if (selectedIds.length === filteredCandidates.length) {
-      setSelectedIds([]);
-    } else {
-      setSelectedIds(filteredCandidates.map((c) => c.id));
-    }
+  const handleSelectAll = (checked: boolean) => {
+    setSelectedIds(checked ? filteredCandidates.map((c) => c.id) : []);
   };
 
   const handleStageChange = (candId: string, stage: PipelineStage) => {
@@ -160,13 +176,13 @@ export default function JobCandidatePipelineModal({
   const compareCandidates = project.candidates.filter((c) => selectedIds.includes(c.id));
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-3 sm:p-5 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative flex h-[94vh] w-full max-w-7xl flex-col rounded-2xl border border-edge bg-[#0e0d12] shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-3 sm:p-5 backdrop-blur-md animate-in">
+      <div className="relative flex h-[94vh] w-full max-w-7xl flex-col rounded-2xl border border-edge bg-card shadow-pop overflow-hidden">
         {/* Top Header Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-edge/80 bg-[#121118] px-6 py-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-edge bg-well px-6 py-4">
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-signal/15 border border-signal/30 text-xl">
-              👥
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-edge bg-card text-muted">
+              <Icon.Users className="h-5 w-5" />
             </span>
             <div>
               <div className="flex items-center gap-2">
@@ -177,18 +193,14 @@ export default function JobCandidatePipelineModal({
                 <span className="font-mono text-xs text-muted">{project.department}</span>
               </div>
               <div className="flex items-center gap-2 mt-0.5">
-                {/* Project Switcher Select */}
-                <select
+                {/* Project Switcher */}
+                <Select
                   value={project.id}
-                  onChange={(e) => onSelectProject(e.target.value)}
-                  className="bg-transparent font-mono text-base font-bold text-ece9f0 border-none outline-none cursor-pointer hover:text-signal transition-colors"
-                >
-                  {projects.map((p) => (
-                    <option key={p.id} value={p.id} className="bg-[#121118] text-ece9f0 font-mono text-xs">
-                      {p.title} ({p.candidates.length} candidates)
-                    </option>
-                  ))}
-                </select>
+                  onChange={onSelectProject}
+                  options={projectSelectOptions}
+                  ariaLabel="Switch job project"
+                  buttonClassName="border-none bg-transparent px-0 font-mono text-base font-bold text-content shadow-none hover:text-signal focus-visible:ring-0"
+                />
               </div>
             </div>
           </div>
@@ -198,123 +210,90 @@ export default function JobCandidatePipelineModal({
             <button
               type="button"
               onClick={handleExportMarkdown}
-              className="flex items-center gap-1.5 rounded-lg border border-edge bg-surface/80 px-3 py-1.5 font-mono text-xs font-semibold text-ece9f0 transition-colors hover:border-signal hover:text-signal"
+              className="flex items-center gap-1.5 rounded-lg border border-edge bg-card px-3 py-1.5 font-mono text-xs font-semibold text-content transition-colors hover:border-signal/50 hover:text-signal outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
               title="Copy markdown table of this pipeline to clipboard"
             >
-              <span>{copiedMd ? '✓ Copied Markdown!' : '📋 Export Leaderboard'}</span>
+              <Icon.Clipboard className="h-3.5 w-3.5 text-muted" />
+              <span>{copiedMd ? 'Copied' : 'Export Leaderboard'}</span>
+              {copiedMd && <Icon.Check className="h-3 w-3 text-signal" />}
             </button>
 
             <button
               type="button"
               onClick={onOpenGuardrails}
-              className="flex items-center gap-1.5 rounded-lg border border-edge bg-surface/80 px-3 py-1.5 font-mono text-xs font-semibold text-muted transition-colors hover:border-signal/50 hover:text-ece9f0"
+              className="flex items-center gap-1.5 rounded-lg border border-edge bg-card px-3 py-1.5 font-mono text-xs font-semibold text-content transition-colors hover:border-signal/50 hover:text-signal outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
             >
-              <span>⚙️</span>
+              <Icon.Settings className="h-3.5 w-3.5 text-muted" />
               <span>Guardrails</span>
             </button>
 
             <button
               type="button"
               onClick={onClose}
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-edge/80 bg-surface/60 font-mono text-sm text-muted hover:border-signal hover:text-signal transition-colors ml-1"
+              aria-label="Close pipeline"
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-edge bg-card font-mono text-sm text-muted transition-colors hover:border-signal/50 hover:text-signal ml-1"
             >
-              ✕
+              <Icon.X className="h-3.5 w-3.5" />
             </button>
           </div>
         </div>
 
         {/* Requisition Summary Strip */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-edge/60 bg-[#09080b] px-6 py-2.5 font-mono text-xs">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-edge px-6 py-2.5 font-mono text-xs">
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-1.5">
-              <span className="text-muted/70">Must-Have Stack:</span>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-muted/80">Must-Have Stack:</span>
               {project.requisition.mustHaveSkills.map((s) => (
                 <span
                   key={s}
-                  className="rounded bg-surface px-2 py-0.5 text-ece9f0 border border-edge/60 text-[11px]"
+                  className="rounded border border-edge bg-well px-2 py-0.5 text-content text-[11px]"
                 >
                   {s}
                 </span>
               ))}
             </div>
             <span className="text-edge">|</span>
-            <span className="text-muted">Target: <strong className="text-ece9f0 uppercase">{project.requisition.seniorityTarget}</strong></span>
+            <span className="text-muted">Target: <strong className="text-content uppercase">{project.requisition.seniorityTarget}</strong></span>
           </div>
 
           <div className="flex items-center gap-4 text-muted text-[11px]">
-            <span>Total Evaluated: <strong className="text-ece9f0">{totalCount}</strong></span>
-            <span>Shortlisted: <strong className="text-emerald-400">{shortlistedCount}</strong></span>
+            <span>Total Evaluated: <strong className="text-content">{totalCount}</strong></span>
+            <span>Shortlisted: <strong className="text-content">{shortlistedCount}</strong></span>
             <span>Avg Match: <strong className="text-signal">{avgFit}%</strong></span>
           </div>
         </div>
 
         {/* Toolbar: Search, Stage Filter Pills, Sort & Quick Screen */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-edge/60 bg-[#121118]/60 px-6 py-3">
-          {/* Stage Tabs */}
-          <div className="flex flex-wrap items-center gap-1.5 font-mono text-xs">
-            <button
-              type="button"
-              onClick={() => setSelectedStage('all')}
-              className={`rounded-lg px-2.5 py-1 transition-colors ${
-                selectedStage === 'all'
-                  ? 'bg-signal text-ink font-bold shadow'
-                  : 'bg-surface/60 text-muted hover:text-ece9f0'
-              }`}
-            >
-              All ({totalCount})
-            </button>
-            {stageOptions.map((st) => {
-              const count = project.candidates.filter((c) => c.pipelineStage === st.value).length;
-              return (
-                <button
-                  key={st.value}
-                  type="button"
-                  onClick={() => setSelectedStage(st.value)}
-                  className={`rounded-lg px-2.5 py-1 transition-colors ${
-                    selectedStage === st.value
-                      ? 'bg-signal text-ink font-bold shadow'
-                      : 'bg-surface/60 text-muted hover:text-ece9f0'
-                  }`}
-                >
-                  {st.label} ({count})
-                </button>
-              );
-            })}
-          </div>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-edge px-6 py-3">
+          <SegmentedTabs
+            active={selectedStage}
+            onChange={setSelectedStage}
+            tabs={[
+              { value: 'all', label: 'All', count: totalCount },
+              ...stageOptions.map((st) => ({
+                value: st.value,
+                label: st.label,
+                count: project.candidates.filter((c) => c.pipelineStage === st.value).length,
+              })),
+            ]}
+          />
 
           {/* Search & Sort Controls */}
           <div className="flex items-center gap-2">
-            {/* Search Input */}
-            <div className="flex items-center gap-1.5 rounded-lg border border-edge/80 bg-[#0c0b0e] px-2.5 py-1 text-xs">
-              <span className="text-muted">🔍</span>
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search candidate..."
-                className="w-32 sm:w-40 bg-transparent font-mono text-xs text-ece9f0 outline-none placeholder:text-muted/50"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="text-muted hover:text-signal text-[10px]"
-                >
-                  ✕
-                </button>
-              )}
-            </div>
+            <SearchInput
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder="Search candidate…"
+              className="w-36 sm:w-48"
+            />
 
-            {/* Sort Selector */}
-            <select
+            <Select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
-              className="rounded-lg border border-edge/80 bg-surface/80 px-2.5 py-1 font-mono text-xs text-muted outline-none hover:text-ece9f0 cursor-pointer"
-            >
-              <option value="fit_desc">Fit Score: High → Low</option>
-              <option value="fit_asc">Fit Score: Low → High</option>
-              <option value="rating_desc">Rating: Highest First</option>
-              <option value="date_desc">Evaluated: Newest First</option>
-            </select>
+              onChange={(v) => setSortBy(v as typeof sortBy)}
+              options={sortOptions}
+              ariaLabel="Sort candidates"
+              className="w-48"
+            />
           </div>
         </div>
 
@@ -322,11 +301,11 @@ export default function JobCandidatePipelineModal({
         <div className="flex-1 overflow-y-auto thin-scroll p-6">
           {filteredCandidates.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
-              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-surface border border-edge text-2xl">
-                📂
+              <span className="flex h-14 w-14 items-center justify-center rounded-2xl border border-edge bg-well text-muted">
+                <Icon.Folder className="h-6 w-6" />
               </span>
               <div>
-                <h4 className="font-mono text-sm font-bold text-ece9f0">
+                <h4 className="font-mono text-sm font-bold text-content">
                   No candidates match current criteria
                 </h4>
                 <p className="mt-1 font-sans text-xs text-muted max-w-sm">
@@ -341,19 +320,19 @@ export default function JobCandidatePipelineModal({
                 onSubmit={handleQuickScreen}
                 className="flex items-center gap-2 max-w-sm w-full pt-2"
               >
-                <div className="flex items-center gap-1.5 flex-1 rounded-xl border border-edge/80 bg-[#0c0b0e] px-3 py-2">
+                <div className="flex items-center gap-1.5 flex-1 rounded-xl border border-edge bg-well px-3 py-2 transition-colors focus-within:border-signal">
                   <span className="font-mono text-xs text-signal font-bold">@</span>
                   <input
                     type="text"
                     value={quickHandle}
                     onChange={(e) => setQuickHandle(e.target.value)}
                     placeholder="github-username"
-                    className="w-full bg-transparent font-mono text-xs text-ece9f0 outline-none placeholder:text-muted/40"
+                    className="w-full bg-transparent font-mono text-xs text-content outline-none placeholder:text-muted/60"
                   />
                 </div>
                 <button
                   type="submit"
-                  className="rounded-xl bg-signal px-4 py-2 font-mono text-xs font-bold text-ink hover:opacity-90 transition-opacity"
+                  className="rounded-xl bg-signal px-4 py-2 font-mono text-xs font-bold text-[#0c0b0e] hover:bg-signal/90 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
                 >
                   Screen
                 </button>
@@ -363,16 +342,15 @@ export default function JobCandidatePipelineModal({
             <div className="overflow-x-auto">
               <table className="w-full border-collapse font-mono text-xs">
                 <thead>
-                  <tr className="border-b border-edge/60 text-left font-mono text-[10px] uppercase tracking-wider text-muted/70">
+                  <tr className="border-b border-edge text-left font-mono text-[10px] uppercase tracking-wider text-muted">
                     <th className="py-2.5 pl-3 pr-2 w-8">
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         checked={
                           filteredCandidates.length > 0 &&
                           selectedIds.length === filteredCandidates.length
                         }
                         onChange={handleSelectAll}
-                        className="rounded border-edge bg-surface text-signal focus:ring-0 cursor-pointer"
+                        ariaLabel="Select all candidates"
                       />
                     </th>
                     <th className="py-2.5 px-2 w-12 text-center">Rank</th>
@@ -386,42 +364,40 @@ export default function JobCandidatePipelineModal({
                     <th className="py-2.5 pr-3 pl-2 text-right min-w-[140px]">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-edge/40">
+                <tbody className="divide-y divide-edge">
                   {filteredCandidates.map((cand, idx) => {
                     const isSelected = selectedIds.includes(cand.id);
-                    const isTop3 = idx < 3;
-                    const rankBadgeColor =
-                      idx === 0
-                        ? 'bg-amber-400/20 text-amber-300 border-amber-400/40'
-                        : idx === 1
-                        ? 'bg-slate-300/20 text-slate-200 border-slate-300/40'
-                        : idx === 2
-                        ? 'bg-amber-700/20 text-amber-500 border-amber-600/40'
-                        : 'bg-surface text-muted border-edge/60';
 
                     return (
                       <tr
                         key={cand.id}
                         className={`transition-colors ${
                           isSelected
-                            ? 'bg-signal/10 border-l-2 border-l-signal'
-                            : 'hover:bg-surface/40'
+                            ? 'bg-signal/[0.07] border-l-2 border-l-signal'
+                            : 'hover:bg-well/60'
                         }`}
                       >
                         {/* Checkbox */}
                         <td className="py-3 pl-3 pr-2">
-                          <input
-                            type="checkbox"
+                          <Checkbox
                             checked={isSelected}
                             onChange={() => handleToggleSelect(cand.id)}
-                            className="rounded border-edge bg-surface text-signal focus:ring-0 cursor-pointer"
+                            ariaLabel={`Select ${cand.username}`}
                           />
                         </td>
 
                         {/* Rank */}
                         <td className="py-3 px-2 text-center">
                           <span
-                            className={`inline-block rounded px-1.5 py-0.5 font-mono text-[10px] font-bold border ${rankBadgeColor}`}
+                            className={`inline-block rounded px-1.5 py-0.5 font-mono text-[10px] font-bold border ${
+                              idx === 0
+                                ? 'border-signal/40 bg-signal/15 text-signal'
+                                : idx === 1
+                                ? 'border-edge bg-well text-content'
+                                : idx === 2
+                                ? 'border-signal/25 bg-signal/[0.07] text-signal/90'
+                                : 'border-edge bg-card text-muted'
+                            }`}
                           >
                             #{idx + 1}
                           </span>
@@ -430,7 +406,7 @@ export default function JobCandidatePipelineModal({
                         {/* Candidate Identity */}
                         <td className="py-3 px-3">
                           <div className="flex items-center gap-2.5">
-                            <div className="h-8 w-8 rounded-full border border-edge bg-surface overflow-hidden flex-none flex items-center justify-center">
+                            <div className="h-8 w-8 rounded-full border border-edge bg-well overflow-hidden flex-none flex items-center justify-center">
                               {cand.avatarUrl ? (
                                 <img
                                   src={cand.avatarUrl}
@@ -450,7 +426,7 @@ export default function JobCandidatePipelineModal({
                               <Link
                                 href={`/profile/${cand.username}?jobId=${project.id}`}
                                 target="_blank"
-                                className="font-mono text-xs font-bold text-ece9f0 hover:text-signal transition-colors block truncate"
+                                className="font-mono text-xs font-bold text-content hover:text-signal transition-colors block truncate"
                               >
                                 {cand.fullName || `@${cand.username}`}
                               </Link>
@@ -467,12 +443,12 @@ export default function JobCandidatePipelineModal({
                         <td className="py-3 px-3 text-center">
                           <div className="inline-flex flex-col items-center">
                             <span
-                              className={`rounded-lg px-2 py-0.5 font-mono text-xs font-bold ${
+                              className={`rounded-lg border px-2 py-0.5 font-mono text-xs font-bold ${
                                 cand.fitScore >= 85
-                                  ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-500/30'
+                                  ? 'border-signal/35 bg-signal/10 text-signal'
                                   : cand.fitScore >= 70
-                                  ? 'bg-amber-950/40 text-amber-300 border border-amber-500/30'
-                                  : 'bg-rose-950/40 text-rose-300 border border-rose-500/30'
+                                  ? 'border-edge bg-well text-content'
+                                  : 'border-edge bg-well text-muted'
                               }`}
                             >
                               {cand.fitScore}%
@@ -486,7 +462,7 @@ export default function JobCandidatePipelineModal({
                         {/* Seniority */}
                         <td className="py-3 px-3 text-center">
                           <div className="inline-flex flex-col items-center">
-                            <span className="capitalize font-semibold text-ece9f0">
+                            <span className="capitalize font-semibold text-content">
                               {cand.seniorityEstimate}
                             </span>
                             <span className="text-[9px] text-muted">
@@ -499,12 +475,14 @@ export default function JobCandidatePipelineModal({
                         <td className="py-3 px-3">
                           <div className="flex flex-col gap-0.5">
                             <div className="flex items-center gap-1.5 text-[10px]">
-                              <span className="text-emerald-400 font-bold">
-                                ✓ {cand.requirementsSummary.metCount} Met
+                              <span className="inline-flex items-center gap-1 text-signal font-bold">
+                                <Icon.Check className="h-3 w-3" />
+                                {cand.requirementsSummary.metCount} Met
                               </span>
                               {cand.requirementsSummary.missingCount > 0 && (
-                                <span className="text-rose-400">
-                                  ✕ {cand.requirementsSummary.missingCount}
+                                <span className="inline-flex items-center gap-1 text-muted">
+                                  <Icon.X className="h-3 w-3" />
+                                  {cand.requirementsSummary.missingCount}
                                 </span>
                               )}
                             </div>
@@ -516,45 +494,21 @@ export default function JobCandidatePipelineModal({
 
                         {/* Pipeline Stage Select */}
                         <td className="py-3 px-3">
-                          <select
+                          <Select
                             value={cand.pipelineStage}
-                            onChange={(e) =>
-                              handleStageChange(cand.id, e.target.value as PipelineStage)
-                            }
-                            className="w-full rounded-lg border border-edge/80 bg-[#0c0b0e] px-2 py-1 font-mono text-[11px] text-ece9f0 outline-none hover:border-signal/50 cursor-pointer"
-                          >
-                            {stageOptions.map((st) => (
-                              <option key={st.value} value={st.value}>
-                                {st.label}
-                              </option>
-                            ))}
-                          </select>
+                            onChange={(v) => handleStageChange(cand.id, v as PipelineStage)}
+                            options={stageSelectOptions}
+                            ariaLabel={`Pipeline stage for ${cand.username}`}
+                            buttonClassName="py-1 text-[11px]"
+                          />
                         </td>
 
-                        {/* Rating (1-5 Stars) */}
+                        {/* Rating */}
                         <td className="py-3 px-3">
-                          <div className="flex items-center gap-1">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <button
-                                key={star}
-                                type="button"
-                                onClick={() =>
-                                  handleRatingChange(
-                                    cand.id,
-                                    cand.starRating === star ? 0 : star
-                                  )
-                                }
-                                className={`text-sm transition-transform hover:scale-125 ${
-                                  cand.starRating && cand.starRating >= star
-                                    ? 'text-amber-400'
-                                    : 'text-muted/30 hover:text-amber-400/50'
-                                }`}
-                                title={`Rate ${star} star${star > 1 ? 's' : ''}`}
-                              >
-                                ★
-                              </button>
-                            ))}
-                          </div>
+                          <StarRating
+                            value={cand.starRating || 0}
+                            onChange={(rating) => handleRatingChange(cand.id, rating)}
+                          />
                         </td>
 
                         {/* Inline Recruiter Note */}
@@ -570,11 +524,11 @@ export default function JobCandidatePipelineModal({
                                   if (e.key === 'Escape') setEditingNoteId(null);
                                 }}
                                 autoFocus
-                                className="w-full rounded border border-signal bg-[#0c0b0e] px-2 py-1 font-mono text-xs text-ece9f0 outline-none"
+                                className="w-full rounded border border-signal bg-card px-2 py-1 font-mono text-xs text-content outline-none ring-2 ring-signal/20"
                               />
                               <button
                                 onClick={() => handleSaveNote(cand.id)}
-                                className="rounded bg-signal px-2 py-1 text-[10px] font-bold text-ink"
+                                className="rounded bg-signal px-2 py-1 text-[10px] font-bold text-[#0c0b0e]"
                               >
                                 Save
                               </button>
@@ -585,15 +539,13 @@ export default function JobCandidatePipelineModal({
                                 setEditingNoteId(cand.id);
                                 setEditingNoteValue(cand.recruiterNotes || '');
                               }}
-                              className="group flex items-center justify-between gap-1 rounded p-1 hover:bg-surface/60 cursor-pointer"
+                              className="group flex items-center justify-between gap-1 rounded p-1 hover:bg-well cursor-pointer"
                               title="Click to edit recruiter notes"
                             >
                               <span className="truncate text-muted text-[11px] italic font-sans max-w-[190px]">
-                                {cand.recruiterNotes || '+ Add note...'}
+                                {cand.recruiterNotes || '+ Add note…'}
                               </span>
-                              <span className="text-[10px] text-muted opacity-0 group-hover:opacity-100 transition-opacity">
-                                ✏️
-                              </span>
+                              <Icon.Pencil className="h-3 w-3 flex-none text-muted opacity-0 group-hover:opacity-100 transition-opacity" />
                             </div>
                           )}
                         </td>
@@ -604,7 +556,7 @@ export default function JobCandidatePipelineModal({
                             <button
                               type="button"
                               onClick={() => setBriefCandidate(cand)}
-                              className="rounded border border-edge/80 bg-surface/60 px-2 py-1 font-mono text-[10px] font-medium text-ece9f0 hover:border-signal hover:text-signal transition-colors"
+                              className="rounded border border-edge bg-card px-2 py-1 font-mono text-[10px] font-medium text-content transition-colors hover:border-signal/50 hover:text-signal"
                               title="View and print 1-pager brief for hiring committee"
                             >
                               EM Brief
@@ -613,19 +565,19 @@ export default function JobCandidatePipelineModal({
                             <Link
                               href={`/profile/${cand.username}?jobId=${project.id}`}
                               target="_blank"
-                              className="rounded border border-edge/80 bg-surface/60 px-2 py-1 font-mono text-[10px] font-medium text-muted hover:border-signal hover:text-signal transition-colors"
+                              className="flex h-[26px] w-[26px] items-center justify-center rounded border border-edge bg-card text-muted transition-colors hover:border-signal/50 hover:text-signal"
                               title="Open full interactive DevScope audit dossier"
                             >
-                              ↗
+                              <Icon.ArrowUpRight className="h-3 w-3" />
                             </Link>
 
                             <button
                               type="button"
                               onClick={() => handleRemove(cand.id, cand.username)}
-                              className="rounded border border-edge/80 bg-surface/40 px-1.5 py-1 font-mono text-[10px] text-muted hover:border-rose-500/50 hover:text-rose-400 transition-colors"
+                              className="flex h-[26px] w-[26px] items-center justify-center rounded border border-edge bg-card text-muted transition-colors hover:border-rose-400/60 hover:text-rose-500"
                               title="Remove candidate from this job"
                             >
-                              ✕
+                              <Icon.X className="h-3 w-3" />
                             </button>
                           </div>
                         </td>
@@ -640,7 +592,7 @@ export default function JobCandidatePipelineModal({
 
         {/* Floating Multi-Select Action Bar */}
         {selectedIds.length > 0 && (
-          <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 rounded-xl border border-signal/40 bg-[#121118]/95 px-4 py-2.5 shadow-2xl backdrop-blur-md animate-in slide-in-from-bottom-2">
+          <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 rounded-xl border border-signal/40 bg-card/95 px-4 py-2.5 shadow-pop backdrop-blur-md animate-in">
             <span className="font-mono text-xs font-bold text-signal">
               {selectedIds.length} candidate{selectedIds.length > 1 ? 's' : ''} selected
             </span>
@@ -654,8 +606,8 @@ export default function JobCandidatePipelineModal({
               onClick={() => setCompareModalOpen(true)}
               className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-mono text-xs font-bold transition-all ${
                 selectedIds.length >= 2 && selectedIds.length <= 3
-                  ? 'bg-signal text-ink hover:opacity-90 shadow-lg'
-                  : 'bg-surface/80 text-muted/60 cursor-not-allowed border border-edge/40'
+                  ? 'bg-signal text-[#0c0b0e] hover:bg-signal/90 shadow-xs'
+                  : 'cursor-not-allowed border border-edge bg-well text-muted/60'
               }`}
               title={
                 selectedIds.length < 2
@@ -665,36 +617,27 @@ export default function JobCandidatePipelineModal({
                   : 'Compare selected candidates side-by-side'
               }
             >
-              <span>⚖️</span>
+              <Icon.Scale className="h-3.5 w-3.5" />
               <span>Compare Side-by-Side</span>
             </button>
 
             {/* Batch Change Stage */}
-            <select
-              onChange={(e) => {
-                if (e.target.value) {
-                  handleBatchStageChange(e.target.value as PipelineStage);
-                  e.target.value = '';
-                }
+            <Select
+              value=""
+              onChange={(v) => {
+                if (v) handleBatchStageChange(v as PipelineStage);
               }}
-              defaultValue=""
-              className="rounded-lg border border-edge bg-surface px-2.5 py-1.5 font-mono text-xs text-ece9f0 outline-none hover:border-signal cursor-pointer"
-            >
-              <option value="" disabled>
-                Move To Stage...
-              </option>
-              {stageOptions.map((st) => (
-                <option key={st.value} value={st.value}>
-                  {st.label}
-                </option>
-              ))}
-            </select>
+              options={[{ value: '', label: 'Move To Stage…' }, ...stageSelectOptions]}
+              placeholder="Move To Stage…"
+              ariaLabel="Batch move selected candidates to stage"
+              className="w-44"
+            />
 
             {/* Clear Selection */}
             <button
               type="button"
               onClick={() => setSelectedIds([])}
-              className="font-mono text-xs text-muted hover:text-ece9f0 pl-1"
+              className="font-mono text-xs text-muted hover:text-content pl-1"
             >
               Clear
             </button>
@@ -702,7 +645,7 @@ export default function JobCandidatePipelineModal({
         )}
 
         {/* Footer info bar */}
-        <div className="flex items-center justify-between border-t border-edge/80 bg-[#121118] px-6 py-3 font-mono text-xs text-muted">
+        <div className="flex items-center justify-between border-t border-edge bg-well px-6 py-3 font-mono text-xs text-muted">
           <div className="flex items-center gap-3">
             <span>Showing {filteredCandidates.length} of {project.candidates.length} candidates</span>
             <span>·</span>
@@ -712,7 +655,7 @@ export default function JobCandidatePipelineModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg bg-surface px-4 py-1.5 font-mono text-xs font-semibold text-ece9f0 border border-edge hover:border-signal/50 transition-colors"
+            className="rounded-lg border border-edge bg-card px-4 py-1.5 font-mono text-xs font-semibold text-content transition-colors hover:border-signal/50 hover:text-signal"
           >
             Done
           </button>

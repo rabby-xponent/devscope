@@ -3,6 +3,8 @@
 import React from 'react';
 import Link from 'next/link';
 import { JobCandidateRecord, JobProject } from '@/lib/job-projects';
+import { Icon } from '@/components/icons';
+import { StarRating } from '@/components/ui';
 
 interface CandidateCompareModalProps {
   isOpen: boolean;
@@ -28,23 +30,23 @@ export default function CandidateCompareModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 dark:bg-black/80 p-4 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative flex max-h-[92vh] w-full max-w-6xl flex-col rounded-2xl border border-slate-200 dark:border-edge bg-white dark:bg-[#0e0d12] text-slate-900 dark:text-[#ece9f0] shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-md animate-in">
+      <div className="relative flex max-h-[92vh] w-full max-w-6xl flex-col rounded-2xl border border-edge bg-card text-content shadow-pop overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-100 dark:border-edge/80 bg-slate-50 dark:bg-[#121118] px-6 py-4">
+        <div className="flex items-center justify-between border-b border-edge bg-well px-6 py-4">
           <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-50 dark:bg-signal/15 border border-orange-200 dark:border-signal/30 text-lg">
-              ⚖️
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-edge bg-card text-muted">
+              <Icon.Scale className="h-4.5 w-4.5" />
             </span>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-mono text-[10px] uppercase tracking-wider text-[#ea580c] dark:text-signal font-bold">
+                <span className="font-mono text-[10px] uppercase tracking-wider text-signal font-bold">
                   Side-by-Side Candidate Calibration
                 </span>
-                <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-muted/60" />
-                <span className="font-mono text-xs text-slate-500 dark:text-muted truncate">{project.title}</span>
+                <span className="h-1 w-1 rounded-full bg-muted/60" />
+                <span className="font-mono text-xs text-muted truncate">{project.title}</span>
               </div>
-              <h2 className="font-mono text-sm font-bold text-slate-900 dark:text-[#ece9f0]">
+              <h2 className="font-mono text-sm font-bold text-content">
                 Comparing {candidates.length} Shortlisted Candidates
               </h2>
             </div>
@@ -52,9 +54,10 @@ export default function CandidateCompareModal({
 
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 dark:border-edge/80 bg-white dark:bg-surface/60 font-mono text-sm text-slate-500 hover:text-slate-900 dark:text-muted dark:hover:text-signal transition-colors"
+            aria-label="Close comparison"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-edge bg-card text-muted transition-colors hover:text-content"
           >
-            ✕
+            <Icon.X className="h-4 w-4" />
           </button>
         </div>
 
@@ -79,22 +82,20 @@ export default function CandidateCompareModal({
               return (
                 <div
                   key={cand.id}
-                  className="flex flex-col rounded-2xl border border-slate-200 dark:border-edge/80 bg-slate-50/70 dark:bg-[#121118]/80 p-5 space-y-4 relative"
+                  className="flex flex-col rounded-2xl border border-edge bg-well p-5 space-y-4 relative"
                 >
                   {/* Rank tag */}
                   <div className="flex items-center justify-between">
-                    <span className="rounded-full bg-orange-50 dark:bg-signal/10 px-2.5 py-0.5 font-mono text-xs font-bold text-[#ea580c] dark:text-signal border border-orange-200 dark:border-signal/20">
+                    <span className="rounded-full border border-signal/30 bg-signal/10 px-2.5 py-0.5 font-mono text-xs font-bold text-signal">
                       Rank #{idx + 1}
                     </span>
-                    <span className="font-mono text-xs text-slate-400 dark:text-muted">
-                      {cand.starRating ? '★'.repeat(cand.starRating) : 'Not rated'}
-                    </span>
+                    <StarRating value={cand.starRating || 0} size="sm" />
                   </div>
 
                   {/* Candidate Identity */}
                   <div className="flex items-center gap-3">
                     {/* Avatar */}
-                    <div className="h-14 w-14 rounded-full border border-slate-200 dark:border-edge/80 bg-white dark:bg-surface flex-none overflow-hidden flex items-center justify-center">
+                    <div className="h-14 w-14 rounded-full border border-edge bg-card flex-none overflow-hidden flex items-center justify-center">
                       {cand.avatarUrl ? (
                         <img
                           src={cand.avatarUrl}
@@ -105,17 +106,17 @@ export default function CandidateCompareModal({
                           }}
                         />
                       ) : (
-                        <span className="font-mono text-lg font-bold text-slate-400 dark:text-muted">
+                        <span className="font-mono text-lg font-bold text-muted">
                           {cand.username.slice(0, 2).toUpperCase()}
                         </span>
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h3 className="font-mono text-sm font-bold text-slate-900 dark:text-[#ece9f0] truncate">
+                      <h3 className="font-mono text-sm font-bold text-content truncate">
                         {cand.fullName || `@${cand.username}`}
                       </h3>
-                      <p className="font-mono text-xs text-[#ea580c] dark:text-signal truncate">@{cand.username}</p>
-                      <span className="inline-block mt-0.5 font-mono text-[10px] text-slate-500 dark:text-muted capitalize">
+                      <p className="font-mono text-xs text-signal truncate">@{cand.username}</p>
+                      <span className="inline-block mt-0.5 font-mono text-[10px] text-muted capitalize">
                         {cand.persona.replace(/_/g, ' ')}
                       </span>
                     </div>
@@ -125,49 +126,43 @@ export default function CandidateCompareModal({
                   <div
                     className={`rounded-xl border p-3 ${
                       cand.fitScore >= 85
-                        ? 'border-emerald-300 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/20'
-                        : cand.fitScore >= 70
-                        ? 'border-amber-300 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-950/20'
-                        : 'border-rose-300 dark:border-rose-500/30 bg-rose-50 dark:bg-rose-950/20'
+                        ? 'border-signal/35 bg-signal/10'
+                        : 'border-edge bg-card'
                     }`}
                   >
                     <div className="flex items-baseline justify-between">
-                      <span className="font-mono text-2xl font-bold text-slate-900 dark:text-[#ece9f0]">
+                      <span className="font-mono text-2xl font-bold text-content">
                         {cand.fitScore}%
                       </span>
                       <span
                         className={`font-mono text-[11px] font-semibold uppercase tracking-wider ${
-                          cand.fitScore >= 85
-                            ? 'text-emerald-700 dark:text-emerald-400'
-                            : cand.fitScore >= 70
-                            ? 'text-amber-700 dark:text-amber-400'
-                            : 'text-rose-700 dark:text-rose-400'
+                          cand.fitScore >= 85 ? 'text-signal' : 'text-muted'
                         }`}
                       >
                         {cand.verdict.replace(/_/g, ' ')}
                       </span>
                     </div>
-                    <div className="mt-1 font-mono text-[10px] text-slate-500 dark:text-muted">
+                    <div className="mt-1 font-mono text-[10px] text-muted">
                       {cand.signalConfidence}% Signal Confidence
                     </div>
                   </div>
 
                   {/* Seniority Calibration */}
-                  <div className="space-y-1.5 rounded-xl border border-slate-200 dark:border-edge/60 bg-white dark:bg-[#0c0b0e] p-3">
-                    <span className="font-mono text-[10px] uppercase tracking-wider text-slate-500 dark:text-muted font-bold">
+                  <div className="space-y-1.5 rounded-xl border border-edge bg-card p-3">
+                    <span className="font-mono text-[10px] uppercase tracking-wider text-muted font-bold">
                       Seniority vs Job Target ({project.requisition.seniorityTarget.toUpperCase()})
                     </span>
                     <div className="flex items-center justify-between">
-                      <span className="font-mono text-xs font-semibold capitalize text-slate-900 dark:text-[#ece9f0]">
+                      <span className="font-mono text-xs font-semibold capitalize text-content">
                         {cand.seniorityEstimate}
                       </span>
                       <span
-                        className={`rounded px-1.5 py-0.5 font-mono text-[9px] font-bold ${
+                        className={`rounded border px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase ${
                           isOverqualified
-                            ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-500/30'
+                            ? 'border-edge bg-well text-muted'
                             : isUnderqualified
-                            ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-500/30'
-                            : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30'
+                            ? 'border-edge bg-well text-muted'
+                            : 'border-signal/35 bg-signal/10 text-signal'
                         }`}
                       >
                         {isOverqualified
@@ -180,22 +175,23 @@ export default function CandidateCompareModal({
                   </div>
 
                   {/* Requirements Breakdown */}
-                  <div className="space-y-2 rounded-xl border border-slate-200 dark:border-edge/60 bg-white dark:bg-[#0c0b0e] p-3">
-                    <span className="font-mono text-[10px] uppercase tracking-wider text-slate-500 dark:text-muted font-bold">
+                  <div className="space-y-2 rounded-xl border border-edge bg-card p-3">
+                    <span className="font-mono text-[10px] uppercase tracking-wider text-muted font-bold">
                       Must-Have Skills ({project.requisition.mustHaveSkills.length})
                     </span>
                     <div className="flex items-center gap-2 font-mono text-xs">
-                      <span className="text-emerald-600 dark:text-emerald-400 font-bold">
-                        ✓ {cand.requirementsSummary.metCount} Met
+                      <span className="inline-flex items-center gap-1 text-signal font-bold">
+                        <Icon.Check className="h-3 w-3" />
+                        {cand.requirementsSummary.metCount} Met
                       </span>
                       {cand.requirementsSummary.partialCount > 0 && (
-                        <span className="text-amber-600 dark:text-amber-400">
+                        <span className="text-muted">
                           · ~{cand.requirementsSummary.partialCount} Partial
                         </span>
                       )}
                       {cand.requirementsSummary.missingCount > 0 && (
-                        <span className="text-rose-600 dark:text-rose-400">
-                          · ✕ {cand.requirementsSummary.missingCount} Missing
+                        <span className="inline-flex items-center gap-1 text-muted">
+                          · <Icon.X className="h-3 w-3" /> {cand.requirementsSummary.missingCount} Missing
                         </span>
                       )}
                     </div>
@@ -204,7 +200,7 @@ export default function CandidateCompareModal({
                       {project.requisition.mustHaveSkills.map((skill) => (
                         <span
                           key={skill}
-                          className="rounded bg-slate-100 dark:bg-surface px-1.5 py-0.5 font-mono text-[9px] text-slate-600 dark:text-muted border border-slate-200 dark:border-edge/50"
+                          className="rounded border border-edge bg-well px-1.5 py-0.5 font-mono text-[9px] text-muted"
                         >
                           {skill}
                         </span>
@@ -214,21 +210,21 @@ export default function CandidateCompareModal({
 
                   {/* Pipeline Stage */}
                   <div className="space-y-1">
-                    <span className="font-mono text-[10px] uppercase tracking-wider text-slate-500 dark:text-muted font-bold">
+                    <span className="font-mono text-[10px] uppercase tracking-wider text-muted font-bold">
                       Current Pipeline Stage
                     </span>
-                    <div className="rounded-xl border border-slate-200 dark:border-edge/80 bg-white dark:bg-surface/60 px-3 py-2 font-mono text-xs text-slate-800 dark:text-[#ece9f0]">
+                    <div className="rounded-xl border border-edge bg-well px-3 py-2 font-mono text-xs text-content">
                       {stageLabels[cand.pipelineStage] || cand.pipelineStage}
                     </div>
                   </div>
 
                   {/* Recruiter Evaluation Notes */}
                   <div className="flex-1 space-y-1">
-                    <span className="font-mono text-[10px] uppercase tracking-wider text-slate-500 dark:text-muted font-bold">
+                    <span className="font-mono text-[10px] uppercase tracking-wider text-muted font-bold">
                       Recruiter Notes
                     </span>
-                    <p className="rounded-xl border border-slate-200 dark:border-edge/40 bg-white/80 dark:bg-[#0c0b0e]/70 p-2.5 font-sans text-xs text-slate-600 dark:text-muted leading-relaxed italic">
-                      "{cand.recruiterNotes || 'No notes documented for this candidate yet.'}"
+                    <p className="rounded-xl border border-edge bg-card p-2.5 font-sans text-xs text-muted leading-relaxed italic">
+                      &quot;{cand.recruiterNotes || 'No notes documented for this candidate yet.'}&quot;
                     </p>
                   </div>
 
@@ -236,10 +232,10 @@ export default function CandidateCompareModal({
                   <Link
                     href={`/profile/${cand.username}?jobId=${project.id}`}
                     target="_blank"
-                    className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-300 dark:border-edge bg-white dark:bg-surface/80 py-2.5 font-mono text-xs font-semibold text-slate-900 dark:text-[#ece9f0] transition-colors hover:border-[#ea580c] hover:text-[#ea580c] dark:hover:border-signal dark:hover:text-signal shadow-xs"
+                    className="flex items-center justify-center gap-1.5 rounded-xl border border-edge bg-card py-2.5 font-mono text-xs font-semibold text-content transition-colors hover:border-signal/60 hover:text-signal shadow-xs outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
                   >
                     <span>Inspect Full Dossier</span>
-                    <span>↗</span>
+                    <Icon.ArrowUpRight className="h-3.5 w-3.5" />
                   </Link>
                 </div>
               );
@@ -247,33 +243,39 @@ export default function CandidateCompareModal({
           </div>
 
           {/* Key Differences / Hiring Probes Section */}
-          <div className="rounded-2xl border border-slate-200 dark:border-edge/80 bg-slate-50 dark:bg-[#121118] p-5 space-y-3">
-            <h4 className="font-mono text-xs font-bold uppercase tracking-wider text-[#ea580c] dark:text-signal">
-              💡 Calibrated Technical Interview Probes for this Requisition
+          <div className="rounded-2xl border border-edge bg-well p-5 space-y-3">
+            <h4 className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-signal">
+              <Icon.Lightbulb className="h-3.5 w-3.5" />
+              Calibrated Technical Interview Probes for this Requisition
             </h4>
             <div className="space-y-2">
               {project.guardrails.customInterviewProbes.map((probe, i) => (
                 <div
                   key={i}
-                  className="flex items-start gap-2.5 rounded-xl border border-slate-200 dark:border-edge/50 bg-white dark:bg-[#0c0b0e] p-3"
+                  className="flex items-start gap-2.5 rounded-xl border border-edge bg-card p-3"
                 >
-                  <span className="font-mono text-xs font-bold text-[#ea580c] dark:text-signal">Q{i + 1}:</span>
-                  <p className="font-mono text-xs text-slate-800 dark:text-[#ece9f0] leading-relaxed">{probe}</p>
+                  <span className="font-mono text-xs font-bold text-signal">Q{i + 1}:</span>
+                  <p className="font-mono text-xs text-content leading-relaxed">{probe}</p>
                 </div>
               ))}
+              {project.guardrails.customInterviewProbes.length === 0 && (
+                <p className="font-mono text-[11px] text-muted">
+                  No custom probes configured for this requisition yet. Add them under Guardrails.
+                </p>
+              )}
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between border-t border-slate-100 dark:border-edge/80 bg-slate-50 dark:bg-[#121118] px-6 py-4">
-          <div className="font-mono text-xs text-slate-500 dark:text-muted">
+        <div className="flex items-center justify-between border-t border-edge bg-well px-6 py-4">
+          <div className="font-mono text-xs text-muted">
             Tip: Use dossiers to compare commit cadence, architecture patterns, and production bundles.
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl bg-white dark:bg-surface px-5 py-2 font-mono text-xs font-semibold text-slate-800 dark:text-[#ece9f0] border border-slate-200 dark:border-edge hover:border-[#ea580c] dark:hover:border-signal/50 transition-colors shadow-xs"
+            className="rounded-xl border border-edge bg-card px-5 py-2 font-mono text-xs font-semibold text-content transition-colors hover:border-signal/60 hover:text-signal shadow-xs outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
           >
             Close Comparison
           </button>

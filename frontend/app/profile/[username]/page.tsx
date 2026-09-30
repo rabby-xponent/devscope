@@ -7,6 +7,7 @@ import { useDevScopeStream } from '@/hooks/useDevScopeStream';
 import { AgentTrace } from '@/components/AgentTrace';
 import { AgentProgress } from '@/components/AgentProgress';
 import { ProfileView } from '@/components/ProfileView';
+import { Icon } from '@/components/icons';
 import { getRequisitionById } from '@/lib/requisitions';
 import { getJobProjectById, addCandidateToProject } from '@/lib/job-projects';
 
@@ -77,8 +78,8 @@ export default function ProfilePage() {
   const isWorking = status === 'connecting' || status === 'streaming';
 
   return (
-    <main className="min-h-screen">
-      <nav className="sticky top-0 z-10 border-b border-edge bg-ink/80 backdrop-blur print:hidden">
+    <main className="page-texture min-h-screen bg-canvas text-content">
+      <nav className="sticky top-0 z-10 border-b border-edge bg-card/90 backdrop-blur print:hidden">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
           <Link
             href="/"
@@ -91,16 +92,17 @@ export default function ProfilePage() {
             {status === 'complete' && (
               <button
                 onClick={() => generate(username, true, liveUrl, activeJd, activeTitle)}
-                className="font-mono text-[11px] uppercase tracking-wider text-muted transition-colors hover:text-signal"
+                className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider text-muted transition-colors hover:text-signal"
               >
-                ↻ regenerate
+                <Icon.Refresh className="h-3 w-3" />
+                regenerate
               </button>
             )}
             <Link
               href="/"
-              className="rounded-md border border-edge px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-muted transition-colors hover:border-signal/50 hover:text-signal"
+              className="rounded-md border border-edge bg-card px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-muted transition-colors hover:border-signal/50 hover:text-signal"
             >
-              ＋ analyze another
+              + analyze another
             </Link>
           </div>
         </div>
@@ -109,9 +111,9 @@ export default function ProfilePage() {
       <div className="mx-auto max-w-5xl px-6 py-10 print:max-w-none print:p-0">
         {error && (
           <div className="fade-up mx-auto max-w-xl rounded-xl border border-edge/80 bg-surface/90 p-8 text-center shadow-2xl print:hidden">
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-signal/10 text-xl text-signal">
-              ⚠️
-            </div>
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-edge bg-well text-muted">
+            <Icon.Alert className="h-5 w-5" />
+          </div>
             <h3 className="font-mono text-sm font-semibold uppercase tracking-wider text-signal">
               Analysis Temporarily Paused
             </h3>
@@ -121,9 +123,10 @@ export default function ProfilePage() {
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <button
                 onClick={() => generate(username, true, liveUrl, activeJd, activeTitle)}
-                className="rounded-lg bg-signal px-5 py-2.5 font-mono text-xs font-semibold uppercase tracking-wider text-ink shadow transition-all hover:bg-signal/90 active:scale-95"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-signal px-5 py-2.5 font-mono text-xs font-semibold uppercase tracking-wider text-[#0c0b0e] shadow-xs transition-all hover:bg-signal/90 active:scale-95 outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
               >
-                ↻ Retry Analysis
+                <Icon.Refresh className="h-3 w-3" />
+                Retry Analysis
               </button>
               <Link
                 href="/"
@@ -152,14 +155,14 @@ export default function ProfilePage() {
             {cached && (
               <div className="fade-up mb-8 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-edge bg-surface/60 px-4 py-3 print:hidden">
                 <p className="font-mono text-[11px] text-muted">
-                  <span className="text-signal">⚡ instant result —</span> this profile was analyzed
+                  <span className="inline-flex items-center gap-1 text-signal"><Icon.Zap className="h-3 w-3" /> instant result —</span> this profile was analyzed
                   before, so we served it from cache instead of running the agent again.
                 </p>
                 <button
                   onClick={() => generate(username, true, liveUrl, activeJd, activeTitle)}
-                  className="flex-none rounded-md border border-edge px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-muted transition-colors hover:border-signal/50 hover:text-signal"
+                  className="flex-none rounded-md border border-edge bg-card px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-muted transition-colors hover:border-signal/50 hover:text-signal"
                 >
-                  ↻ run a fresh analysis
+                  run a fresh analysis
                 </button>
               </div>
             )}

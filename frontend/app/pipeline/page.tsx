@@ -13,6 +13,7 @@ import {
 import JobCandidatePipelineModal from '@/components/JobCandidatePipelineModal';
 import JobGuardrailsModal from '@/components/JobGuardrailsModal';
 import NewJobModal from '@/components/NewJobModal';
+import { Icon } from '@/components/icons';
 
 function PipelineContent() {
   const searchParams = useSearchParams();
@@ -69,21 +70,21 @@ function PipelineContent() {
 
   if (!activeProject) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#0c0b0e] text-muted font-mono text-sm">
-        Loading RecruiterOS Pipeline...
+      <div className="flex min-h-screen items-center justify-center bg-canvas text-muted font-mono text-sm">
+        Loading RecruiterOS Pipeline…
       </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[#0c0b0e] text-[#ece9f0]">
+    <main className="page-texture min-h-screen bg-canvas text-content">
       {/* Top Nav */}
-      <nav className="border-b border-edge/80 bg-[#0c0b0e]/90 backdrop-blur-md px-6 py-4">
+      <nav className="border-b border-edge bg-card/90 backdrop-blur-md px-6 py-4">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <div className="flex items-center gap-4">
             <Link href="/" className="flex items-center gap-2.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-signal shadow-[0_0_10px_#f0a04b]" />
-              <span className="font-mono text-sm font-bold tracking-[0.25em] text-ece9f0">
+              <span className="h-2.5 w-2.5 rounded-full bg-signal shadow-[0_0_10px_rgb(var(--signal-rgb)/0.5)]" />
+              <span className="font-mono text-sm font-bold tracking-[0.25em] text-content">
                 DEVSCOPE
               </span>
             </Link>
@@ -96,15 +97,15 @@ function PipelineContent() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowNewJobModal(true)}
-              className="flex items-center gap-1.5 rounded-lg border border-edge bg-surface/80 px-3 py-1.5 font-mono text-xs font-semibold text-signal transition-colors hover:bg-signal hover:text-ink"
+              className="flex items-center gap-1.5 rounded-lg bg-signal px-3 py-1.5 font-mono text-xs font-semibold text-[#0c0b0e] transition-colors hover:bg-signal/90 outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
             >
-              <span>＋</span>
+              <Icon.Plus className="h-3.5 w-3.5" />
               <span>New Job Project</span>
             </button>
 
             <Link
               href="/"
-              className="rounded-lg border border-edge bg-surface/60 px-3 py-1.5 font-mono text-xs text-muted hover:text-ece9f0 transition-colors"
+              className="rounded-lg border border-edge bg-card px-3 py-1.5 font-mono text-xs text-muted transition-colors hover:border-signal/50 hover:text-signal"
             >
               ← Back to Console
             </Link>
@@ -152,8 +153,8 @@ export default function PipelinePage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-[#0c0b0e] text-muted font-mono text-sm">
-          Loading RecruiterOS Pipeline...
+        <div className="flex min-h-screen items-center justify-center bg-canvas text-muted font-mono text-sm">
+          Loading RecruiterOS Pipeline…
         </div>
       }
     >

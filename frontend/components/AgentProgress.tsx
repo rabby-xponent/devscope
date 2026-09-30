@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { TraceEvent } from '@/types/profile';
+import { Icon } from '@/components/icons';
 
 type Phase = 'identity' | 'code' | 'activity' | 'presence';
 
@@ -38,12 +39,12 @@ const PHASES: Array<{ key: Phase; label: string }> = [
 // an estimate, not an exact total. Capped below 100 until synthesis starts.
 const ESTIMATED_TOTAL_STEPS = 12;
 
-const DISCOVERY_META: Record<string, { icon: string; label: string }> = {
-  get_github_profile: { icon: '👤', label: 'Profile' },
-  get_repos: { icon: '⭐', label: 'Repositories' },
-  get_aggregated_languages: { icon: '💻', label: 'Languages' },
-  get_commit_activity: { icon: '🔥', label: 'Activity' },
-  inspect_live_url: { icon: '🌐', label: 'Live App' },
+const DISCOVERY_META: Record<string, { icon: (p: { className?: string }) => JSX.Element; label: string }> = {
+  get_github_profile: { icon: (p) => <Icon.AtSign {...p} />, label: 'Profile' },
+  get_repos: { icon: (p) => <Icon.Folder {...p} />, label: 'Repositories' },
+  get_aggregated_languages: { icon: (p) => <Icon.Monitor {...p} />, label: 'Languages' },
+  get_commit_activity: { icon: (p) => <Icon.Zap {...p} />, label: 'Activity' },
+  inspect_live_url: { icon: (p) => <Icon.Globe {...p} />, label: 'Live App' },
 };
 const DISCOVERY_TOOLS = Object.keys(DISCOVERY_META);
 
@@ -293,7 +294,9 @@ export function AgentProgress({ username, trace }: { username: string; trace: Tr
                       key={step.key}
                       className="fade-up flex items-start gap-3 rounded-md border border-edge bg-surface/60 px-3 py-2.5"
                     >
-                      <span className="text-lg leading-none">{meta?.icon ?? '•'}</span>
+                      <span className="mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-md border border-edge bg-well text-muted">
+                        {meta?.icon ? meta.icon({ className: 'h-3 w-3' }) : <span className="block h-1 w-1 rounded-full bg-muted" />}
+                      </span>
                       <div className="min-w-0">
                         <div className="font-mono text-[10px] uppercase tracking-widest text-muted">
                           {meta?.label ?? step.label}
@@ -310,7 +313,9 @@ export function AgentProgress({ username, trace }: { username: string; trace: Tr
           {synthesizing && (
             <div className="fade-up mt-6 rounded-lg border border-signal/30 bg-signaldim p-4">
               <div className="flex items-center gap-3">
-                <span className="text-xl">✨</span>
+                <span className="flex h-8 w-8 flex-none items-center justify-center rounded-lg border border-signal/30 bg-card text-signal">
+                  <Icon.Sparkle className="h-4 w-4" />
+                </span>
                 <div className="min-w-0">
                   <div className="text-sm font-medium text-signal">Writing your analysis</div>
                   <div className="mt-0.5 font-mono text-[11px] text-muted">
@@ -377,7 +382,7 @@ export function AgentProgress({ username, trace }: { username: string; trace: Tr
                           {isActive ? (
                             <span className="block h-3 w-3 animate-spin rounded-full border-2 border-edge border-t-signal" />
                           ) : (
-                            <span className="font-mono text-xs text-signal">✓</span>
+                            <Icon.Check className="h-3.5 w-3.5 text-signal" strokeWidth={2} />
                           )}
                         </span>
                         <div className="min-w-0">

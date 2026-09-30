@@ -1,21 +1,45 @@
-@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================================
+   Design tokens — raw RGB triplets consumed by tailwind.config.ts
+   Every semantic color adapts automatically between light and dark.
+   ========================================================================== */
 :root {
   --font-sans: 'Sora', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
-  --bg-primary: #faf9f5;
-  --text-primary: #0f172a;
+
+  /* Light theme: warm paper canvas, white cards, ink text, orange-600 accent */
+  --canvas-rgb: 250 249 245;   /* #faf9f5 */
+  --card-rgb: 255 255 255;     /* #ffffff */
+  --well-rgb: 245 244 239;     /* #f5f4ef */
+  --ink-rgb: 255 255 255;      /* legacy: white layer in light mode */
+  --surface-rgb: 255 255 255;
+  --edge-rgb: 228 226 218;     /* #e4e2da */
+  --muted-rgb: 100 101 105;    /* #646569 */
+  --content-rgb: 15 23 42;     /* #0f172a */
+  --signal-rgb: 234 88 12;     /* orange-600 */
 }
 
 html.dark {
-  --bg-primary: #0d0c0f;
-  --text-primary: #ece9f0;
+  /* Dark theme: true-black canvas, raised panels, soft off-white text */
+  --canvas-rgb: 12 11 14;      /* #0c0b0e */
+  --card-rgb: 22 20 26;        /* #16141a */
+  --well-rgb: 9 8 11;          /* #09080b */
+  --ink-rgb: 12 11 14;
+  --surface-rgb: 22 20 26;
+  --edge-rgb: 44 41 52;        /* #2c2934 */
+  --muted-rgb: 139 134 150;    /* #8b8696 */
+  --content-rgb: 236 233 240;  /* #ece9f0 */
+  --signal-rgb: 240 160 75;    /* #f0a04b */
 }
 
+/* ============================================================================
+   Base
+   ========================================================================== */
 * {
   box-sizing: border-box;
 }
@@ -24,23 +48,26 @@ html,
 body {
   padding: 0;
   margin: 0;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
+  background-color: rgb(var(--canvas-rgb));
+  color: rgb(var(--content-rgb));
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 ::selection {
-  background: #f97316;
+  background: rgb(var(--signal-rgb));
   color: #ffffff;
 }
 
 html.dark ::selection {
-  background: #f0a04b;
-  color: #0d0c0f;
+  background: rgb(var(--signal-rgb));
+  color: #0c0b0e;
 }
 
+/* ============================================================================
+   Animations
+   ========================================================================== */
 @keyframes fade-up {
   from {
     opacity: 0;
@@ -53,20 +80,18 @@ html.dark ::selection {
 }
 
 @keyframes pulse-dot {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.3;
-  }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
 }
 
-@keyframes scan {
+@keyframes pop-in {
   from {
-    background-position: 0 0;
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
   }
   to {
-    background-position: 0 -200px;
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -78,27 +103,46 @@ html.dark ::selection {
   animation: pulse-dot 1.2s ease-in-out infinite;
 }
 
-/* Light mode Dageno-inspired subtle warm grid */
+/* Replaces removed tailwindcss-animate dependency (animate-in utilities) */
+.animate-in {
+  animation: pop-in 0.18s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ============================================================================
+   Background grid (hero) — adapts per theme
+   ========================================================================== */
 .grid-bg {
   background-image:
-    linear-gradient(#eceae2 1px, transparent 1px),
-    linear-gradient(90deg, #eceae2 1px, transparent 1px);
+    linear-gradient(rgb(var(--edge-rgb) / 0.55) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(var(--edge-rgb) / 0.55) 1px, transparent 1px);
   background-size: 48px 48px;
   background-position: center;
 }
 
-html.dark .grid-bg {
+/* App page texture — quiet dot grid + soft ambient accent light.
+   The workspace counterpart of the marketing grid: calmer and finer, so dense
+   product surfaces float on a tactile canvas without competing with content.
+   Prints clean (background images are stripped in @media print). */
+.page-texture {
   background-image:
-    linear-gradient(#1a1820 1px, transparent 1px),
-    linear-gradient(90deg, #1a1820 1px, transparent 1px);
-  background-size: 44px 44px;
+    radial-gradient(1100px 420px at 50% -160px, rgb(var(--signal-rgb) / 0.07), transparent 70%),
+    radial-gradient(rgb(var(--edge-rgb) / 0.8) 1px, transparent 1px);
+  background-size: auto, 24px 24px;
   background-position: center;
 }
 
-/* Global and element-level custom thin scrollbars */
+html.dark .page-texture {
+  background-image:
+    radial-gradient(1100px 420px at 50% -160px, rgb(var(--signal-rgb) / 0.05), transparent 70%),
+    radial-gradient(rgb(var(--edge-rgb) / 0.9) 1px, transparent 1px);
+}
+
+/* ============================================================================
+   Scrollbars — thin, theme-adaptive
+   ========================================================================== */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #272430 transparent;
+  scrollbar-color: rgb(var(--edge-rgb)) transparent;
 }
 
 ::-webkit-scrollbar {
@@ -111,18 +155,17 @@ html.dark .grid-bg {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #272430;
+  background: rgb(var(--edge-rgb));
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3f3b4d;
+  background: rgb(var(--muted-rgb) / 0.7);
 }
 
-/* Custom ultrathin scrollbar for panels */
 .thin-scroll {
   scrollbar-width: thin;
-  scrollbar-color: #272430 transparent;
+  scrollbar-color: rgb(var(--edge-rgb)) transparent;
 }
 .thin-scroll::-webkit-scrollbar {
   width: 4px;
@@ -132,16 +175,57 @@ html.dark .grid-bg {
   background: transparent;
 }
 .thin-scroll::-webkit-scrollbar-thumb {
-  background: #272430;
+  background: rgb(var(--edge-rgb));
   border-radius: 9999px;
 }
-.thin-scroll::-webkit-scrollbar-thumb:hover {
-  background: #f0a04b;
+
+/* Range slider — professional, thin, brand-accented */
+input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 9999px;
+  background: rgb(var(--edge-rgb));
+  outline: none;
+  cursor: pointer;
 }
 
-/* ==========================================================================
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 14px;
+  width: 14px;
+  border-radius: 9999px;
+  background: rgb(var(--signal-rgb));
+  border: 2px solid rgb(var(--card-rgb));
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
+  cursor: grab;
+  transition: transform 0.1s ease;
+}
+
+input[type='range']::-webkit-slider-thumb:active {
+  cursor: grabbing;
+  transform: scale(1.15);
+}
+
+input[type='range']::-moz-range-thumb {
+  height: 14px;
+  width: 14px;
+  border-radius: 9999px;
+  background: rgb(var(--signal-rgb));
+  border: 2px solid rgb(var(--card-rgb));
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
+  cursor: grab;
+}
+
+input[type='range']::-moz-range-track {
+  height: 4px;
+  border-radius: 9999px;
+  background: rgb(var(--edge-rgb));
+}
+
+/* ============================================================================
    Executive Print & PDF Export Styles
-   Calibrated for high-contrast, professional recruiter dossiers
    ========================================================================== */
 @media print {
   @page {
@@ -149,7 +233,6 @@ html.dark .grid-bg {
     margin: 10mm 12mm 10mm 12mm;
   }
 
-  /* Force exact background color and graphic reproduction in Chrome & Safari */
   *,
   *::before,
   *::after {
@@ -157,7 +240,7 @@ html.dark .grid-bg {
     print-color-adjust: exact !important;
     box-shadow: none !important;
     text-shadow: none !important;
-    background-image: none !important; /* Neutralize all dark mode CSS gradients */
+    background-image: none !important;
   }
 
   html,
@@ -170,7 +253,6 @@ html.dark .grid-bg {
     margin: 0 !important;
   }
 
-  /* Hide screen chrome, interactive buttons, debug traces, and web navigation */
   nav,
   button,
   details,
@@ -180,7 +262,6 @@ html.dark .grid-bg {
     display: none !important;
   }
 
-  /* Break avoidance to prevent sliced cards and isolated lines */
   .print-card,
   .print-avoid-break {
     break-inside: avoid !important;
@@ -189,7 +270,6 @@ html.dark .grid-bg {
     background-color: #ffffff !important;
   }
 
-  /* Keep headings firmly attached to following content (prevents orphan headers) */
   h1, h2, h3, h4, h5, h6,
   .print-heading,
   .print-header {
@@ -197,7 +277,6 @@ html.dark .grid-bg {
     page-break-after: avoid !important;
   }
 
-  /* Force light theme executive color overrides */
   .text-ece9f0,
   .text-ece9f0\/90,
   .text-ece9f0\/95,
@@ -211,7 +290,7 @@ html.dark .grid-bg {
   }
 
   .text-signal {
-    color: #b45309 !important; /* Executive amber tone */
+    color: #b45309 !important;
   }
 
   .bg-signal {
@@ -224,7 +303,6 @@ html.dark .grid-bg {
     border-color: #cbd5e1 !important;
   }
 
-  /* All dark surfaces and gradients map to crisp white in print */
   .bg-surface,
   .bg-surface\/30,
   .bg-surface\/40,
@@ -246,7 +324,6 @@ html.dark .grid-bg {
     background-image: none !important;
   }
 
-  /* High contrast badge and pill print overrides */
   .text-emerald-300,
   .text-emerald-400 {
     color: #065f46 !important;
@@ -310,7 +387,6 @@ html.dark .grid-bg {
     border-color: #cbd5e1 !important;
   }
 
-  /* Compact layout spacing for clean 2-3 page dossier */
   .fade-up {
     animation: none !important;
   }
