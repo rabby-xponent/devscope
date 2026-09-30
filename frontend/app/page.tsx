@@ -3,16 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import RequisitionSelect from '@/components/RequisitionSelect';
 import { Icon } from '@/components/icons';
-import {
-  getSavedRequisitions,
-  saveRequisition,
-  deleteRequisition,
-  getActiveRequisitionId,
-  setActiveRequisitionId,
-  SavedRequisition,
-} from '@/lib/requisitions';
 import {
   getDeveloperProfile,
   recordDeveloperAudit,
@@ -47,27 +38,12 @@ export default function Home() {
   const [auditLiveUrl, setAuditLiveUrl] = useState('');
   const [showLiveUrl, setShowLiveUrl] = useState(false);
 
-  // Developer Pre-Flight Mode State
-  const [isDevMode, setIsDevMode] = useState(false);
+  // Developer identity (username memory + portfolio URL for the audit box)
   const [devProfile, setDevProfile] = useState<DeveloperWorkspaceProfile | null>(null);
-
-  // Requisitions State (Developer Space Benchmark)
-  const [requisitions, setRequisitions] = useState<SavedRequisition[]>([]);
-  const [activeRoleId, setActiveRoleId] = useState<string>('req_senior_fullstack');
-  const [showRoleModal, setShowRoleModal] = useState(false);
-  const [newTitle, setNewTitle] = useState('');
-  const [newCompany, setNewCompany] = useState('');
-  const [newJdText, setNewJdText] = useState('');
 
   const router = useRouter();
 
   useEffect(() => {
-    // Load requisitions for developer benchmark
-    const list = getSavedRequisitions();
-    setRequisitions(list);
-    const active = getActiveRequisitionId();
-    if (active) setActiveRoleId(active);
-
     const dProf = getDeveloperProfile();
     setDevProfile(dProf);
     if (dProf.githubUsername) setAuditUsername(dProf.githubUsername);
@@ -77,65 +53,18 @@ export default function Home() {
     }
   }, []);
 
-  const handleRoleChange = (id: string) => {
-    setActiveRoleId(id);
-    setActiveRequisitionId(id || null);
-  };
-
-  const handleDeleteRole = (id: string) => {
-    deleteRequisition(id);
-    const updated = getSavedRequisitions();
-    setRequisitions(updated);
-    if (activeRoleId === id) {
-      setActiveRoleId(updated[0]?.id || '');
-      setActiveRequisitionId(updated[0]?.id || null);
-    }
-  };
-
-  const handleCreateRole = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTitle.trim() || !newJdText.trim()) return;
-    const created = saveRequisition({
-      title: newTitle.trim(),
-      company: newCompany.trim() || 'Internal Team',
-      rawJdText: newJdText.trim(),
-      coreStack: [],
-      seniorityMinYears: 3,
-      allowPrivateRepos: true,
-    });
-    const updated = getSavedRequisitions();
-    setRequisitions(updated);
-    setActiveRoleId(created.id);
-    setActiveRequisitionId(created.id);
-    setShowRoleModal(false);
-    setNewTitle('');
-    setNewCompany('');
-    setNewJdText('');
-  };
-
-  const handleAnalyze = (targetUser?: string, targetLive?: string, targetRole?: string) => {
+  const handleAnalyze = (targetUser?: string, targetLive?: string) => {
     const u = (targetUser ?? auditUsername).trim().replace(/^@/, '');
     const l = (targetLive ?? auditLiveUrl).trim();
-    const r = targetRole !== undefined ? targetRole : activeRoleId;
     if (!u) return;
 
-    const roleTitle = isDevMode
-      ? (requisitions.find((item) => item.id === r)?.title || 'General Engineering Audit')
-      : 'Technical Talent Audit';
-
-    if (isDevMode) {
-      recordDeveloperAudit(u, roleTitle);
+    if (devProfile?.githubUsername) {
+      recordDeveloperAudit(u, 'Technical Talent Audit');
       setDevProfile(getDeveloperProfile());
     }
 
-    const params = new URLSearchParams();
+    const params = new URLSearchParams({ mode: 'recruiter' });
     if (l) params.set('liveUrl', l);
-    if (isDevMode) {
-      params.set('mode', 'developer');
-      if (r) params.set('roleId', r);
-    } else {
-      params.set('mode', 'recruiter');
-    }
 
     const qs = params.toString() ? `?${params.toString()}` : '';
     router.push(`/profile/${encodeURIComponent(u)}${qs}`);
@@ -320,50 +249,32 @@ export default function Home() {
                   </Link>
 
                   {/* Developer Career Suite Card */}
-                  <div
-                    onClick={() => setIsDevMode(!isDevMode)}
-                    className={`group rounded-2xl border p-4.5 backdrop-blur-md transition-all cursor-pointer flex flex-col justify-between ${
-                      isDevMode
-                        ? 'border-emerald-500 bg-emerald-50/60 dark:bg-emerald-950/20 ring-1 ring-emerald-500/40 shadow-sm'
-                        : 'border-slate-200 dark:border-emerald-500/30 bg-white dark:bg-[#121118]/80 hover:border-emerald-500 hover:shadow-md'
-                    }`}
+                  <Link
+                    href="/developer"
+                    className="group rounded-2xl border border-slate-200 dark:border-edge bg-white dark:bg-[#121118]/80 p-4.5 backdrop-blur-md transition-all cursor-pointer hover:border-slate-900/40 dark:hover:border-signal/60 hover:shadow-md flex flex-col justify-between shadow-sm"
                   >
                     <div>
                       <div className="flex items-center justify-between">
                         <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900/[0.04] dark:bg-[#0c0b0e] border border-slate-200 dark:border-edge text-muted">
                           <Icon.Monitor className="h-4 w-4" />
                         </span>
-                        <span className="rounded-full bg-emerald-50 dark:bg-emerald-500/15 px-2.5 py-0.5 font-mono text-[9px] font-bold text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 uppercase">
-                          {isDevMode ? 'Active Mode' : 'Engineer Suite'}
+                        <span className="rounded-full bg-slate-100 dark:bg-surface px-2.5 py-0.5 font-mono text-[9px] font-bold text-slate-600 dark:text-muted border border-slate-200 dark:border-edge uppercase">
+                          Dedicated Space ↗
                         </span>
                       </div>
-                      <h3 className="mt-2.5 font-mono text-sm font-bold text-slate-900 dark:text-[#ece9f0] group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-                        Developer Career Pre-Flight
+                      <h3 className="mt-2.5 font-mono text-sm font-bold text-slate-900 dark:text-[#ece9f0] group-hover:text-slate-700 dark:group-hover:text-signal transition-colors">
+                        Developer CareerOS
                       </h3>
                       <p className="mt-1 font-sans text-xs text-slate-500 dark:text-muted leading-relaxed">
-                        Benchmark your public code signals against target job descriptions, uncover blind spots, and practice interview questions.
+                        Run your job search as a campaign: track target roles, pre-flight every application, close skill gaps, and watch your fit scores climb.
                       </p>
                     </div>
-                    <div className="mt-3 flex items-center gap-1 font-mono text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                      <span className="font-medium">{isDevMode ? 'Pre-flight benchmark enabled' : 'Toggle Pre-Flight Benchmark'}</span>
+                    <div className="mt-3 flex items-center gap-1 font-mono text-xs font-semibold text-slate-700 dark:text-[#ece9f0] group-hover:translate-x-1 transition-transform">
+                      <span>Open Career Workspace</span>
                       <span>→</span>
                     </div>
-                  </div>
+                  </Link>
                 </div>
-
-                {/* Optional Developer Target Role Picker when isDevMode is active */}
-                {isDevMode && (
-                  <div className="rounded-xl border border-emerald-500/40 bg-white dark:bg-[#0c0b0e] p-3 space-y-2 animate-in fade-in shadow-xs">
-                    <RequisitionSelect
-                      requisitions={requisitions}
-                      activeRoleId={activeRoleId}
-                      onSelectRole={handleRoleChange}
-                      onOpenCreateModal={() => setShowRoleModal(true)}
-                      onDeleteRole={handleDeleteRole}
-                      label="Benchmark against target role:"
-                    />
-                  </div>
-                )}
 
                 {/* Trust Signals Row */}
                 <div className="flex flex-wrap items-center gap-5 font-mono text-[11px] text-slate-500 dark:text-muted/60 pt-1">
@@ -386,10 +297,10 @@ export default function Home() {
                 {/* Dossier Header Badge */}
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-edge/80 pb-4">
                   <div className="font-mono text-[10px] uppercase tracking-widest text-slate-500 dark:text-muted">
-                    {isDevMode ? 'Career Pre-Flight Preview' : 'Generated Dossier Preview'}
+                    Generated Dossier Preview
                   </div>
                   <span className="rounded-full border border-emerald-300 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 font-mono text-[10px] font-semibold text-emerald-700 dark:text-emerald-400">
-                    {isDevMode ? '94% Target Fit' : '94% Confidence'}
+                    94% Confidence
                   </span>
                 </div>
 
@@ -488,9 +399,7 @@ export default function Home() {
                 </div>
 
                 <div className="mt-3 text-center font-mono text-[10px] text-slate-400 dark:text-muted/60">
-                  {isDevMode
-                    ? 'Export your interview defense guide to PDF with 1 click.'
-                    : 'Ready to share with hiring committees in PDF format.'}
+                  Ready to share with hiring committees in PDF format.
                 </div>
               </div>
             </div>
@@ -810,94 +719,6 @@ export default function Home() {
         </div>
       </footer>
 
-      {/* Save New Job Description Modal */}
-      {showRoleModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 dark:bg-black/80 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-2xl border border-slate-200 dark:border-edge bg-white dark:bg-[#0c0b0e] p-6 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-edge/60 pb-3">
-              <div className="flex items-center gap-2">
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-signal/25 bg-signal/10 text-signal">
-                  <Icon.Clipboard className="h-4 w-4" />
-                </span>
-                <h3 className="font-mono text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-[#ece9f0]">
-                  Save Job Requisition
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowRoleModal(false)}
-                aria-label="Close"
-                className="rounded-lg p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:text-muted dark:hover:bg-surface dark:hover:text-signal"
-              >
-                <Icon.X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <p className="mt-2 text-xs text-slate-600 dark:text-muted">
-              Save your open role once. DevScope will automatically score every candidate against these requirements and generate targeted phone-screen interview questions.
-            </p>
-
-            <form onSubmit={handleCreateRole} className="mt-4 space-y-3.5">
-              <div>
-                <label className="block font-mono text-[11px] uppercase tracking-wider text-slate-500 dark:text-muted">
-                  Role Title *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Staff Distributed Systems Engineer"
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-slate-300 dark:border-edge/60 bg-slate-50 dark:bg-surface px-3 py-2 font-mono text-xs text-slate-900 dark:text-[#ece9f0] outline-none focus:border-[#ea580c] dark:focus:border-signal"
-                />
-              </div>
-
-              <div>
-                <label className="block font-mono text-[11px] uppercase tracking-wider text-slate-500 dark:text-muted">
-                  Company / Team (Optional)
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Core Infrastructure or Stealth AI"
-                  value={newCompany}
-                  onChange={(e) => setNewCompany(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-slate-300 dark:border-edge/60 bg-slate-50 dark:bg-surface px-3 py-2 font-mono text-xs text-slate-900 dark:text-[#ece9f0] outline-none focus:border-[#ea580c] dark:focus:border-signal"
-                />
-              </div>
-
-              <div>
-                <label className="block font-mono text-[11px] uppercase tracking-wider text-slate-500 dark:text-muted">
-                  Job Description / Requirements Text *
-                </label>
-                <textarea
-                  required
-                  rows={5}
-                  placeholder="Paste the requirements, tech stack (e.g. Go, Rust, Kafka, Kubernetes), and qualifications from your job posting..."
-                  value={newJdText}
-                  onChange={(e) => setNewJdText(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-slate-300 dark:border-edge/60 bg-slate-50 dark:bg-surface px-3 py-2 font-mono text-xs text-slate-900 dark:text-[#ece9f0] outline-none focus:border-[#ea580c] dark:focus:border-signal placeholder:text-slate-400 dark:placeholder:text-muted/40"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowRoleModal(false)}
-                  className="rounded-xl border border-slate-200 dark:border-edge/60 px-4 py-2 font-mono text-xs text-slate-600 dark:text-muted hover:text-slate-900 dark:hover:text-[#ece9f0]"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="rounded-xl bg-[#ea580c] hover:bg-[#c2410c] dark:bg-signal dark:hover:bg-signal/90 px-5 py-2 font-mono text-xs font-semibold uppercase tracking-wider text-white dark:text-ink shadow-xs"
-                >
-                  Save & Select Role
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </main>
   );
 }

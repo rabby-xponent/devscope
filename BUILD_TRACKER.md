@@ -383,3 +383,68 @@ pie title Roadmap Milestone Status
 - [ ] **Developer Pre-Flight Defense Simulator:** Interactive interview rehearsal against target job gaps.
 - [ ] **GitHub OAuth Private Contribution Proof:** Querying GraphQL `includePrivateContributions: true` for zero-code aggregate commit counts.
 - [ ] **Embeddable Verified Talent Badge:** Dynamic markdown/SVG badge for candidate GitHub READMEs and portfolios.
+
+---
+
+## 5. Upcoming Roadmap Tracker: Developer Career OS & Monetization (2026–2027)
+
+> Full ideation, tier design, enforcement architecture, and AI-era bets are documented in
+> [`DEVELOPER_CAREER_OS_IDEATION.md`](./DEVELOPER_CAREER_OS_IDEATION.md). Milestones below mirror
+> its sequencing proposal (§5).
+
+### Phase 5: Developer Career OS (the candidate-side companion)
+
+- [x] **Milestone 19 — CareerOS Command Center (`/developer`):**
+  * Dedicated developer portal mirroring RecruiterOS structure: Proof Strength headline card,
+    Target Roles board, application pipeline, interview defense hub, skill gap radar, signal
+    maintenance strip.
+  * Consistent token-based UI (`bg-card`/`edge`/`signal`), `page-texture` backdrop, primitives
+    from `components/ui.tsx` — zero new one-off components.
+- [x] **Milestone 20 — Target Roles & Campaign Loop:**
+  * `lib/target-roles.ts` persistence (developer-side counterpart of requisitions).
+  * Pre-flight audits attached to target roles with status flow
+    (`Researching → Applied → Screening → Interviewing → Offer / Rejected`).
+  * Per-role audit history ledger: fit-score deltas across re-verification runs
+    (evidence in → score out loop).
+- [x] **Milestone 21 — Skill Gap Radar & Evidence Task Generator:**
+  * Aggregated gap analysis across recent audits, ranked by recurrence.
+  * Concrete evidence-building tasks per gap (ship demo / README rewrite / OSS PR / blog post).
+  * Signal maintenance nudges (stale portfolio URLs, missing flagship README, inactive demo).
+- [ ] **Milestone 22 — Interview Defense Hub v1:**
+  * Personal question bank accumulated from audit gap probes, per target role.
+  * Self-grade confidence marking + spaced-repetition resurfacing.
+- [ ] **Milestone 23 — Public Proof Page (`/proof/:username/:roleId`):**
+  * Recruiter-legible, shareable evidence page: verified matrix, live app audit, role fit card,
+    DevScope attestation.
+  * Markdown/SVG verified badge embed (absorbs Phase 4 badge item).
+
+> **Build note (Milestones 19–21):** Implemented in the CareerOS Foundation pass. The landing
+> page's developer toggle (inline requisition benchmarking) was replaced by a dedicated portal
+> card linking to `/developer`; dead demo-mode state was removed. Pre-flight from the board
+> routes to `/profile/:handle?mode=developer&targetRoleId=...`, where completed audits
+> auto-append to the role's ledger (`recordAuditForRole`). Proof Strength is a deterministic
+> composite (avg fit 60% / requirement breadth 25% / verified-claim ratio 15%, coverage-damped)
+> with no fabricated market data. `next build` passed with the new `/developer` route (6→7 routes).
+
+### Phase 6: Accounts, Freemium & AI-Era Bets
+
+- [ ] **Milestone 24 — Identity & Workspace Backend:**
+  * Magic-link email auth; one identity, switchable candidate/recruiter contexts.
+  * Cloud store migration of existing localStorage schemas (nothing built is lost).
+  * Recruiter/candidate data isolation red lines enforced at the API layer.
+- [ ] **Milestone 25 — Quota & Billing Enforcement:**
+  * `usage_events` ledger; `/api/agent/stream` as the single enforcement point
+    (quota check → signed analysis token → SSE allowed).
+  * Stripe Checkout + webhook plan state cached in session.
+  * Tier gates: Free = 3 audits/month + 1 target role + 1 branded Proof Page;
+    Pro = unlimited everything + simulated screens + priority queue;
+    RecruiterOS Team = per-seat batch/cloud features.
+  * Anonymous landing-page demo preserved at 1 audit per profile (cookie/cache bound).
+- [ ] **Milestone 26 — AI-Era Differentiators (2027 bets):**
+  * Simulated Screen agent: adversarial interview rehearsal grounded in the developer's own
+    unverified claims (text first, voice later).
+  * AI-tooling fluency audit: agentic workflow artifacts, commit patterns, disclosure hygiene.
+  * GitHub OAuth private aggregate proof (absorbs Phase 4 OAuth item).
+  * Portfolio what-if simulator (projected fit impact of proposed evidence work).
+  * Machine-readable Proof Page (JSON-LD) for agent-to-agent screening interoperability.
+  * Individual opt-out registry + profile visibility controls (trust positioning).

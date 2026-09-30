@@ -10,6 +10,7 @@ import { ProfileView } from '@/components/ProfileView';
 import { Icon } from '@/components/icons';
 import { getRequisitionById } from '@/lib/requisitions';
 import { getJobProjectById, addCandidateToProject } from '@/lib/job-projects';
+import { getTargetRoleById, recordAuditForRole } from '@/lib/target-roles';
 
 export default function ProfilePage() {
   const params = useParams();
@@ -18,6 +19,7 @@ export default function ProfilePage() {
   const liveUrl = searchParams.get('liveUrl') || undefined;
   const roleId = searchParams.get('roleId') || undefined;
   const jobId = searchParams.get('jobId') || undefined;
+  const targetRoleId = searchParams.get('targetRoleId') || undefined;
   const rawJd = searchParams.get('jd') || undefined;
   const mode = searchParams.get('mode') === 'developer' ? 'developer' : 'recruiter';
 
@@ -30,6 +32,13 @@ export default function ProfilePage() {
     if (project) {
       activeJd = project.requisition.rawJdText;
       activeTitle = project.title;
+    }
+  } else if (targetRoleId) {
+    // Resolve from CareerOS target role (Developer Campaign Engine)
+    const target = targetRoleId ? getTargetRoleById(targetRoleId) : undefined;
+    if (target) {
+      activeJd = target.rawJdText;
+      activeTitle = target.title;
     }
   } else if (roleId) {
     const saved = getRequisitionById(roleId);
@@ -44,7 +53,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (username) generate(username, false, liveUrl, activeJd, activeTitle);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [username, liveUrl, roleId, jobId, rawJd]);
+  }, [username, liveUrl, roleId, jobId, rawJd, targetRoleId]);
 
   // Auto-record assessed candidate into Job Project pipeline upon completion
   useEffect(() => {
@@ -74,6 +83,17 @@ export default function ProfilePage() {
       }
     }
   }, [status, profile, jobId, liveUrl]);
+
+  // Auto-record developer pre-flight audit into the CareerOS target role ledger
+  useEffect(() => {
+    if (status === 'complete' && profile && targetRoleId) {
+      try {
+        recordAuditForRole(targetRoleId, profile);
+      } catch {
+        /* ignore */
+      }
+    }
+  }, [status, profile, targetRoleId]);
 
   const isWorking = status === 'connecting' || status === 'streaming';
 
