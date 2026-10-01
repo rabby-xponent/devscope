@@ -435,6 +435,11 @@ pie title Roadmap Milestone Status
 
 ### Phase 6: Accounts, Freemium & AI-Era Bets
 
+> **Phase plan (Milestones 24–25):** the finalized architecture is in
+> `MONETIZATION_ARCHITECTURE.md`; executable sub-milestones (M24A–M25C) with acceptance
+> criteria and progress live in `MONETIZATION_BUILD_TRACKER.md`. Summary entries below stay
+> for overall history.
+
 > **Build note (Milestone 23):** Snapshot-at-publish design: an audit is private until the
 > developer clicks "Publish proof page" on the profile view (`components/PublishProofBar.tsx`),
 > which `PUT`s the vetted profile to `/api/proofs/:username/:roleId` and stores it as a
@@ -444,6 +449,7 @@ pie title Roadmap Milestone Status
 > per role (`proofUrl`/`proofVersion` on the target-role store); `/by/:username` lists published
 > snapshots. Backend CORS now accepts a comma-separated origin list (dev runs :3100). Print/PDF
 > styles included. SVG badge embed still open.
+
 - [ ] **Milestone 24 — Identity & Workspace Backend:**
   * Magic-link email auth; one identity, switchable candidate/recruiter contexts.
   * Cloud store migration of existing localStorage schemas (nothing built is lost).

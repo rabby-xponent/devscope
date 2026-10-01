@@ -185,6 +185,12 @@ This is the single highest-retention feature for a months-long search: it conver
 
 ## 3. Monetization & Workspace Architecture
 
+> **Status update (Oct 2026):** this section was the draft thesis. The finalized,
+> build-ready architecture now lives in `MONETIZATION_ARCHITECTURE.md` and supersedes §3
+> where they differ (notably: identity providers, the atomic-reserve design, the tier
+> registry, and the data model). §3.4 landing repositioning still applies as written.
+> Build progress: `MONETIZATION_BUILD_TRACKER.md`.
+
 ### 3.1 Current state vs. target
 
 Today: no accounts, no limits, recruiter identity is a local-storage persona (`Sarah Chen, Pro Seat`
