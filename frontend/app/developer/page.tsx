@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ThemeToggle } from '@/lib/theme';
 import { getDeveloperProfile } from '@/lib/workspace-profiles';
+import { ProofPagesCard } from '@/components/ProofPagesCard';
 import { Icon } from '@/components/icons';
 import { Select, SearchInput } from '@/components/ui';
 import type { SelectOption } from '@/components/ui';
@@ -418,6 +419,12 @@ function DeveloperCareerContent() {
             </div>
           )}
         </div>
+
+        {/* Proof Pages (published, shareable evidence links) */}
+        <ProofPagesCard
+          username={devProfile?.githubUsername?.trim().replace(/^@/, '') || ''}
+          roles={roles}
+        />
 
         {/* Skill Gap Radar + Unverified Claims */}
         <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-2">
