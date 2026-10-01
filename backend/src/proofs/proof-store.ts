@@ -52,6 +52,18 @@ export async function readProof(username: string, roleId: string): Promise<Proof
   }
 }
 
+/** Remove a published snapshot — public access must actually go away (red line §4.3). */
+export async function deleteProof(username: string, roleId: string): Promise<boolean> {
+  if (!VALID_ID.test(username) || !VALID_ID.test(roleId)) return false;
+  try {
+    await fs.unlink(proofPath(proofId(username, roleId)));
+    return true;
+  } catch (err: any) {
+    if (err.code === 'ENOENT') return false;
+    throw err;
+  }
+}
+
 export async function writeProof(
   input: Omit<ProofSnapshot, 'id' | 'version' | 'publishedAt' | 'updatedAt'>
 ): Promise<ProofSnapshot> {

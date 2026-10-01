@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Icon } from '@/components/icons';
-import { listPublishedProofs, ProofMeta } from '@/lib/proof-pages';
+import { listPublishedProofs, unpublishProofPage, ProofMeta } from '@/lib/proof-pages';
 import type { TargetRole } from '@/lib/target-roles';
 
 /**
@@ -17,6 +17,8 @@ import type { TargetRole } from '@/lib/target-roles';
 export function ProofPagesCard({ username, roles }: { username: string; roles: TargetRole[] }) {
   const [proofs, setProofs] = useState<ProofMeta[] | null>(null);
   const [copiedId, setCopiedId] = useState('');
+  const [unpublishingId, setUnpublishingId] = useState('');
+  const [error, setError] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -31,6 +33,29 @@ export function ProofPagesCard({ username, roles }: { username: string; roles: T
       cancelled = true;
     };
   }, [username]);
+
+  const reload = async () => {
+    if (!username) return setProofs([]);
+    try {
+      setProofs(await listPublishedProofs(username));
+    } catch {
+      setProofs([]);
+    }
+  };
+
+  const unpublish = async (roleId: string, title: string) => {
+    if (!confirm(`Unpublish the proof page for "${title}"? The public link will stop working immediately.`)) return;
+    setUnpublishingId(roleId);
+    setError('');
+    try {
+      await unpublishProofPage(username, roleId);
+      await reload();
+    } catch (err: any) {
+      setError(err?.message || 'Unpublish failed');
+    } finally {
+      setUnpublishingId('');
+    }
+  };
 
   const copy = async (roleId: string) => {
     try {
@@ -97,6 +122,7 @@ export function ProofPagesCard({ username, roles }: { username: string; roles: T
                   </p>
                 </div>
                 <div className="flex flex-none items-center gap-1.5">
+                  {error && <span className="font-mono text-[10px] text-red-500">{error}</span>}
                   <a
                     href={`/proof/${username}/${p.roleId}`}
                     target="_blank"
@@ -118,6 +144,15 @@ export function ProofPagesCard({ username, roles }: { username: string; roles: T
                       <Icon.Link className="h-3 w-3" />
                     )}
                     {copiedId === p.roleId ? 'copied' : 'copy'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => unpublish(p.roleId, p.roleTitle)}
+                    disabled={unpublishingId === p.roleId}
+                    className="flex h-[26px] w-[26px] items-center justify-center rounded-lg border border-edge bg-card text-muted transition-colors hover:border-rose-400/60 hover:text-rose-500 disabled:opacity-50"
+                    title="Unpublish — removes the public link"
+                  >
+                    <Icon.X className="h-3 w-3" />
                   </button>
                 </div>
               </li>

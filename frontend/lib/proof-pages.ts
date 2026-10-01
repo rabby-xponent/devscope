@@ -66,6 +66,21 @@ export async function publishProofPage(input: {
   return res.json();
 }
 
+/** Unpublish a proof page — public access is removed immediately. */
+export async function unpublishProofPage(
+  username: string,
+  roleId: string
+): Promise<void> {
+  const res = await fetch(
+    `${API_URL}/api/proofs/${encodeURIComponent(username)}/${encodeURIComponent(roleId)}`,
+    { method: 'DELETE' }
+  );
+  if (!res.ok && res.status !== 404) {
+    const detail = await res.json().catch(() => ({}));
+    throw new Error(detail.error || `Unpublish failed (${res.status})`);
+  }
+}
+
 /** Fetch the public proof snapshot ( recruiter-facing fetch — no auth). */
 export async function getPublicProof(
   username: string,

@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { DevProfile } from '../types/profile';
-import { readProof, writeProof, listProofs } from './proof-store';
+import { readProof, writeProof, listProofs, deleteProof } from './proof-store';
 
 /**
  * Proof Page routes.
@@ -14,6 +14,30 @@ import { readProof, writeProof, listProofs } from './proof-store';
 const router = Router();
 
 const VALID = /^[a-zA-Z0-9_-]+$/;
+
+/**
+ * Unpublish — removes public access to a snapshot.
+ * NOTE: PUT/DELETE share the same trust model today (demo, no auth); both become
+ * owner-authenticated in M24B. Until then this matches PUT's exposure exactly.
+ */
+router.delete('/:username/:roleId', async (req: Request, res: Response) => {
+  const username = String(req.params.username || '');
+  const roleId = String(req.params.roleId || '');
+  if (!VALID.test(username) || !VALID.test(roleId)) {
+    res.status(400).json({ error: 'Invalid proof id' });
+    return;
+  }
+  try {
+    const removed = await deleteProof(username, roleId);
+    if (!removed) {
+      res.status(404).json({ error: 'Proof page not found' });
+      return;
+    }
+    res.json({ ok: true, unpublished: `${username}/${roleId}` });
+  } catch {
+    res.status(500).json({ error: 'Failed to unpublish proof page' });
+  }
+});
 
 /** List published proofs for a username (CareerOS uses this to flag live links). */
 router.get('/by/:username', async (req: Request, res: Response) => {
