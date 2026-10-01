@@ -40,15 +40,23 @@ Closes the only current cost hole (`GET /api/agent/stream` is currently unlimite
 **Out of scope:** accounts, real quotas, billing.
 
 **Acceptance criteria:**
-- [ ] Fresh audit on a new handle → allowed once; second fresh run on same handle → blocked
+- [x] Fresh audit on a new handle → allowed once; second fresh run on same handle → blocked
       with a structured `demo_exhausted` SSE error.
-- [ ] Cached profile read → always served, never consumes demo budget.
+- [x] Cached profile read → always served, never consumes demo budget.
 - [ ] Clearing cookies and retrying → IP limiter still blocks beyond the hourly cap.
 - [ ] Banner appears after demo completion with a signup CTA (handle pre-filled).
 - [ ] All existing flows (recruiter demo, proof pages) unaffected.
 
-**Status:** `[ ]` not started
-**Build note:** _(filled in on completion)_
+**Status:** `[~]` backend gate shipped; UI wall + banner pending
+**Build note:** Backend half done (`backend/src/security/demo-gate.ts`): cookie
+`devscope_demo_runs_v1` (HttpOnly, SameSite=Lax) tracks demo-audited handles; cache hits
+never consume; IP backstop (`DEMO_IP_HOURLY_CAP`, default 10/hr, in-memory) implemented but
+not yet load-tested past the cap; `DEMO_LIMIT=off` escape hatch for dev. Route restructured
+so cache read + gate run **before** `flushHeaders()` (Set-Cookie must precede flush — bug
+caught and fixed in verification). Verified: cache-hit free, fresh run consumes + issues
+cookie, replay with cookie → `demo_exhausted` with no agent run. Remaining: frontend banner
+after demo completion + wall modal on the new error code. Authenticated users skip the gate
+once M24B identity lands.
 
 ---
 

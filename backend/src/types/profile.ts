@@ -139,4 +139,6 @@ export interface TraceEvent {
   message?: string;
   technicalDetails?: string;
   cached?: boolean;
+  /** Machine-readable error code (e.g. 'demo_exhausted', 'rate_limited') */
+  code?: string;
 }
