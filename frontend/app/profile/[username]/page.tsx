@@ -12,6 +12,7 @@ import { getRequisitionById } from '@/lib/requisitions';
 import { getJobProjectById, addCandidateToProject } from '@/lib/job-projects';
 import { getTargetRoleById, recordAuditForRole } from '@/lib/target-roles';
 import { PublishProofBar } from '@/components/PublishProofBar';
+import { DemoWall, DemoSignupBanner } from '@/components/DemoUpsell';
 
 export default function ProfilePage() {
   const params = useParams();
@@ -130,7 +131,11 @@ export default function ProfilePage() {
       </nav>
 
       <div className="mx-auto max-w-5xl px-6 py-10 print:max-w-none print:p-0">
-        {error && (
+        {error && (error.code === 'demo_exhausted' || error.code === 'rate_limited') && (
+          <DemoWall code={error.code} username={username} message={error.message} />
+        )}
+
+        {error && error.code !== 'demo_exhausted' && error.code !== 'rate_limited' && (
           <div className="fade-up mx-auto max-w-xl rounded-xl border border-edge/80 bg-surface/90 p-8 text-center shadow-2xl print:hidden">
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-edge bg-well text-muted">
             <Icon.Alert className="h-5 w-5" />
@@ -173,6 +178,7 @@ export default function ProfilePage() {
 
         {!error && status === 'complete' && profile && (
           <>
+            {!cached && <DemoSignupBanner username={username} />}
             {cached && (
               <div className="fade-up mb-8 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-edge bg-surface/60 px-4 py-3 print:hidden">
                 <p className="font-mono text-[11px] text-muted">

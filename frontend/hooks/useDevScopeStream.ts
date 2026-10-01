@@ -9,6 +9,8 @@ type Status = 'idle' | 'connecting' | 'streaming' | 'complete' | 'error';
 export interface StreamError {
   message: string;
   technicalDetails?: string;
+  /** Machine-readable code from the backend (e.g. 'demo_exhausted', 'rate_limited') */
+  code?: string;
 }
 
 export function useDevScopeStream() {
@@ -60,7 +62,9 @@ export function useDevScopeStream() {
       if (roleTitle && roleTitle.trim()) params.set('roleTitle', roleTitle.trim());
 
       const url = `${API_URL}/api/generate?${params.toString()}`;
-      const source = new EventSource(url);
+      // Backend is cross-origin (different port): cookies (demo gate) only flow
+      // when withCredentials is set, and the backend CORS allows credentials.
+      const source = new EventSource(url, { withCredentials: true });
       sourceRef.current = source;
 
     // Safety watchdog: if after 50s no complete/error is received, fail gracefully
@@ -118,12 +122,14 @@ export function useDevScopeStream() {
       const msgEvent = e as MessageEvent;
       let userMsg = 'Connection to the analysis engine was interrupted. Please retry in a few moments.';
       let details: string | undefined;
+      let code: string | undefined;
 
       if (msgEvent.data) {
         try {
           const parsed = JSON.parse(msgEvent.data);
           userMsg = parsed.message || userMsg;
           details = parsed.technicalDetails;
+          code = parsed.code;
         } catch {
           /* fallback */
         }
@@ -132,6 +138,7 @@ export function useDevScopeStream() {
       setError({
         message: userMsg,
         technicalDetails: details,
+        code,
       });
       setStatus('error');
       source.close();

@@ -44,19 +44,23 @@ Closes the only current cost hole (`GET /api/agent/stream` is currently unlimite
       with a structured `demo_exhausted` SSE error.
 - [x] Cached profile read → always served, never consumes demo budget.
 - [ ] Clearing cookies and retrying → IP limiter still blocks beyond the hourly cap.
-- [ ] Banner appears after demo completion with a signup CTA (handle pre-filled).
-- [ ] All existing flows (recruiter demo, proof pages) unaffected.
+- [x] Banner appears after demo completion with a signup CTA (handle pre-filled).
+- [x] All existing flows (recruiter demo, proof pages) unaffected.
 
-**Status:** `[~]` backend gate shipped; UI wall + banner pending
-**Build note:** Backend half done (`backend/src/security/demo-gate.ts`): cookie
+**Status:** `[~]` functionally complete — only the IP-cap load test outstanding
+**Build note:** Backend half (`backend/src/security/demo-gate.ts`): cookie
 `devscope_demo_runs_v1` (HttpOnly, SameSite=Lax) tracks demo-audited handles; cache hits
 never consume; IP backstop (`DEMO_IP_HOURLY_CAP`, default 10/hr, in-memory) implemented but
 not yet load-tested past the cap; `DEMO_LIMIT=off` escape hatch for dev. Route restructured
 so cache read + gate run **before** `flushHeaders()` (Set-Cookie must precede flush — bug
-caught and fixed in verification). Verified: cache-hit free, fresh run consumes + issues
-cookie, replay with cookie → `demo_exhausted` with no agent run. Remaining: frontend banner
-after demo completion + wall modal on the new error code. Authenticated users skip the gate
-once M24B identity lands.
+caught and fixed in verification). Frontend half (`components/DemoUpsell.tsx`):
+`DemoSignupBanner` renders after a fresh non-cached completion (sessionStorage dismissal);
+`DemoWall` replaces the generic error card on `demo_exhausted`/`rate_limited`, with an
+honest "accounts ship next milestone" CTA until M24B. **Cross-origin lesson:** the frontend
+calls the backend on a different port, so EventSource needed `{ withCredentials: true }`
+AND backend CORS `credentials: true` — without them the demo cookie never round-tripped
+(silently; caught only by live browser verification). Verified in browser: fresh run →
+banner; replay → wall with server message; cache hits free.
 
 ---
 

@@ -15,6 +15,7 @@ const allowedOrigins = (process.env.FRONTEND_URL || '*')
 app.use(
   cors({
     origin: allowedOrigins,
+    credentials: true, // EventSource/fetch from the frontend must be able to carry the demo cookie
   })
 );
 app.use(express.json());
