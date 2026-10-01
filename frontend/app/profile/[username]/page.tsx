@@ -11,6 +11,7 @@ import { Icon } from '@/components/icons';
 import { getRequisitionById } from '@/lib/requisitions';
 import { getJobProjectById, addCandidateToProject } from '@/lib/job-projects';
 import { getTargetRoleById, recordAuditForRole } from '@/lib/target-roles';
+import { PublishProofBar } from '@/components/PublishProofBar';
 
 export default function ProfilePage() {
   const params = useParams();
@@ -185,6 +186,9 @@ export default function ProfilePage() {
                   run a fresh analysis
                 </button>
               </div>
+            )}
+            {mode === 'developer' && targetRoleId && (
+              <PublishProofBar username={username} targetRoleId={targetRoleId} profile={profile} />
             )}
             <ProfileView profile={profile} mode={mode} />
             {trace.length > 0 && (

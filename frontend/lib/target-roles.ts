@@ -50,6 +50,10 @@ export interface TargetRole {
   status: ApplicationStatus;
   /** Freeform campaign notes (recruiter contact, referral, context) */
   notes: string;
+  /** Public Proof Page URL once the developer has published this role's evidence */
+  proofUrl?: string;
+  /** Snapshot version of the published Proof Page (bumped on re-publish) */
+  proofVersion?: number;
   /** Newest-last chronological ledger of audits run against this role */
   auditHistory: TargetRoleAuditEntry[];
 }

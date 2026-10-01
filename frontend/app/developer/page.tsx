@@ -375,6 +375,18 @@ function DeveloperCareerContent() {
                         className="w-36"
                       />
                       <div className="flex items-center gap-1.5">
+                        {role.proofUrl && (
+                          <a
+                            href={role.proofUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="flex h-[26px] w-[26px] items-center justify-center rounded-lg border border-signal/35 bg-signal/10 text-signal transition-colors hover:bg-signal/20"
+                            title={`Proof page live · snapshot v${role.proofVersion || 1}`}
+                          >
+                            <Icon.Link className="h-3 w-3" />
+                          </a>
+                        )}
                         <button
                           type="button"
                           onClick={(e) => {

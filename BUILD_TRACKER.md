@@ -420,9 +420,9 @@ pie title Roadmap Milestone Status
 > `syncDefenseCards` merges new questions from each role's latest ledger entry while preserving
 > graded state; cards persist after their role is deleted. Ledger schema now stores the full
 > rubric (`screenGuide`) instead of question strings.
-- [ ] **Milestone 23 — Public Proof Page (`/proof/:username/:roleId`):**
-  * Recruiter-legible, shareable evidence page: verified matrix, live app audit, role fit card,
-    DevScope attestation.
+- [x] **Milestone 23 — Public Proof Page (`/proof/:username/:roleId`):**
+  * Recruiter-legible, shareable evidence page: requirement scorecard, verified claims matrix,
+    live artifact audit, signal snapshot, DevScope attestation header.
   * Markdown/SVG verified badge embed (absorbs Phase 4 badge item).
 
 > **Build note (Milestones 19–21):** Implemented in the CareerOS Foundation pass. The landing
@@ -435,6 +435,15 @@ pie title Roadmap Milestone Status
 
 ### Phase 6: Accounts, Freemium & AI-Era Bets
 
+> **Build note (Milestone 23):** Snapshot-at-publish design: an audit is private until the
+> developer clicks "Publish proof page" on the profile view (`components/PublishProofBar.tsx`),
+> which `PUT`s the vetted profile to `/api/proofs/:username/:roleId` and stores it as a
+> point-in-time snapshot (`backend/src/proofs/` — file-backed, maps 1:1 onto a future table).
+> Public URL is stable across the 24h cache TTL and re-runs; re-publishing bumps a visible
+> `vN` (recruiter sees how often evidence was refreshed). CareerOS board shows a live-link chip
+> per role (`proofUrl`/`proofVersion` on the target-role store); `/by/:username` lists published
+> snapshots. Backend CORS now accepts a comma-separated origin list (dev runs :3100). Print/PDF
+> styles included. SVG badge embed still open.
 - [ ] **Milestone 24 — Identity & Workspace Backend:**
   * Magic-link email auth; one identity, switchable candidate/recruiter contexts.
   * Cloud store migration of existing localStorage schemas (nothing built is lost).
