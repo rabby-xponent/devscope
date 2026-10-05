@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { ThemeToggle } from '@/lib/theme';
 import { getDeveloperProfile } from '@/lib/workspace-profiles';
 import { ProofPagesCard } from '@/components/ProofPagesCard';
+import { AccountMenu } from '@/components/AccountMenu';
 import { Icon } from '@/components/icons';
 import { Select, SearchInput } from '@/components/ui';
 import type { SelectOption } from '@/components/ui';
@@ -153,6 +154,7 @@ function DeveloperCareerContent() {
           </div>
 
           <div className="flex items-center gap-2.5">
+            <AccountMenu workspace="developer" />
             <ThemeToggle />
             <Link
               href="/"

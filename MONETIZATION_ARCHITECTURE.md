@@ -273,14 +273,17 @@ table, claiming `owner_user_id` by matching GitHub handle on first login.
 6. Cache reads are always free; quota blocks *new runs* only, never hides data.
 7. Red lines: user↔user and candidate↔recruiter isolation enforced at the API layer.
 8. jsonb-first schema mirroring existing interfaces; migrate on first login, idempotently.
+9. **(2026-10-05) Auth stack: managed — Supabase.** Project to be created by the owner;
+   M24B ships code-complete behind env config with an offline dev-auth mode.
+10. **(2026-10-05) Free tier: 3 audits / rolling 30 days.**
+11. **(2026-10-05) Anonymous demo stays** (1 fresh audit per profile, cookie + IP gated) after
+    accounts ship.
+12. **(2026-10-05) Free proof-page branding: footer-only** "Built with DevScope" line — no
+    watermark; keeps the artifact premium while preserving attribution.
 
 **Open (needs sign-off before the relevant milestone):**
-1. **Managed (Supabase) vs self-hosted Postgres + custom JWT** — before M24B. *Recommendation: managed.*
-2. **Pro price point:** $14/mo vs $19/mo anchor — before M25B.
-3. **Free-tier audit count:** 3/rolling-30d vs 1/week — before M25A. *Recommendation: 3/30d.*
-4. **Anonymous demo after accounts ship:** keep 1/profile forever? — before M25A. *Recommendation: keep.*
-5. **Free proof-page branding:** footer-only vs watermark — before M25A.
-6. **Team seat price + pilot discount** — before M25C, informed by the 5-recruiter pilot.
+1. **Pro price point:** $14/mo vs $19/mo anchor — before M25B.
+2. **Team seat price + pilot discount** — before M25C, informed by the 5-recruiter pilot.
 
 ---
 

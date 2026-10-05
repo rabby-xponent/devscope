@@ -84,14 +84,31 @@ one account with two switchable contexts. Replaces the fake `recruiter-auth.ts` 
 
 **Acceptance criteria:**
 - [ ] Sign in with GitHub → account created, handle captured; sign in with magic link →
-      same human merges by verified email.
-- [ ] Both contexts visible on one account; switching never merges candidate/recruiter data.
-- [ ] Signed-out recruiter portal clearly labeled *local-only demo mode* (or gated per §7).
+      same human merges by verified email. _(needs Supabase keys; local dev sign-in path
+      verified end-to-end)_
+- [x] Both contexts visible on one account; switching never merges candidate/recruiter data.
+- [x] Signed-out recruiter portal clearly labeled *local-only demo mode* (or gated per §7).
 - [ ] Backend rejects forged/expired JWTs; all new tables have RLS enabled and tested.
-- [ ] No regression: anonymous demo still works.
+      _(forged token → 401 verified; RLS tests need Supabase keys)_
+- [x] No regression: anonymous demo still works.
 
-**Status:** `[ ]` not started
-**Build note:** _(filled in on completion)_
+**Status:** `[~]` code-complete — Supabase-dependent criteria pending keys
+**Build note:** `db/supabase.ts` (admin client, config probe, row types);
+`auth/middleware.ts` (`attachAuth` global — token from `Authorization: Bearer`,
+`x-devscope-session`, or `access_token` query param because EventSource cannot set
+headers; `requireAuth` 401/503); `auth/routes.ts` — `GET /api/auth/me`,
+`POST /api/auth/sync` (idempotent user + workspace + membership provisioning),
+`POST /api/auth/dev-auth` (local mode: `DEV_AUTH_MODE=on` mints real HS256 session
+tokens, 7d expiry, verified by the same middleware path as Supabase JWTs);
+`auth/supabase-setup.sql` — full schema + RLS (users/workspaces/memberships, plus the
+M24D workspace tables and M24C meter tables — meter tables RLS-enabled with NO policies:
+service-role writes only). Frontend: `lib/auth.ts` (supabase|dev backend switch),
+`SessionProvider` + `AuthModal` (GitHub disabled with an honest note until keys exist),
+`AccountMenu` (identity chip → signed-in-as, Developer/Recruiter switcher, sign out),
+Mail/LogOut icons. Verified: tsc clean both sides; 15-check behavioral suite (dev-auth
+mint, /me, 401 anonymous, 401 forged); browser: dev sign-in → chip + context switcher;
+sign-out → "Local-only demo mode" chip returns. Pending keys: GitHub OAuth, magic link,
+merge-by-email, RLS tests.
 
 ---
 

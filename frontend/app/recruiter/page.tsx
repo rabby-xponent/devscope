@@ -21,6 +21,8 @@ import {
   RecruiterAccount,
 } from '@/lib/recruiter-auth';
 import { ThemeToggle } from '@/lib/theme';
+import { AccountMenu } from '@/components/AccountMenu';
+import { useSession } from '@/components/SessionProvider';
 import { Icon } from '@/components/icons';
 import { Select, Checkbox, StarRating, SearchInput, SegmentedTabs } from '@/components/ui';
 import type { SelectOption } from '@/components/ui';
@@ -37,6 +39,7 @@ function RecruiterPortalContent() {
   // Recruiter Session & Account
   const [account, setAccount] = useState<RecruiterAccount | null>(null);
   const [showAccountModal, setShowAccountModal] = useState(false);
+  const { user: sessionUser, loading: sessionLoading } = useSession();
 
   // Projects State
   const [projects, setProjects] = useState<JobProject[]>([]);
@@ -238,6 +241,16 @@ function RecruiterPortalContent() {
 
           {/* Recruiter Identity & Actions */}
           <div className="flex items-center gap-2.5">
+            <AccountMenu workspace="recruiter" />
+            {!sessionLoading && !sessionUser && (
+              <span
+                className="hidden md:inline-flex items-center gap-1.5 rounded-lg border border-edge bg-well px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-wider text-muted"
+                title="Your requisitions and screenings stay in this browser until you sign in."
+              >
+                <Icon.Info className="h-3 w-3" />
+                Local-only demo mode
+              </span>
+            )}
             <ThemeToggle />
 
             {/* Recruiter Profile Card Trigger */}

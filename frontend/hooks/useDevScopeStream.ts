@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { API_URL } from '@/lib/config';
 import { DevProfile, TraceEvent } from '@/types/profile';
+import { getAccessToken } from '@/lib/auth';
 
 type Status = 'idle' | 'connecting' | 'streaming' | 'complete' | 'error';
 
@@ -40,7 +41,7 @@ export function useDevScopeStream() {
   }, []);
 
   const generate = useCallback(
-    (
+    async (
       username: string,
       force = false,
       liveUrl?: string,
@@ -60,6 +61,10 @@ export function useDevScopeStream() {
       if (liveUrl && liveUrl.trim()) params.set('liveUrl', liveUrl.trim());
       if (jobDescription && jobDescription.trim()) params.set('jd', jobDescription.trim());
       if (roleTitle && roleTitle.trim()) params.set('roleTitle', roleTitle.trim());
+      // Signed-in users pass their session token: EventSource cannot set
+      // headers, so the backend also accepts it as a query param (M24B/C).
+      const token = await getAccessToken();
+      if (token) params.set('access_token', token);
 
       const url = `${API_URL}/api/generate?${params.toString()}`;
       // Backend is cross-origin (different port): cookies (demo gate) only flow
