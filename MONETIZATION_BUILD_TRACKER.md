@@ -171,13 +171,24 @@ everything they built (idempotent first-login import).
 **Acceptance criteria:**
 - [ ] Existing user logs in → target roles, defense cards, requisitions, job projects, and
       published proofs all present; localStorage still functions as cache offline.
-- [ ] Import run twice → zero duplicates.
-- [ ] Recruiter workspace data readable only by its members (RLS test).
+      _(server routes ready; first-login client trigger not built yet)_
+- [ ] Import run twice → zero duplicates. _(idempotent by construction; DB-mode test
+      pending keys)_
+- [ ] Recruiter workspace data readable only by its members (RLS test). _(pending keys)_
 - [ ] Candidate campaign data unreadable from a recruiter context (API-level test — red line).
 - [ ] Export produces a complete JSON of the user's data; delete removes it and revokes proofs.
+      _(endpoints built; `proofs` table migration not in SQL yet)_
 
-**Status:** `[ ]` not started
-**Build note:** _(filled in on completion)_
+**Status:** `[~]` server routes complete; client import trigger + proofs migration pending
+**Build note:** `workspace/routes.ts` — `POST /api/workspace/import` (jsonb-first: rows
+store the existing TS interfaces verbatim in `data`, client-generated ids preserved;
+idempotent — reads existing ids per kind and inserts only fresh rows),
+`GET /api/workspace/export` (complete JSON), `DELETE /api/workspace/delete`. All behind
+`requireAuth`; structured 503 until the Supabase keys exist, so local dev is unaffected.
+Table DDL lives in `auth/supabase-setup.sql` (same file as M24B); `index.ts` mounts the
+auth, usage, and workspace routers (landed here so every prior commit still compiles).
+Remaining: first-login import trigger with the `devscope_migrated_v1` flag, `proofs`
+table migration, RLS + import/export/delete tests once keys exist.
 
 ---
 
