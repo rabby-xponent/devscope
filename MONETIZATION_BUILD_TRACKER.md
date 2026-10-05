@@ -43,15 +43,14 @@ Closes the only current cost hole (`GET /api/agent/stream` is currently unlimite
 - [x] Fresh audit on a new handle → allowed once; second fresh run on same handle → blocked
       with a structured `demo_exhausted` SSE error.
 - [x] Cached profile read → always served, never consumes demo budget.
-- [ ] Clearing cookies and retrying → IP limiter still blocks beyond the hourly cap.
+- [x] Clearing cookies and retrying → IP limiter still blocks beyond the hourly cap.
 - [x] Banner appears after demo completion with a signup CTA (handle pre-filled).
 - [x] All existing flows (recruiter demo, proof pages) unaffected.
 
-**Status:** `[~]` functionally complete — only the IP-cap load test outstanding
+**Status:** `[x]` complete
 **Build note:** Backend half (`backend/src/security/demo-gate.ts`): cookie
 `devscope_demo_runs_v1` (HttpOnly, SameSite=Lax) tracks demo-audited handles; cache hits
-never consume; IP backstop (`DEMO_IP_HOURLY_CAP`, default 10/hr, in-memory) implemented but
-not yet load-tested past the cap; `DEMO_LIMIT=off` escape hatch for dev. Route restructured
+never consume; IP backstop (`DEMO_IP_HOURLY_CAP`, default 10/hr, in-memory). `DEMO_LIMIT=off` escape hatch for dev. Route restructured
 so cache read + gate run **before** `flushHeaders()` (Set-Cookie must precede flush — bug
 caught and fixed in verification). Frontend half (`components/DemoUpsell.tsx`):
 `DemoSignupBanner` renders after a fresh non-cached completion (sessionStorage dismissal);
@@ -60,7 +59,11 @@ honest "accounts ship next milestone" CTA until M24B. **Cross-origin lesson:** t
 calls the backend on a different port, so EventSource needed `{ withCredentials: true }`
 AND backend CORS `credentials: true` — without them the demo cookie never round-tripped
 (silently; caught only by live browser verification). Verified in browser: fresh run →
-banner; replay → wall with server message; cache hits free.
+banner; replay → wall with server message; cache hits free. **IP-cap load test (final criterion):** with
+`DEMO_IP_HOURLY_CAP=2`, 8 sequential fresh runs from one spoofed IP — exactly 2 passed the
+gate (nonexistent handles fail fast at the GitHub fetch, zero agent/LLM cost), the remaining
+6 got structured `rate_limited` SSE errors with no agent runs. Test script was temporary and
+removed; backend restored to default cap after.
 
 ---
 
