@@ -130,12 +130,16 @@ export default function ProfilePage() {
         </div>
       </nav>
 
-      <div className="mx-auto max-w-5xl px-6 py-10 print:max-w-none print:p-0">
-        {error && (error.code === 'demo_exhausted' || error.code === 'rate_limited') && (
+      <div className="mx-auto max-w-5xl px-6 py-10 print:max-w-none print:p-0">        {error &&
+          (error.code === 'demo_exhausted' ||
+            error.code === 'rate_limited' ||
+            error.code === 'quota_exhausted') && (
           <DemoWall code={error.code} username={username} message={error.message} />
         )}
-
-        {error && error.code !== 'demo_exhausted' && error.code !== 'rate_limited' && (
+        {error &&
+          error.code !== 'demo_exhausted' &&
+          error.code !== 'rate_limited' &&
+          error.code !== 'quota_exhausted' && (
           <div className="fade-up mx-auto max-w-xl rounded-xl border border-edge/80 bg-surface/90 p-8 text-center shadow-2xl print:hidden">
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-edge bg-well text-muted">
             <Icon.Alert className="h-5 w-5" />

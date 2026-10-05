@@ -128,14 +128,29 @@ and happen *before* agent work starts.
 that M25A will promote into the registry.
 
 **Acceptance criteria:**
-- [ ] Concurrent SSE starts cannot exceed quota (race test: parallel requests, count ≤ limit).
-- [ ] Cache hits never write usage rows; fresh runs always do.
-- [ ] Exhausted user gets a structured event and keeps full read access to existing data.
+- [x] Concurrent SSE starts cannot exceed quota (race test: parallel requests, count ≤ limit).
+      _(in-memory mode: 6 concurrent starts → exactly 3 allowed, ledger = 3)_
+- [x] Cache hits never write usage rows; fresh runs always do.
+- [x] Exhausted user gets a structured event and keeps full read access to existing data.
 - [ ] `cost_est_cents` populated for real runs (best-effort, documented margin view).
+      _(column exists, written null in v1 — capture deferred)_
 - [ ] Anonymous demo budget is also ledger-backed (survives cookie deletion via IP rows).
+      _(recording implemented, keyed `anon:<ip>`; enforcement is still the M24A gate;
+      DB-mode verification pending keys)_
 
-**Status:** `[ ]` not started
-**Build note:** _(filled in on completion)_
+**Status:** `[~]` verified end-to-end in memory mode; DB-mode criteria pending keys
+**Build note:** `security/usage-ledger.ts` — `FREE_AUDIT_LIMIT = 3` (the one config
+constant M25A promotes into the registry), 30d rolling window, atomic compare-and-set
+reserve on `user_counters` (conditional UPDATE retried on conflict; first-slot claim via
+insert with 23505 conflict retry — the row lock makes concurrent SSE starts safe), and a
+ledger-only in-memory fallback with the identical API so the chokepoint code never forks.
+`routes/api.ts`: signed-in users bypass the M24A demo gate and hit `reserveAudit` before
+any agent work; blocked runs get a structured `quota_exhausted` SSE event with
+remaining/resetAt; anonymous allowed runs write best-effort `anon:<ip>` ledger rows;
+cache hits short-circuit before any reserve. `GET /api/usage` is the meter endpoint;
+`DemoUpsell` handles `quota_exhausted` with its own wall copy and the profile page routes
+it to `DemoWall`. Verified: 3 fresh runs → 3/3 → 4th blocked; race test 6 concurrent →
+exactly 3 allowed; anonymous demo gate regression; cache hits consume nothing.
 
 ---
 

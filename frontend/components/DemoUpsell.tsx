@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Icon } from '@/components/icons';
+import { useSession } from '@/components/SessionProvider';
+import { authBackend } from '@/lib/auth';
 
 /**
  * Anonymous demo funnel surfaces (M24A — MONETIZATION_BUILD_TRACKER.md).
@@ -19,23 +21,22 @@ import { Icon } from '@/components/icons';
  */
 
 function SignupCta({ label = 'Create your free workspace' }: { label?: string }) {
-  const [noted, setNoted] = useState(false);
+  const { openSignIn } = useSession();
   return (
     <div className="flex flex-col items-start gap-2">
       <button
         type="button"
-        onClick={() => setNoted(true)}
+        onClick={openSignIn}
         className="inline-flex items-center gap-1.5 rounded-lg bg-signal px-5 py-2.5 font-mono text-xs font-semibold uppercase tracking-wider text-[#0c0b0e] shadow-xs transition-all hover:bg-signal/90 active:scale-95 outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
       >
         <Icon.Sparkle className="h-3 w-3" />
         {label}
       </button>
-      {noted && (
-        <p className="max-w-sm text-[11px] leading-relaxed text-muted">
-          Accounts ship in the next milestone. Until then this workspace runs locally in your
-          browser — nothing you've built is lost when you sign in later.
-        </p>
-      )}
+      <p className="max-w-sm text-[11px] leading-relaxed text-muted">
+        {authBackend() === 'supabase'
+          ? '3 free audits per rolling 30 days, saved roles, proof pages — no card. Your local work carries over.'
+          : 'Local dev sign-in is live (Supabase project pending). Your local work carries over.'}
+      </p>
     </div>
   );
 }
@@ -99,27 +100,30 @@ export function DemoWall({
   username,
   message,
 }: {
-  code: 'demo_exhausted' | 'rate_limited';
+  code: 'demo_exhausted' | 'rate_limited' | 'quota_exhausted';
   username: string;
   message: string;
 }) {
   const isExhausted = code === 'demo_exhausted';
+  const isQuota = code === 'quota_exhausted';
   return (
     <div className="fade-up mx-auto max-w-xl rounded-xl border border-edge bg-card p-8 text-center shadow-card">
       <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-signal/30 bg-signal/10 text-signal">
         <Icon.Zap className="h-5 w-5" />
       </div>
       <h3 className="font-mono text-sm font-semibold uppercase tracking-wider text-content">
-        {isExhausted ? 'Free demo used' : 'Demo temporarily paused'}
+        {isExhausted ? 'Free demo used' : isQuota ? 'Free audits used' : 'Demo temporarily paused'}
       </h3>
       <p className="mt-2 text-sm leading-relaxed text-muted">{message}</p>
 
       <div className="mt-6 flex flex-col items-center gap-4">
-        <SignupCta />
+        <SignupCta label={isQuota ? 'Get unlimited audits' : 'Create your free workspace'} />
         <p className="max-w-sm text-[11px] leading-relaxed text-muted/80">
           {isExhausted
             ? 'Everything already generated stays viewable, and re-opening analyzed profiles is always free.'
-            : 'The limit resets on a rolling hourly window — nothing is lost in the meantime.'}
+            : isQuota
+              ? 'Your quota resets on a rolling 30-day window — existing analyses never disappear.'
+              : 'The limit resets on a rolling hourly window — nothing is lost in the meantime.'}
         </p>
         <Link
           href="/"
