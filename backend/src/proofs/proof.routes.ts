@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { DevProfile } from '../types/profile';
 import { readProof, writeProof, listProofs, deleteProof } from './proof-store';
+import { can, tierForSession } from '../config/tiers';
 
 /**
  * Proof Page routes.
@@ -69,7 +70,19 @@ router.get('/:username/:roleId', async (req: Request, res: Response) => {
   res.json({ proof: snap });
 });
 
-/** Publish / re-publish a snapshot (called from the developer's profile view). */
+/**
+ * Publish / re-publish a snapshot (called from the developer's profile view).
+ *
+ * Enforces `proof.publish` from the tier registry (M25A): Free keeps 1 active
+ * page and every page it creates is branded; Pro is unlimited and unbranded.
+ * Re-publishing an existing page is always allowed — it edits a page you already
+ * own rather than creating a new one — and pages already published are never
+ * hidden or revoked by hitting the limit (§6 dark-pattern rule).
+ *
+ * Known v1 gap: pages are keyed by GitHub handle, so the count is enforced per
+ * handle rather than per account. Handle ownership verification is §10 follow-up
+ * work (free-tier OAuth handle claim).
+ */
 router.put('/:username/:roleId', async (req: Request, res: Response) => {
   const username = String(req.params.username || '');
   const roleId = String(req.params.roleId || '');
@@ -89,18 +102,40 @@ router.put('/:username/:roleId', async (req: Request, res: Response) => {
   }
 
   try {
+    const tier = tierForSession(Boolean(req.auth));
+    const entitlement = can(tier, 'proof.publish');
+    const existing = await readProof(username, roleId);
+
+    if (!existing) {
+      const activeCount = (await listProofs(username)).length;
+      const verdict = can(tier, 'proof.publish', { used: activeCount });
+      if (!verdict.allowed) {
+        res.status(402).json({
+          error: 'proof_limit',
+          capability: 'proof.publish',
+          limit: verdict.limit,
+          remaining: verdict.remaining ?? 0,
+          reason: verdict.reason,
+          upgradeTo: verdict.upgradeTo,
+        });
+        return;
+      }
+    }
+
     const snap = await writeProof({
       username,
       roleId,
       roleTitle: roleTitle || profile.requisitionFit?.roleTitle || 'Target Role',
       note,
       profile,
+      branded: entitlement.branded,
     });
     res.json({
       ok: true,
       version: snap.version,
       publishedAt: snap.publishedAt,
       updatedAt: snap.updatedAt,
+      branded: entitlement.branded,
       url: `/proof/${username}/${roleId}`,
     });
   } catch (err: any) {

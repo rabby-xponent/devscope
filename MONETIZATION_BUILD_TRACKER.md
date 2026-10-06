@@ -197,7 +197,8 @@ table migration, RLS + import/export/delete tests once keys exist.
 **Aim:** limits as data. One registry + `can()` consumed by backend enforcement and frontend
 meters — so rigor later is a config change.
 
-**Depends on:** §11 open decisions #3, #4, #5 — **sign off first**.
+**Depends on:** §11 decisions #3, #4, #5 — **signed off** (managed Supabase auth, Free = 3
+audits per rolling 30 days, anonymous demo retained, footer-only proof attribution).
 
 **Scope:**
 - `TIERS` registry + `can(user, capability, ctx)` shared by backend and frontend.
@@ -210,12 +211,45 @@ meters — so rigor later is a config change.
 
 **Acceptance criteria:**
 - [ ] Every capability in the matrix (architecture §6) is enforced at its chokepoint.
+      _(server-enforced: `audit.run` at the SSE chokepoint, `proof.publish` at PUT.
+      `target_role.create` + `practice.full` are client-side walls only while that
+      state is client-side — they become hard walls when M24D moves roles/deck server-first;
+      `profile.read`/`data.export` are unlimited on every tier, so no wall exists)_
 - [ ] Meter shows accurate remaining count; resets correctly at 30d boundary.
-- [ ] Paywalled surfaces never hide the user's own existing data (dark-pattern check).
-- [ ] Changing a limit in the registry changes behavior with no code edits elsewhere.
+      _(remaining matches the ledger on every fetch and the registry-as-data rerun;
+      the 30-day rollover itself is reported from the ledger window (`resetAt`) but was
+      not exercised in real time)_
+- [x] Paywalled surfaces never hide the user's own existing data (dark-pattern check).
+      _(verified in the browser: a locked workspace keeps its role card fully usable,
+      the practice deck stays visible view-only, re-publishing an owned proof page still
+      bumps its version, and every wall repeats that existing work stays put)_
+- [x] Changing a limit in the registry changes behavior with no code edits elsewhere.
 
-**Status:** `[ ]` not started
-**Build note:** _(filled in on completion)_
+**Status:** `[x]` complete — verified in the browser and against the registry
+**Build note:** `backend/src/config/tiers.ts` is now the only place a limit exists:
+`TIERS` (anonymous/free/pro/team) × 9 capabilities, `can(tier, capability, {used})` →
+`Verdict` (allowed, remaining, branded, verbatim `reason`, `upgradeTo`), plus
+`ruleFor`/`tierForSession`/`numericLimit`/`ALL_CAPABILITIES`. It is dependency-free and
+imported by both sides through the `@backend/config/tiers` alias (it lives under
+`backend/src/` because that build has `rootDir: ./src`), so the browser and the
+enforcement code cannot drift. `security/entitlements.ts` adds `GET /api/entitlements`,
+answering with per-capability verdicts computed from the same registry, adding
+`resetAt` for `audit.run` and **failing closed** if the usage lookup errors.
+`security/usage-ledger.ts` no longer hardcodes anything —
+`FREE_AUDIT_LIMIT = TIERS.free['audit.run'].limit`. `proof.routes.ts` enforces
+`proof.publish` on PUT: re-publishing a page you own always succeeds (version bump),
+a new page over the allowance returns 402 `{error:'proof_limit', limit, remaining,
+reason, upgradeTo}` and stamps `branded` from the registry at publish time, so a Pro
+publish stays unbranded forever. Frontend: `QuotaMeter` (live remaining + bar, signal
+color at ≤1, reset date, honest `demo · 1 audit per profile` for anonymous visitors),
+`FeatureLock`/`useCapabilityLock` chips, and an `UpgradeModal` built from the registry's
+own Pro labels that never claims checkout exists. Also hardened the public proof page
+against snapshots missing `profile.github` — those are file-backed artifacts that outlive
+code versions and must not white-screen a recruiter's link. Verified: 21/21 API checks
+(anonymous vs Free verdicts, 402 shape, re-publish, public read, cleanup); registry-as-data
+rerun (free limit patched 3→2 in that one file — meter and the SSE gate both moved, then
+restored with an empty diff); browser pass at 1440px covering meter, role lock + upgrade
+modal, and a branded public proof page.
 
 ---
 

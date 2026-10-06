@@ -14,15 +14,17 @@
  *   meter is verifiable locally and M24D swaps storage without touching the
  *   chokepoint.
  *
- * Free tier (architecture §11, decisions 9-12): 3 audits / rolling 30 days.
- * Anonymous demo runs are metered separately by the demo gate (M24A).
+ * The Free allowance is read from the tier registry (M25A) — this file must
+ * never hardcode a limit. Anonymous demo runs are metered separately by the demo
+ * gate (M24A).
  */
 
 import { Router, Request, Response } from 'express';
 import { getAdmin, isDbConfigured } from '../db/supabase';
 import { requireAuth } from '../auth/middleware';
+import { TIERS } from '../config/tiers';
 
-export const FREE_AUDIT_LIMIT = 3;
+export const FREE_AUDIT_LIMIT: number = TIERS.free['audit.run'].limit;
 const ROLLING_WINDOW_MS = 30 * 24 * 3600 * 1000;
 
 export interface ReserveVerdict {

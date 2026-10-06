@@ -6,6 +6,7 @@ import proofRoutes from './proofs/proof.routes';
 import authRoutes from './auth/routes';
 import { attachAuth } from './auth/middleware';
 import { usageRouter } from './security/usage-ledger';
+import { entitlementsRouter } from './security/entitlements';
 import workspaceRoutes from './workspace/routes';
 
 const app = express();
@@ -33,6 +34,7 @@ app.use('/api', apiRoutes);
 app.use('/api/proofs', proofRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/usage', usageRouter);
+app.use('/api/entitlements', entitlementsRouter);
 app.use('/api/workspace', workspaceRoutes);
 
 app.listen(PORT, () => {

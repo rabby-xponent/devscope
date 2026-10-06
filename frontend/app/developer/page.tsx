@@ -7,6 +7,9 @@ import { ThemeToggle } from '@/lib/theme';
 import { getDeveloperProfile } from '@/lib/workspace-profiles';
 import { ProofPagesCard } from '@/components/ProofPagesCard';
 import { AccountMenu } from '@/components/AccountMenu';
+import { QuotaMeter } from '@/components/QuotaMeter';
+import { useCapabilityLock } from '@/components/FeatureLock';
+import { useEntitlements } from '@/hooks/useEntitlements';
 import { Icon } from '@/components/icons';
 import { Select, SearchInput } from '@/components/ui';
 import type { SelectOption } from '@/components/ui';
@@ -46,6 +49,10 @@ function DeveloperCareerContent() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [defenseCards, setDefenseCards] = useState<DefenseCard[]>([]);
+
+  // Entitlements (M25A): the meter and every lock chip below read verdicts from
+  // the backend tier registry — the browser never decides a limit itself.
+  const { entitlements } = useEntitlements();
 
   useEffect(() => {
     setDevProfile(getDeveloperProfile());
@@ -121,6 +128,19 @@ function DeveloperCareerContent() {
     router.push(`/profile/${encodeURIComponent(handle)}?${params.toString()}`);
   };
 
+  // `target_role.create` (1 on Free, unlimited on Pro). Existing roles stay
+  // fully usable when locked — only adding a new one is gated (§6).
+  const roleLock = useCapabilityLock(entitlements, 'target_role.create', roles.length);
+  const atRoleLimit = roleLock.locked;
+
+  const handleAddRole = () => {
+    if (atRoleLimit) {
+      roleLock.onRequest();
+      return;
+    }
+    setShowNewRoleModal(true);
+  };
+
   if (!devProfile) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-canvas font-mono text-sm text-muted">
@@ -154,6 +174,7 @@ function DeveloperCareerContent() {
           </div>
 
           <div className="flex items-center gap-2.5">
+            <QuotaMeter />
             <AccountMenu workspace="developer" />
             <ThemeToggle />
             <Link
@@ -207,11 +228,13 @@ function DeveloperCareerContent() {
               />
             </div>
             <button
-              onClick={() => setShowNewRoleModal(true)}
+              onClick={handleAddRole}
+              title={atRoleLimit ? roleLock.verdict.reason || undefined : undefined}
               className="flex items-center gap-1.5 rounded-xl bg-signal px-4 py-2 font-mono text-xs font-bold text-[#0c0b0e] shadow-xs transition-colors hover:bg-signal/90 outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
             >
               <Icon.Plus className="h-3.5 w-3.5" />
               <span>Add Target Role</span>
+              {atRoleLimit && roleLock.lock}
             </button>
           </div>
         </div>
