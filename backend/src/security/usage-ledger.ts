@@ -51,6 +51,8 @@ interface MemEvent {
 }
 
 const memEvents: MemEvent[] = [];
+/** Paid-tier runs, kept apart from the free-window counter (see recordPaidRun). */
+const memPaidRuns: MemEvent[] = [];
 
 function memInWindow(userId: string, now: number): MemEvent[] {
   return memEvents.filter(
@@ -227,6 +229,36 @@ export async function reserveAudit(userId: string, target: string): Promise<Rese
 export async function getUsage(userId: string): Promise<ReserveVerdict> {
   if (isDbConfigured()) return dbUsage(userId);
   return memUsage(userId);
+}
+
+/**
+ * Record a run for attribution WITHOUT spending the free allowance (M25B).
+ *
+ * Paid tiers are unlimited, so `reserveAudit` must not gate them — but the
+ * usage row still lands, because per-run cost and attribution are exactly the
+ * data that justifies a subscription. The free counter is deliberately left
+ * alone: it is a rolling-window allowance, not a run log.
+ */
+export async function recordPaidRun(userId: string, target: string): Promise<void> {
+  try {
+    if (isDbConfigured()) {
+      const admin = getAdmin()!;
+      const { error } = await admin.from('usage_events').insert({
+        user_id: userId,
+        kind: 'audit',
+        target,
+        cache_hit: false,
+        cost_est_cents: null,
+      });
+      if (error) throw new Error(error.message);
+    } else {
+      // Local mode keeps attribution separate from the free-window counter, so
+      // a paid run can never eat the allowance a downgraded user still has.
+      memPaidRuns.push({ userId, target, createdAt: Date.now() });
+    }
+  } catch (err: any) {
+    console.error('[usage-ledger] paid run record failed:', err?.message);
+  }
 }
 
 /**

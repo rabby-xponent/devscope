@@ -15,6 +15,7 @@ import { Router, Request, Response } from 'express';
 import { ALL_CAPABILITIES, can, tierForSession, Capability, Verdict } from '../config/tiers';
 import { getUsage } from './usage-ledger';
 import { listProofs } from '../proofs/proof-store';
+import { getPlanState } from '../billing/subscriptions';
 
 export interface EntitlementEntry extends Verdict {
   /** Rolling-window reset for `audit.run`; null when unknown. */
@@ -24,7 +25,10 @@ export interface EntitlementEntry extends Verdict {
 const router = Router();
 
 router.get('/', async (req: Request, res: Response) => {
-  const tier = tierForSession(Boolean(req.auth));
+  // Tier comes from the local subscription mirror (M25B); the registry's
+  // `tierForSession` is only the anonymous/free fallback.
+  const plan = await getPlanState(req.auth?.userId ?? null, Boolean(req.auth));
+  const tier = plan.tier || tierForSession(Boolean(req.auth));
   const capabilities: Record<Capability, EntitlementEntry> = {} as Record<
     Capability,
     EntitlementEntry
@@ -70,7 +74,7 @@ router.get('/', async (req: Request, res: Response) => {
     };
   }
 
-  res.json({ tier, capabilities });
+  res.json({ tier, capabilities, plan: req.auth ? plan : null });
 });
 
 export const entitlementsRouter = router;

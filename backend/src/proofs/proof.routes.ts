@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { DevProfile } from '../types/profile';
 import { readProof, writeProof, listProofs, deleteProof } from './proof-store';
 import { can, tierForSession } from '../config/tiers';
+import { getPlanState } from '../billing/subscriptions';
 
 /**
  * Proof Page routes.
@@ -102,7 +103,8 @@ router.put('/:username/:roleId', async (req: Request, res: Response) => {
   }
 
   try {
-    const tier = tierForSession(Boolean(req.auth));
+    const plan = await getPlanState(req.auth?.userId ?? null, Boolean(req.auth));
+    const tier = plan.tier || tierForSession(Boolean(req.auth));
     const entitlement = can(tier, 'proof.publish');
     const existing = await readProof(username, roleId);
 

@@ -7,17 +7,18 @@
  * Rules this component exists to honor:
  * - It never blocks access to data the user already owns. A locked capability is
  *   about doing something *new*, and the copy says so.
- * - It reads what Pro includes from the tier registry, so the pitch can never
- *   drift from the product.
- * - Until Stripe checkout exists (M25B), the primary action is honest about
- *   being unavailable rather than faking a payment step.
+ * - It reads what Pro includes from the tier registry and what it costs from the
+ *   plan catalogue, so the pitch can never drift from the product or the price.
+ * - When billing is not configured it says so. No fake payment step, no dead
+ *   button: "Keep working on Free" is always available.
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Icon } from '@/components/icons';
 import { Capability, ruleFor } from '@backend/config/tiers';
 import type { EntitlementEntry } from '@/lib/entitlements';
 import { useSession } from '@/components/SessionProvider';
+import { PLANS, PlanId, startCheckout, startPortal, BillingError } from '@/lib/billing';
 
 /** What Pro adds over Free, read straight from the registry. */
 function proHighlights(capability: Capability | null): string[] {
@@ -36,6 +37,9 @@ function proHighlights(capability: Capability | null): string[] {
   return out;
 }
 
+/** Individual plans only — Team seats are a sales conversation, not this wall. */
+const UPGRADE_PLANS: PlanId[] = ['pro_monthly', 'pro_annual'];
+
 export function UpgradeModal({
   verdict,
   capability = null,
@@ -46,6 +50,11 @@ export function UpgradeModal({
   onClose: () => void;
 }) {
   const { user, openSignIn } = useSession();
+  const [plan, setPlan] = useState<PlanId>('pro_monthly');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [unavailable, setUnavailable] = useState(false);
+  const onPaidTier = verdict.tier === 'pro' || verdict.tier === 'team';
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -54,6 +63,36 @@ export function UpgradeModal({
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [onClose]);
+
+  async function handleCheckout() {
+    setBusy(true);
+    setError(null);
+    try {
+      const { url } = await startCheckout(plan);
+      // Stripe hosts the payment step; our webhook decides the plan afterwards.
+      window.location.href = url;
+    } catch (err) {
+      if (err instanceof BillingError && err.notConfigured) {
+        setUnavailable(true);
+      } else {
+        setError(err instanceof Error ? err.message : 'Checkout failed. Try again in a moment.');
+      }
+      setBusy(false);
+    }
+  }
+
+  async function handlePortal() {
+    setBusy(true);
+    setError(null);
+    try {
+      const { url } = await startPortal();
+      window.location.href = url;
+    } catch (err) {
+      if (err instanceof BillingError && err.notConfigured) setUnavailable(true);
+      else setError(err instanceof Error ? err.message : 'Billing portal unavailable.');
+      setBusy(false);
+    }
+  }
 
   return (
     <div
@@ -119,11 +158,71 @@ export function UpgradeModal({
               <Icon.Sparkle className="h-3.5 w-3.5" />
               Create your free account
             </button>
+          ) : onPaidTier ? (
+            <button
+              type="button"
+              onClick={handlePortal}
+              disabled={busy}
+              className="flex items-center justify-center gap-1.5 rounded-xl bg-signal px-4 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-[#0c0b0e] shadow-xs transition-all hover:bg-signal/90 disabled:opacity-60"
+            >
+              {busy ? 'Opening…' : 'Manage billing'}
+            </button>
           ) : (
+            <>
+              <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Billing period">
+                {UPGRADE_PLANS.map((id) => {
+                  const option = PLANS[id];
+                  const selected = plan === id;
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      role="radio"
+                      aria-checked={selected}
+                      onClick={() => setPlan(id)}
+                      className={`rounded-xl border px-3 py-2 text-left transition-colors ${
+                        selected
+                          ? 'border-signal/60 bg-signal/10'
+                          : 'border-edge bg-well hover:border-signal/30'
+                      }`}
+                    >
+                      <span className="block font-mono text-[10px] uppercase tracking-wider text-muted">
+                        {id === 'pro_monthly' ? 'Monthly' : 'Annual'}
+                      </span>
+                      <span className="block font-mono text-sm font-bold text-content">
+                        {option.display}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-center font-mono text-[10px] uppercase tracking-wider text-muted/80">
+                {PLANS[plan].cadence}
+              </p>
+              <button
+                type="button"
+                onClick={handleCheckout}
+                disabled={busy}
+                className="flex items-center justify-center gap-1.5 rounded-xl bg-signal px-4 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-[#0c0b0e] shadow-xs transition-all hover:bg-signal/90 disabled:opacity-60 active:scale-[0.99]"
+              >
+                <Icon.Sparkle className="h-3.5 w-3.5" />
+                {busy ? 'Opening checkout…' : `Upgrade to Pro — ${PLANS[plan].display}`}
+              </button>
+            </>
+          )}
+
+          {unavailable && (
             <p className="rounded-xl border border-edge bg-well px-4 py-2.5 text-center font-mono text-[11px] leading-relaxed text-muted">
-              Pro self-serve checkout is opening soon — no card required to stay on Free.
+              Self-serve checkout is not switched on this deployment yet — no card required to
+              stay on Free.
             </p>
           )}
+          {error && (
+            <p className="rounded-xl border border-signal/40 bg-signal/10 px-4 py-2.5 text-center font-mono text-[11px] leading-relaxed text-signal">
+              {error}
+            </p>
+          )}
+
           <button
             type="button"
             onClick={onClose}

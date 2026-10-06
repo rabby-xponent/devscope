@@ -11,11 +11,37 @@ import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Icon } from '@/components/icons';
 import { useSession } from '@/components/SessionProvider';
+import { useEntitlements } from '@/hooks/useEntitlements';
+import { PLANS, startCheckout, startPortal, BillingError } from '@/lib/billing';
 
 export function AccountMenu({ workspace }: { workspace: 'developer' | 'recruiter' }) {
   const { user, loading, openSignIn, signOut } = useSession();
+  const { entitlements } = useEntitlements();
   const [open, setOpen] = useState(false);
+  const [billingBusy, setBillingBusy] = useState(false);
+  const [billingNote, setBillingNote] = useState<string | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
+
+  const paid = entitlements.tier === 'pro' || entitlements.tier === 'team';
+
+  /** Self-serve billing: the portal handles cancel, plan change, card. */
+  async function handleBilling() {
+    setBillingBusy(true);
+    setBillingNote(null);
+    try {
+      const { url } = paid ? await startPortal() : await startCheckout('pro_monthly');
+      window.location.href = url;
+    } catch (err) {
+      setBillingNote(
+        err instanceof BillingError && err.notConfigured
+          ? 'Billing is not switched on this deployment yet.'
+          : err instanceof Error
+            ? err.message
+            : 'Billing unavailable.'
+      );
+      setBillingBusy(false);
+    }
+  }
 
   useEffect(() => {
     if (!open) return;
@@ -122,6 +148,33 @@ export function AccountMenu({ workspace }: { workspace: 'developer' | 'recruiter
                 {ctx.current && <Icon.Check className="h-3 w-3" />}
               </Link>
             ))}
+          </div>
+          <div className="border-t border-edge p-1.5">
+            <div className="flex items-center justify-between px-2 pb-1 pt-1 font-mono text-[10px] uppercase tracking-wider text-muted">
+              <span>Plan</span>
+              <span className={paid ? 'text-signal' : ''}>{entitlements.tier}</span>
+            </div>
+            <button
+              type="button"
+              role="menuitem"
+              disabled={billingBusy}
+              onClick={() => void handleBilling()}
+              className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 font-mono text-xs text-content transition-colors hover:bg-well hover:text-signal disabled:opacity-60"
+            >
+              <Icon.Zap className="h-3.5 w-3.5" />
+              <span className="flex-1 text-left">
+                {billingBusy
+                  ? 'Opening…'
+                  : paid
+                    ? 'Manage billing'
+                    : `Upgrade to Pro — ${PLANS.pro_monthly.display}`}
+              </span>
+            </button>
+            {billingNote && (
+              <p className="px-2 pb-1 font-mono text-[10px] leading-relaxed text-muted">
+                {billingNote}
+              </p>
+            )}
           </div>
           <div className="border-t border-edge p-1.5">
             <button

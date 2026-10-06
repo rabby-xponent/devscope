@@ -8,6 +8,7 @@ import { getDeveloperProfile } from '@/lib/workspace-profiles';
 import { ProofPagesCard } from '@/components/ProofPagesCard';
 import { AccountMenu } from '@/components/AccountMenu';
 import { QuotaMeter } from '@/components/QuotaMeter';
+import { CheckoutNotice } from '@/components/CheckoutNotice';
 import { useCapabilityLock } from '@/components/FeatureLock';
 import { useEntitlements } from '@/hooks/useEntitlements';
 import { Icon } from '@/components/icons';
@@ -188,6 +189,7 @@ function DeveloperCareerContent() {
       </nav>
 
       <div className="mx-auto max-w-7xl space-y-8 px-4 pt-8 sm:px-6">
+        <CheckoutNotice />
         {/* Welcome + Identity Card */}
         <div className="relative flex flex-col justify-between gap-5 overflow-hidden rounded-2xl border border-edge bg-card p-6 shadow-card sm:p-7 md:flex-row md:items-center">
           <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-signal/50 to-transparent" />

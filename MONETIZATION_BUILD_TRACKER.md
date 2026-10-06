@@ -258,7 +258,7 @@ modal, and a branded public proof page.
 **Aim:** self-serve payment. Pro (individual) and Team (per seat) via Stripe Checkout;
 webhooks are the only writer of plan state.
 
-**Depends on:** §11 open decision #2 (price point) — **sign off first**.
+**Depends on:** §11 decisions 13/14 — **signed off** ($14/mo + $120/yr Pro, $29/seat/mo Team).
 
 **Scope:**
 - Checkout (subscription mode), Customer Portal, webhook handler with signature verification.
@@ -270,13 +270,45 @@ webhooks are the only writer of plan state.
 
 **Acceptance criteria:**
 - [ ] Test-mode purchase lifts limits immediately (meter updates without re-login).
+      _(verified with real signed webhooks: `checkout.session.completed` flips the tier to
+      pro in the same cycle and the meter reads unlimited without a re-login; the hosted
+      Checkout redirect itself needs test keys + price IDs, so the full click-through is
+      still to be run in a provisioned account)_
 - [ ] Cancel → access until period end → graceful downgrade to Free; data intact.
-- [ ] Webhook replay/idempotency safe; forged webhook rejected.
-- [ ] No Stripe call on the SSE hot path (verified in logs).
-- [ ] Failed payment → `past_due` + grace, then downgrade.
+      _(mirror keeps `active` + `cancel_at_period_end` so access continues to period end;
+      `subscription.deleted` downgrades to Free, profile reads/export stay unlimited and
+      the free meter comes back — pending one live test-mode cancel)_
+- [x] Webhook replay/idempotency safe; forged webhook rejected.
+      _(claimed event ids make redelivery a no-op; forged timestamp, missing signature and
+      tampered body all rejected 400 — the claim is released if the write fails so Stripe's
+      retry still applies it)_
+- [x] No Stripe call on the SSE hot path (verified in logs).
+      _(the SDK was pointed at a dead API host for the verification run: entitlements reads
+      and five fresh SSE audits all completed, while the portal route failed loudly — proof
+      the audit path never touches Stripe)_
+- [x] Failed payment → `past_due` + grace, then downgrade.
+      (`invoice.payment_failed` keeps the paid tier for `BILLING_GRACE_DAYS` (default 7) and
+      `invoice.paid` clears it; with the window already closed the same event drops the user
+      to Free on the next read — no cron, no deletion)_
 
-**Status:** `[ ]` not started
-**Build note:** _(filled in on completion)_
+**Status:** `[~]` code-complete and verified against signed webhooks; needs a real test-mode
+purchase + cancel run once Stripe keys and price IDs exist
+**Build note:** `billing/stripe.ts` owns the lazy client and maps price IDs → plans; the
+catalogue itself is `config/plans.ts` (dependency-free, shared with the browser), so the
+upgrade modal's advertised price is the price Checkout charges. `billing/subscriptions.ts` is
+the mirror (`subscriptions` + `billing_events`, plus an in-memory fallback for local mode)
+and the 60s-TTL plan cache every route reads — tier resolution is a read of local state, so a
+Stripe outage cannot block an audit. `billing/billing.routes.ts` holds checkout, the Customer
+Portal, subscription status, and the webhook; the webhook is mounted on the RAW body in
+`index.ts` (before `express.json`) because the signature covers the exact bytes, and it is
+the only writer of plan state — a checkout redirect grants nothing. Enforcement follows the
+tier: `routes/api.ts` skips the free reserve for paid tiers but still records the run
+(`recordPaidRun`) so cost and attribution stay complete; `entitlements.ts` and
+`proof.routes.ts` read the resolved tier. Frontend: the upgrade modal picks monthly/annual
+and starts Checkout, the account menu shows the plan and opens the portal, and a return
+banner re-checks entitlements until the webhook lands. Unconfigured billing answers an honest
+503 and the UI says so rather than faking a payment step. Verified: 19/19 billing checks +
+6/6 dunning checks against SDK-signed events, both typechecks clean.
 
 ---
 

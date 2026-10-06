@@ -182,7 +182,7 @@ features*; they never hide the user's own existing self-assessment (ideation §2
 
 **Default tier matrix (v1):**
 
-| Capability | Anonymous | Free | Pro (~$12–19/mo) | Team (per seat) |
+| Capability | Anonymous | Free | Pro ($14/mo) | Team ($29/seat/mo) |
 |---|---|---|---|---|
 | `audit.run` (fresh) | 1 per profile (cookie-bound) | 3 / rolling 30d | Unlimited + priority | — |
 | Cache reads / re-view | unlimited | unlimited | unlimited | — |
@@ -219,8 +219,8 @@ features*; they never hide the user's own existing self-assessment (ideation §2
 - **Dunning:** `past_due` keeps access for a grace window (7d), then downgrades to Free —
   never deletes data.
 - **Local dev:** `stripe listen --forward-to localhost:4000/api/billing/webhook`.
-- **Price points (open, §11):** decide before M25B — recommendation: $14/mo or $120/yr
-  annual-anchor for Pro; Team seat price TBD with pilot data.
+- **Price points (§11 decisions 13/14):** $14/mo or $120/yr annual-anchor for Pro;
+  $29/seat/mo for Team.
 
 ---
 
@@ -280,10 +280,17 @@ table, claiming `owner_user_id` by matching GitHub handle on first login.
     accounts ship.
 12. **(2026-10-05) Free proof-page branding: footer-only** "Built with DevScope" line — no
     watermark; keeps the artifact premium while preserving attribution.
+13. **(2026-10-06) Pro price: $14/mo, with $120/yr as the annual anchor** (two months free).
+    Chosen over $19 because the Free tier already ships 3 audits/month — the paid value is
+    the lift, not the access, so the wall has to stay cheap to cross.
+14. **(2026-10-06) Team: $29/seat/mo.** Roughly 2x Pro per seat, which is the usual shape for
+    shared pipelines plus batch screening. Pilot discounts are a commercial lever, not a
+    list-price change.
 
 **Open (needs sign-off before the relevant milestone):**
-1. **Pro price point:** $14/mo vs $19/mo anchor — before M25B.
-2. **Team seat price + pilot discount** — before M25C, informed by the 5-recruiter pilot.
+1. ~~Pro price point~~ — **signed off 2026-10-06, $14/mo** (decision 13).
+2. ~~Team seat price~~ — **signed off 2026-10-06, $29/seat/mo** (decision 14). Pilot discount
+   policy still to be set from the 5-recruiter pilot.
 
 ---
 

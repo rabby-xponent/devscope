@@ -4,7 +4,9 @@ import { readCache, writeCache } from '../cache/cache.service';
 import { DevProfile, TraceEvent } from '../types/profile';
 import { sanitizeErrorMessage } from '../utils/error-formatter';
 import { evaluateDemoRun, isDemoGateEnabled } from '../security/demo-gate';
-import { reserveAudit, recordAnonymousRun } from '../security/usage-ledger';
+import { reserveAudit, recordAnonymousRun, recordPaidRun } from '../security/usage-ledger';
+import { getPlanState } from '../billing/subscriptions';
+import { can } from '../config/tiers';
 
 const router = Router();
 const agent = new AgentService();
@@ -33,14 +35,22 @@ router.get('/generate', async (req: Request, res: Response) => {
   let quotaBlock: { message: string; resetAt: string | null } | null = null;
 
   if (!cached && req.auth) {
-    // Signed-in users skip the anonymous demo gate (M24B); the usage ledger
-    // meters them with an atomic check-and-reserve BEFORE agent work (M24C).
-    const verdict = await reserveAudit(req.auth.userId, username);
-    if (!verdict.allowed) {
-      quotaBlock = {
-        message: `You've used all ${verdict.limit} free audits in this rolling 30-day window. Everything already generated stays viewable — upgrade lifts the limit.`,
-        resetAt: verdict.resetAt,
-      };
+    // Signed-in users skip the anonymous demo gate (M24B); the tier registry
+    // decides whether the free meter applies at all (M25A), and the ledger's
+    // atomic check-and-reserve runs BEFORE agent work (M24C). The plan comes
+    // from the local subscriptions mirror behind a 60s cache — never a Stripe
+    // call on this path (M25B, architecture §8).
+    const plan = await getPlanState(req.auth.userId, true);
+    if (can(plan.tier, 'audit.run').limit === 'unlimited') {
+      void recordPaidRun(req.auth.userId, username);
+    } else {
+      const verdict = await reserveAudit(req.auth.userId, username);
+      if (!verdict.allowed) {
+        quotaBlock = {
+          message: `You've used all ${verdict.limit} free audits in this rolling 30-day window. Everything already generated stays viewable — upgrade lifts the limit.`,
+          resetAt: verdict.resetAt,
+        };
+      }
     }
   } else if (!cached && isDemoGateEnabled()) {
     const ip =
