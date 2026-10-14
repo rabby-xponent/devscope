@@ -577,7 +577,7 @@ export function ProfileView({
       )}
 
       {/* Recruiter Navigation Bar (Web Only) */}
-      <div className="sticky top-[57px] z-20 -mx-2 mb-8 flex items-center justify-between border-y border-edge bg-canvas/98 dark:bg-canvas/98 px-3 py-2.5 backdrop-blur-md shadow-xs print:hidden">
+      <div className="sticky top-[57px] z-20 -mx-6 mb-8 flex items-center justify-between border-y border-edge bg-canvas px-6 py-2.5 shadow-xs print:hidden">
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => setActiveTab('verdict')}

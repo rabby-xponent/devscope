@@ -101,7 +101,7 @@ export default function ProfilePage() {
 
   return (
     <main className="page-texture min-h-screen bg-canvas text-content">
-      <nav className="sticky top-0 z-10 border-b border-edge bg-card/90 backdrop-blur print:hidden">
+      <nav className="sticky top-0 z-30 border-b border-edge bg-canvas shadow-xs print:hidden">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
           <Link
             href="/"
