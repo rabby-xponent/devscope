@@ -70,9 +70,9 @@ export function AccountMenu({ workspace }: { workspace: 'developer' | 'recruiter
       <button
         type="button"
         onClick={openSignIn}
-        className="flex items-center gap-1.5 rounded-lg border border-signal/40 bg-signal/10 px-3 py-1.5 font-mono text-xs font-bold text-signal shadow-xs transition-colors hover:bg-signal/20 outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
+        className="inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 rounded-lg border border-[#ea580c]/30 dark:border-signal/40 bg-[#ea580c]/5 dark:bg-signal/10 px-3 py-1.5 font-mono text-xs font-semibold text-[#ea580c] dark:text-signal shadow-xs transition-colors hover:bg-[#ea580c]/10 dark:hover:bg-signal/20 outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
       >
-        <Icon.LogOut className="h-3.5 w-3.5" />
+        <Icon.Lock className="h-3.5 w-3.5 shrink-0" />
         <span>Sign in</span>
       </button>
     );

@@ -223,14 +223,14 @@ export default function ProfilePage() {
         )}
       </div>
 
-      <footer className="border-t border-edge py-6 text-center print:hidden">
-        <p className="font-mono text-[11px] text-muted/60">
+      <footer className="border-t border-edge/80 py-6 text-center print:hidden">
+        <p className="font-mono text-xs text-slate-500 dark:text-muted">
           developed by{' '}
           <a
-            href="#"
+            href="https://www.linkedin.com/in/golamrabby-/"
             target="_blank"
-            rel="noreferrer"
-            className="text-muted transition-colors hover:text-signal"
+            rel="noopener noreferrer"
+            className="font-medium text-[#ea580c] dark:text-signal hover:underline transition-colors"
           >
             Golam Rabby
           </a>

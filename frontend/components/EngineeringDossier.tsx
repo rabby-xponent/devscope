@@ -163,7 +163,15 @@ function DossierDrawer({ onClose }: { onClose: () => void }) {
 
           <p className="mt-8 border-t border-slate-200 dark:border-edge pt-4 font-sans text-[11px] leading-relaxed text-slate-500 dark:text-muted/80">
             Every claim above corresponds to shipped, tested behavior — this dossier doubles as the
-            project&apos;s engineering changelog. Built by Golam Rabby.
+            project&apos;s engineering changelog. Built by{' '}
+            <a
+              href="https://www.linkedin.com/in/golamrabby-/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-[#ea580c] dark:text-signal hover:underline transition-colors"
+            >
+              Golam Rabby
+            </a>.
           </p>
         </div>
       </aside>
@@ -175,39 +183,52 @@ export function EngineeringDossier({ onOpen }: { onOpen: () => void }) {
   return (
     <section id="engineering" className="py-20 sm:py-28 border-b border-slate-200 dark:border-edge/60 bg-[#faf9f5] dark:bg-[#0c0b0e]">
       <div className="mx-auto max-w-6xl px-6">
-        <div className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-[#ea580c] dark:text-signal font-semibold">
-          <span>●</span> Engineering Dossier
-        </div>
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+          <div>
+            <div className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-[#ea580c] dark:text-signal font-semibold">
+              <span className="h-2 w-2 rounded-full bg-[#ea580c] dark:bg-signal animate-pulse" /> Architecture & Engineering Decisions
+            </div>
 
-        <h2 className="mt-4 font-sans text-3xl font-extrabold tracking-tight sm:text-4xl text-slate-900 dark:text-[#ece9f0]">
-          See exactly <span className="text-[#ea580c] dark:text-signal">how it was built.</span>
-        </h2>
-        <p className="mt-4 max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-muted">
-          Not a feature list — the engineering decisions behind it, the tests that prove them, and
-          the stack they run on. Open the dossier.
-        </p>
+            <h2 className="mt-3 font-sans text-3xl font-extrabold tracking-tight sm:text-4xl text-slate-900 dark:text-[#ece9f0]">
+              See exactly <span className="text-[#ea580c] dark:text-signal">how it was built.</span>
+            </h2>
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-muted">
+              Not marketing fluff — explore the 6 architectural decisions (resilient LLM gateway, atomic usage metering, signature verification) and verified test benchmarks.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={onOpen}
+            className="flex-none inline-flex items-center justify-center gap-2 rounded-xl bg-signal px-5 py-3 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-sm transition-all hover:brightness-105 active:scale-95"
+          >
+            <Icon.Sparkle className="h-4 w-4" />
+            Open Build Dossier Drawer
+            <Icon.ArrowUpRight className="h-3.5 w-3.5" />
+          </button>
+        </div>
 
         <button
           type="button"
           onClick={onOpen}
-          className="group mt-8 grid w-full grid-cols-2 gap-3 rounded-2xl border border-slate-200 dark:border-edge bg-white dark:bg-surface/60 p-6 text-left shadow-sm transition-all hover:border-[#ea580c]/50 dark:hover:border-signal/50 hover:shadow-md sm:grid-cols-3 lg:grid-cols-6"
+          className="group mt-8 grid w-full grid-cols-2 gap-3 rounded-2xl border border-slate-200 dark:border-edge bg-white dark:bg-surface/60 p-6 text-left shadow-sm transition-all hover:border-signal/50 hover:shadow-md sm:grid-cols-3 lg:grid-cols-6 cursor-pointer"
           aria-haspopup="dialog"
+          title="Click to open the architecture drawer"
         >
           {DOSSIER_STATS.map((stat) => (
             <div key={stat.label} className="px-1">
-              <div className="font-mono text-xl font-bold text-[#ea580c] dark:text-signal">{stat.value}</div>
+              <div className="font-mono text-xl font-bold text-[#ea580c] dark:text-signal group-hover:scale-105 transition-transform origin-left">{stat.value}</div>
               <div className="mt-0.5 font-mono text-[10px] uppercase tracking-wider text-slate-500 dark:text-muted">
                 {stat.label}
               </div>
             </div>
           ))}
-          <div className="col-span-2 flex items-center gap-1.5 font-mono text-[10px] font-semibold uppercase tracking-wider text-[#ea580c] dark:text-signal sm:col-span-3 lg:col-span-6">
-            Open the build dossier
-            <Icon.ArrowUpRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          <div className="col-span-2 flex items-center gap-1.5 font-mono text-[11px] font-bold uppercase tracking-wider text-[#ea580c] dark:text-signal sm:col-span-3 lg:col-span-6 pt-2 border-t border-slate-100 dark:border-edge/50">
+            <span>Click anywhere to open full architecture decisions & verification tests</span>
+            <Icon.ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1 group-hover:-translate-y-0.5" />
           </div>
         </button>
       </div>
-
     </section>
   );
 }

@@ -82,10 +82,9 @@ export function ThemeToggle({ className = '' }: { className?: string }) {
       onClick={toggleTheme}
       aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
       title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
-      className={`inline-flex items-center gap-1.5 rounded-lg border border-edge bg-card px-2.5 py-1.5 font-mono text-xs font-medium text-muted shadow-xs outline-none transition-all hover:border-signal/50 hover:text-signal focus-visible:ring-2 focus-visible:ring-signal/40 ${className}`}
+      className={`inline-flex h-8 w-8 items-center justify-center rounded-lg border border-edge bg-card text-muted shadow-xs outline-none transition-all hover:border-signal/50 hover:text-signal focus-visible:ring-2 focus-visible:ring-signal/40 ${className}`}
     >
-      {mounted && (isDark ? <Icon.Moon className="h-3.5 w-3.5" /> : <Icon.Sun className="h-3.5 w-3.5" />)}
-      <span aria-hidden>{mounted ? (isDark ? 'Dark' : 'Light') : ''}</span>
+      {mounted && (isDark ? <Icon.Moon className="h-4 w-4" /> : <Icon.Sun className="h-4 w-4" />)}
     </button>
   );
 }

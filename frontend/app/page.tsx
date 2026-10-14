@@ -11,6 +11,8 @@ import {
 } from '@/lib/workspace-profiles';
 import { ThemeToggle } from '@/lib/theme';
 import { EngineeringDossier, EngineeringDossierDrawer } from '@/components/EngineeringDossier';
+import { PricingSection } from '@/components/PricingSection';
+import { AccountMenu } from '@/components/AccountMenu';
 
 const CANDIDATE_ARCHETYPES = [
   {
@@ -78,46 +80,50 @@ export default function Home() {
     <main className="min-h-screen bg-[#faf9f5] dark:bg-[#0c0b0e] text-slate-900 dark:text-[#ece9f0] selection:bg-orange-500 selection:text-white dark:selection:bg-signal dark:selection:text-ink transition-colors duration-200">
       {/* Top Navigation */}
       <nav className="sticky top-0 z-30 border-b border-slate-200/80 dark:border-edge/80 bg-[#faf9f5]/90 dark:bg-[#0c0b0e]/90 backdrop-blur-md">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link href="/" className="flex items-center gap-2.5">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3.5">
+          <Link href="/" className="flex items-center gap-2.5 shrink-0">
             <span className="h-2.5 w-2.5 rounded-full bg-[#ea580c] dark:bg-signal shadow-[0_0_10px_rgba(234,88,12,0.4)] dark:shadow-[0_0_10px_#f0a04b]" />
             <span className="font-mono text-sm font-bold tracking-[0.25em] text-slate-900 dark:text-[#ece9f0]">
               DEVSCOPE
             </span>
           </Link>
 
-          <div className="hidden items-center gap-8 font-mono text-xs uppercase tracking-wider text-slate-600 dark:text-muted sm:flex">
-            <a href="#how-it-works" className="transition-colors hover:text-[#ea580c] dark:hover:text-signal">
+          <div className="hidden items-center gap-6 xl:gap-8 font-mono text-xs uppercase tracking-wider text-slate-600 dark:text-muted lg:flex shrink-0">
+            <a href="#how-it-works" className="whitespace-nowrap transition-colors hover:text-[#ea580c] dark:hover:text-signal">
               How It Works
             </a>
-            <a href="#the-problem" className="transition-colors hover:text-[#ea580c] dark:hover:text-signal">
-              The Reality
+            <a href="#features" className="whitespace-nowrap transition-colors hover:text-[#ea580c] dark:hover:text-signal">
+              Features
             </a>
-            <a href="#features" className="transition-colors hover:text-[#ea580c] dark:hover:text-signal">
-              What You Get
+            <a href="#pricing" className="whitespace-nowrap transition-colors hover:text-[#ea580c] dark:hover:text-signal">
+              Pricing
             </a>
-            <a href="#engineering" className="transition-colors hover:text-[#ea580c] dark:hover:text-signal">
-              Engineering
-            </a>
+            <button
+              type="button"
+              onClick={() => setDossierOpen(true)}
+              className="inline-flex items-center gap-1 whitespace-nowrap font-mono text-xs uppercase tracking-wider text-slate-600 dark:text-muted transition-colors hover:text-[#ea580c] dark:hover:text-signal"
+            >
+              Build Dossier
+              <Icon.ArrowUpRight className="h-3 w-3" />
+            </button>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
             <ThemeToggle />
             <button
               onClick={() => handleAnalyze('gaearon', 'https://overreacted.io')}
-              className="rounded-lg border border-slate-200 dark:border-edge bg-white dark:bg-surface/80 px-3.5 py-1.5 font-mono text-xs uppercase tracking-wider text-slate-700 dark:text-muted transition-colors hover:border-[#ea580c] hover:text-[#ea580c] dark:hover:border-signal/50 dark:hover:text-signal shadow-xs"
+              className="hidden xl:inline-flex items-center whitespace-nowrap shrink-0 rounded-lg border border-slate-200 dark:border-edge bg-white dark:bg-surface/80 px-3 py-1.5 font-mono text-xs uppercase tracking-wider text-slate-700 dark:text-muted transition-colors hover:border-[#ea580c] hover:text-[#ea580c] dark:hover:border-signal/50 dark:hover:text-signal shadow-xs"
             >
               Live Demo
             </button>
+            <AccountMenu workspace="developer" />
             <Link
               href="/recruiter"
-              className="flex items-center gap-1.5 rounded-lg border border-[#ea580c]/30 dark:border-signal/50 bg-[#ea580c]/10 dark:bg-signal/15 px-3.5 py-1.5 font-mono text-xs font-semibold text-[#ea580c] dark:text-signal hover:bg-[#ea580c] hover:text-white dark:hover:bg-signal dark:hover:text-ink transition-all shadow-xs"
+              className="inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 rounded-lg border border-[#ea580c]/30 dark:border-signal/50 bg-[#ea580c]/10 dark:bg-signal/15 px-3 py-1.5 font-mono text-xs font-semibold text-[#ea580c] dark:text-signal hover:bg-[#ea580c] hover:text-white dark:hover:bg-signal dark:hover:text-ink transition-all shadow-xs"
             >
-              <span className="inline-flex items-center gap-1.5">
-                <Icon.Building className="h-3.5 w-3.5" />
-                Recruiter Portal
-              </span>
-              <Icon.ArrowUpRight className="h-3 w-3" />
+              <Icon.Building className="h-3.5 w-3.5 shrink-0" />
+              <span>Recruiter Portal</span>
+              <Icon.ArrowUpRight className="h-3 w-3 shrink-0" />
             </Link>
           </div>
         </div>
@@ -682,6 +688,9 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Pricing & Package Plans */}
+      <PricingSection />
+
       {/* Engineering Dossier (portfolio) */}
       <EngineeringDossier onOpen={() => setDossierOpen(true)} />
 
@@ -720,8 +729,8 @@ export default function Home() {
             <a
               href="https://www.linkedin.com/in/golamrabby-/"
               target="_blank"
-              rel="noreferrer"
-              className="text-slate-600 dark:text-muted transition-colors hover:text-[#ea580c] dark:hover:text-signal"
+              rel="noopener noreferrer"
+              className="font-medium text-[#ea580c] dark:text-signal hover:underline transition-colors"
             >
               Golam Rabby
             </a>
