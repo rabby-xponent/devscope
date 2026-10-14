@@ -45,6 +45,7 @@ const allowedOrigins = [
 // request). Preview URLs are random and unguessable, so this is low risk.
 const allowVercelPreviews = process.env.ALLOW_VERCEL_PREVIEWS === 'true';
 const isVercelPreview = (origin: string) => /^[a-z0-9-]+\.vercel\.app$/.test(origin);
+const isLocalhost = (origin: string) => /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
 
 if (process.env.NODE_ENV === 'production' && allowedOrigins.length === 0) {
   console.warn(
@@ -56,7 +57,12 @@ app.use(
   cors({
     origin: (origin, cb) => {
       const clean = origin ? normalizeOrigin(origin) : '';
-      if (!clean || allowedOrigins.includes(clean) || (allowVercelPreviews && isVercelPreview(clean))) {
+      if (
+        !clean ||
+        allowedOrigins.includes(clean) ||
+        (allowVercelPreviews && isVercelPreview(clean)) ||
+        isLocalhost(clean)
+      ) {
         cb(null, origin || true);
       } else {
         console.warn(`[cors] Blocked request from unlisted origin: ${origin}`);

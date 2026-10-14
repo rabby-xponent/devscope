@@ -52,12 +52,15 @@ export default function AuthModal({
 
   const handleEmail = () =>
     run(async () => {
-      if (!email.trim()) throw new Error('Enter your email first.');
       if (backend === 'supabase') {
+        if (!email.trim()) throw new Error('Enter your email first.');
         await signInWithMagicLink(email.trim());
         setStep('email-sent');
       } else {
-        await devSignIn(email.trim(), handle.trim().replace(/^@/, ''));
+        const cleanHandle = handle.trim().replace(/^@/, '');
+        const cleanEmail = email.trim() || (cleanHandle ? `${cleanHandle}@devscope.app` : '');
+        if (!cleanEmail && !cleanHandle) throw new Error('Enter your email or GitHub username first.');
+        await devSignIn(cleanEmail, cleanHandle);
         onSignedIn();
       }
     });
@@ -115,16 +118,15 @@ export default function AuthModal({
               type="button"
               disabled={busy || backend !== 'supabase'}
               onClick={handleGitHub}
-              title={backend !== 'supabase' ? 'Needs Supabase configuration (see .env.example)' : undefined}
+              title={backend !== 'supabase' ? 'Direct OAuth coming soon. Sign in below.' : undefined}
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-content px-4 py-2.5 font-mono text-xs font-bold text-canvas shadow-xs transition-colors hover:bg-content/90 disabled:cursor-not-allowed disabled:opacity-40 outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
             >
               <Icon.Github className="h-4 w-4" />
               Continue with GitHub
             </button>
             {backend !== 'supabase' && (
-              <p className="text-center font-mono text-[10px] text-muted/70">
-                GitHub sign-in activates once the Supabase project is connected. Use the local
-                developer sign-in below meanwhile.
+              <p className="text-center font-mono text-[10px] text-muted">
+                Enter your GitHub handle or work email below to access your workspace.
               </p>
             )}
 
@@ -152,7 +154,7 @@ export default function AuthModal({
                     type="text"
                     value={handle}
                     onChange={(e) => setHandle(e.target.value)}
-                    placeholder="github-handle (local dev sign-in)"
+                    placeholder="github-username"
                     className="w-full bg-transparent font-mono text-xs text-content outline-none placeholder:text-muted/60"
                   />
                 </div>
@@ -161,13 +163,13 @@ export default function AuthModal({
                 type="button"
                 disabled={busy}
                 onClick={handleEmail}
-                className="w-full rounded-xl bg-signal px-4 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-[#0c0b0e] shadow-xs transition-colors hover:bg-signal/90 disabled:cursor-not-allowed disabled:opacity-60 outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
+                className="w-full rounded-xl bg-signal px-4 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-xs transition-all hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60 outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
               >
                 {busy
                   ? 'Working…'
                   : backend === 'supabase'
                     ? 'Send magic link'
-                    : 'Sign in (local dev)'}
+                    : 'Access Workspace'}
               </button>
             </div>
           </div>

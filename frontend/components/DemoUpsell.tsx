@@ -23,19 +23,17 @@ import { authBackend } from '@/lib/auth';
 function SignupCta({ label = 'Create your free workspace' }: { label?: string }) {
   const { openSignIn } = useSession();
   return (
-    <div className="flex flex-col items-start gap-2">
+    <div className="flex flex-col items-start gap-1.5">
       <button
         type="button"
         onClick={openSignIn}
-        className="inline-flex items-center gap-1.5 rounded-lg bg-signal px-5 py-2.5 font-mono text-xs font-semibold uppercase tracking-wider text-[#0c0b0e] shadow-xs transition-all hover:bg-signal/90 active:scale-95 outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
+        className="inline-flex items-center gap-1.5 rounded-lg bg-signal px-5 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-xs transition-all hover:brightness-105 active:scale-95 outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
       >
-        <Icon.Sparkle className="h-3 w-3" />
+        <Icon.Sparkle className="h-3.5 w-3.5" />
         {label}
       </button>
       <p className="max-w-sm text-[11px] leading-relaxed text-muted">
-        {authBackend() === 'supabase'
-          ? '3 free audits per rolling 30 days, saved roles, proof pages — no card. Your local work carries over.'
-          : 'Local dev sign-in is live (Supabase project pending). Your local work carries over.'}
+        3 free audits per rolling 30 days, saved target roles, and proof pages — no credit card required.
       </p>
     </div>
   );
@@ -58,9 +56,9 @@ export function DemoSignupBanner({ username }: { username: string }) {
   if (!mounted || dismissed) return null;
 
   return (
-    <div className="fade-up mb-8 flex flex-wrap items-center justify-between gap-4 rounded-lg border border-signal/30 bg-signal/[0.06] px-4 py-3 print:hidden">
+    <div className="fade-up mb-8 flex flex-wrap items-center justify-between gap-4 rounded-lg border border-signal/30 bg-signal/[0.06] px-4 py-3.5 print:hidden">
       <div className="min-w-0">
-        <p className="font-mono text-[11px] uppercase tracking-wider text-signal">
+        <p className="font-mono text-[11px] uppercase tracking-wider text-signal font-semibold">
           <span className="inline-flex items-center gap-1">
             <Icon.Zap className="h-3 w-3" />
             free demo used — @{username}
@@ -68,11 +66,11 @@ export function DemoSignupBanner({ username }: { username: string }) {
         </p>
         <p className="mt-1 text-[13px] leading-relaxed text-muted">
           That was your free demo audit for this profile. A free workspace gives you{' '}
-          <span className="text-content">3 analyses a month</span>, saved target roles, and
+          <span className="text-content font-medium">3 analyses a month</span>, saved target roles, and
           proof pages — no credit card. Re-opening this profile stays free either way.
         </p>
       </div>
-      <div className="flex flex-none items-center gap-3">
+      <div className="flex flex-none items-start gap-3">
         <SignupCta label="Create free workspace" />
         <button
           type="button"
@@ -84,11 +82,11 @@ export function DemoSignupBanner({ username }: { username: string }) {
             }
             setDismissed(true);
           }}
-          className="flex h-7 w-7 items-center justify-center rounded-md border border-edge bg-card text-muted transition-colors hover:border-signal/50 hover:text-signal"
+          className="flex h-8 w-8 items-center justify-center rounded-md border border-edge bg-card text-muted transition-colors hover:border-signal/50 hover:text-signal"
           title="Dismiss"
           aria-label="Dismiss"
         >
-          <Icon.X className="h-3 w-3" />
+          <Icon.X className="h-3.5 w-3.5" />
         </button>
       </div>
     </div>

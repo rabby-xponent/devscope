@@ -226,7 +226,7 @@ async function applyEvent(event: Stripe.Event): Promise<boolean> {
         return false;
       }
       const item = sub.items?.data?.[0];
-      const seats = sub.items?.data?.reduce((sum, i) => sum + (i.quantity ?? 1), 0) ?? 1;
+      const seats = sub.items?.data?.reduce((sum: number, i: any) => sum + (i.quantity ?? 1), 0) ?? 1;
       await writeSubscription({
         userId,
         customerId: idOf(sub.customer),

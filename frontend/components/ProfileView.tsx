@@ -75,60 +75,77 @@ const LEVEL_WIDTH: Record<string, number> = {
 };
 
 const SENIORITY_STYLES: Record<string, string> = {
-  junior: 'border-zinc-600 bg-zinc-800/60 text-zinc-300 print:text-zinc-700 print:border-zinc-400 print:bg-zinc-100',
-  mid: 'border-blue-600/50 bg-blue-900/30 text-blue-300 print:text-blue-800 print:border-blue-300 print:bg-blue-50',
-  senior: 'border-purple-600/50 bg-purple-900/30 text-purple-300 print:text-purple-800 print:border-purple-300 print:bg-purple-50',
-  staff: 'border-orange-600/50 bg-orange-900/30 text-orange-300 print:text-orange-800 print:border-orange-300 print:bg-orange-50',
-  principal: 'border-amber-500/60 bg-amber-900/30 text-amber-300 print:text-amber-800 print:border-amber-300 print:bg-amber-50',
+  junior:
+    'border-zinc-200 bg-zinc-100 text-zinc-800 dark:border-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-300 print:text-zinc-700 print:border-zinc-400 print:bg-zinc-100',
+  mid:
+    'border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-500/30 dark:bg-blue-950/40 dark:text-blue-300 print:text-blue-800 print:border-blue-300 print:bg-blue-50',
+  senior:
+    'border-purple-200 bg-purple-50 text-purple-800 dark:border-purple-500/30 dark:bg-purple-950/40 dark:text-purple-300 print:text-purple-800 print:border-purple-300 print:bg-purple-50',
+  staff:
+    'border-orange-200 bg-orange-50 text-orange-800 dark:border-orange-500/30 dark:bg-orange-950/40 dark:text-orange-300 print:text-orange-800 print:border-orange-300 print:bg-orange-50',
+  principal:
+    'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-950/40 dark:text-amber-300 print:text-amber-800 print:border-amber-300 print:bg-amber-50',
 };
 
 const COLLAB_STYLES: Record<string, string> = {
-  high: 'border-emerald-600/50 bg-emerald-900/30 text-emerald-300 print:text-emerald-800 print:border-emerald-300 print:bg-emerald-50',
-  medium: 'border-blue-600/50 bg-blue-900/30 text-blue-300 print:text-blue-800 print:border-blue-300 print:bg-blue-50',
-  low: 'border-zinc-600 bg-zinc-800/60 text-zinc-400 print:text-zinc-700 print:border-zinc-300 print:bg-zinc-100',
-  solo: 'border-orange-600/50 bg-orange-900/30 text-orange-300 print:text-orange-800 print:border-orange-300 print:bg-orange-50',
+  high:
+    'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-950/40 dark:text-emerald-300 print:text-emerald-800 print:border-emerald-300 print:bg-emerald-50',
+  medium:
+    'border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-500/30 dark:bg-blue-950/40 dark:text-blue-300 print:text-blue-800 print:border-blue-300 print:bg-blue-50',
+  low:
+    'border-zinc-200 bg-zinc-100 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-400 print:text-zinc-700 print:border-zinc-300 print:bg-zinc-100',
+  solo:
+    'border-orange-200 bg-orange-50 text-orange-800 dark:border-orange-500/30 dark:bg-orange-950/40 dark:text-orange-300 print:text-orange-800 print:border-orange-300 print:bg-orange-50',
 };
 
 const QUALITY_STYLES: Record<string, string> = {
-  excellent: 'border-emerald-600/50 bg-emerald-900/30 text-emerald-300 print:text-emerald-800 print:border-emerald-300 print:bg-emerald-50',
-  good: 'border-blue-600/50 bg-blue-900/30 text-blue-300 print:text-blue-800 print:border-blue-300 print:bg-blue-50',
-  average: 'border-yellow-600/50 bg-yellow-900/30 text-yellow-300 print:text-amber-800 print:border-amber-300 print:bg-amber-50',
-  poor: 'border-red-600/50 bg-red-900/30 text-red-300 print:text-red-800 print:border-red-300 print:bg-red-50',
+  excellent:
+    'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-950/40 dark:text-emerald-300 print:text-emerald-800 print:border-emerald-300 print:bg-emerald-50',
+  good:
+    'border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-500/30 dark:bg-blue-950/40 dark:text-blue-300 print:text-blue-800 print:border-blue-300 print:bg-blue-50',
+  average:
+    'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-950/40 dark:text-amber-300 print:text-amber-800 print:border-amber-300 print:bg-amber-50',
+  poor:
+    'border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-500/30 dark:bg-rose-950/40 dark:text-rose-300 print:text-rose-800 print:border-rose-300 print:bg-rose-50',
 };
 
 const CONSISTENCY_STYLES: Record<string, string> = {
-  daily: 'border-emerald-600/50 bg-emerald-900/30 text-emerald-300 print:text-emerald-800 print:border-emerald-300 print:bg-emerald-50',
-  regular: 'border-blue-600/50 bg-blue-900/30 text-blue-300 print:text-blue-800 print:border-blue-300 print:bg-blue-50',
-  sporadic: 'border-yellow-600/50 bg-yellow-900/30 text-yellow-300 print:text-amber-800 print:border-amber-300 print:bg-amber-50',
-  burst: 'border-orange-600/50 bg-orange-900/30 text-orange-300 print:text-orange-800 print:border-orange-300 print:bg-orange-50',
+  daily:
+    'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-950/40 dark:text-emerald-300 print:text-emerald-800 print:border-emerald-300 print:bg-emerald-50',
+  regular:
+    'border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-500/30 dark:bg-blue-950/40 dark:text-blue-300 print:text-blue-800 print:border-blue-300 print:bg-blue-50',
+  sporadic:
+    'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-950/40 dark:text-amber-300 print:text-amber-800 print:border-amber-300 print:bg-amber-50',
+  burst:
+    'border-orange-200 bg-orange-50 text-orange-800 dark:border-orange-500/30 dark:bg-orange-950/40 dark:text-orange-300 print:text-orange-800 print:border-orange-300 print:bg-orange-50',
 };
 
 const PERSONA_CONFIG: Record<string, { icon: string; label: string; style: string; badge: string; desc: string }> = {
   working_professional: {
     icon: 'briefcase',
     label: 'Working Professional',
-    style: 'border-signal/35 bg-signal/10 text-signal print:border-amber-300 print:bg-amber-50 print:text-amber-900',
+    style: 'border-orange-200 bg-orange-50 text-orange-800 dark:border-signal/35 dark:bg-signal/10 dark:text-signal print:border-amber-300 print:bg-amber-50 print:text-amber-900',
     badge: 'Enterprise & Private Repos',
     desc: 'Primary engineering output is in private/corporate repositories. Evaluated through architectural tenure, live demos, and technical depth rather than public hobby commits.',
   },
   fresher_builder: {
     icon: 'zap',
     label: 'Active Builder',
-    style: 'border-signal/35 bg-signal/10 text-signal print:border-amber-300 print:bg-amber-50 print:text-amber-900',
+    style: 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-950/40 dark:text-emerald-300 print:border-emerald-300 print:bg-emerald-50 print:text-emerald-900',
     badge: 'High Public Velocity',
     desc: 'Demonstrates strong self-driven momentum with active public repositories, personal projects, and continuous learning patterns.',
   },
   open_source_contributor: {
     icon: 'globe',
     label: 'OSS Contributor',
-    style: 'border-signal/35 bg-signal/10 text-signal print:border-amber-300 print:bg-amber-50 print:text-amber-900',
+    style: 'border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-500/30 dark:bg-blue-950/40 dark:text-blue-300 print:border-blue-300 print:bg-blue-50 print:text-blue-900',
     badge: 'Community Code Author',
     desc: 'Proven track record of public pull requests, community package maintenance, and peer-reviewed open-source contributions.',
   },
   specialist: {
     icon: 'target',
     label: 'Domain Specialist',
-    style: 'border-signal/35 bg-signal/10 text-signal print:border-amber-300 print:bg-amber-50 print:text-amber-900',
+    style: 'border-purple-200 bg-purple-50 text-purple-800 dark:border-purple-500/30 dark:bg-purple-950/40 dark:text-purple-300 print:border-purple-300 print:bg-purple-50 print:text-purple-900',
     badge: 'Deep Niche Mastery',
     desc: 'Focused technical mastery in a specialized ecosystem with concentrated contributions, custom tooling, and high architectural depth.',
   },
@@ -256,9 +273,9 @@ export function ProfileView({
 
   const activeColor =
     rp && rp.daysSinceLastCommit <= 30
-      ? 'border-signal/40 bg-signal/10 text-signal print:border-emerald-300 print:bg-emerald-50 print:text-emerald-800'
+      ? 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-950/40 dark:text-emerald-300 print:border-emerald-300 print:bg-emerald-50 print:text-emerald-800'
       : rp && rp.daysSinceLastCommit <= 90
-        ? 'border-signal/30 bg-signal/[0.06] text-signal/90 print:border-amber-300 print:bg-amber-50 print:text-amber-800'
+        ? 'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-950/40 dark:text-amber-300 print:border-amber-300 print:bg-amber-50 print:text-amber-800'
         : 'border-edge bg-well text-muted print:border-zinc-300 print:bg-zinc-100 print:text-zinc-700';
 
   const activeLabel = rp
@@ -354,9 +371,9 @@ export function ProfileView({
             <div className="flex items-center gap-2 print:hidden">
               <button
                 onClick={copyRecruiterBrief}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-edge bg-surface/90 px-3.5 py-2 font-mono text-[11px] font-medium uppercase tracking-wider text-ece9f0 shadow-sm transition-all hover:border-signal/50 hover:bg-surface hover:text-signal active:scale-95"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-edge bg-card px-3.5 py-2 font-mono text-[11px] font-semibold uppercase tracking-wider text-content shadow-xs transition-all hover:border-signal/50 hover:bg-well hover:text-signal active:scale-95"
               >
-                <span>{copied ? <Icon.Check className="h-3.5 w-3.5" /> : <Icon.Clipboard className="h-3.5 w-3.5" />}</span>
+                <span>{copied ? <Icon.Check className="h-3.5 w-3.5 text-emerald-600" /> : <Icon.Clipboard className="h-3.5 w-3.5" />}</span>
                 <span>
                   {copied
                     ? isDev
@@ -369,7 +386,7 @@ export function ProfileView({
               </button>
               <button
                 onClick={() => window.print()}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-signal/40 bg-signal/10 px-3.5 py-2 font-mono text-[11px] font-medium uppercase tracking-wider text-signal shadow-sm transition-all hover:bg-signal/20 active:scale-95"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-signal/30 bg-signal/[0.08] px-3.5 py-2 font-mono text-[11px] font-semibold uppercase tracking-wider text-signal shadow-xs transition-all hover:bg-signal/15 active:scale-95"
               >
                 <Icon.Printer className="h-3.5 w-3.5" />
                 <span>Export PDF</span>
@@ -397,11 +414,11 @@ export function ProfileView({
               <span className="font-mono text-lg font-bold text-ece9f0 print:text-base print:text-zinc-900">
                 {rp?.seniorityEstimate?.toUpperCase() || 'ENGINEER'} LEVEL
               </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-signal/30 bg-signal/10 px-3 py-0.5 font-mono text-[11px] font-semibold text-signal print:border-amber-300 print:bg-amber-100 print:text-amber-900">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-orange-200 bg-orange-50 px-3 py-0.5 font-mono text-[11px] font-semibold text-orange-800 dark:border-signal/30 dark:bg-signal/10 dark:text-signal print:border-amber-300 print:bg-amber-100 print:text-amber-900">
                 <PersonaIcon name={persona.icon} />
                 {persona.label}
               </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-signal/30 bg-signal/10 px-3 py-0.5 font-mono text-[11px] font-semibold text-signal print:border-amber-300 print:bg-amber-100 print:text-amber-900">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-orange-200 bg-orange-50 px-3 py-0.5 font-mono text-[11px] font-semibold text-orange-800 dark:border-signal/30 dark:bg-signal/10 dark:text-signal print:border-amber-300 print:bg-amber-100 print:text-amber-900">
                 <Icon.Star className="h-3 w-3" />
                 Shortlist Recommendation
               </span>
@@ -560,14 +577,14 @@ export function ProfileView({
       )}
 
       {/* Recruiter Navigation Bar (Web Only) */}
-      <div className="sticky top-[57px] z-10 -mx-2 mb-8 flex items-center justify-between border-y border-edge bg-ink/90 px-2 py-2.5 backdrop-blur print:hidden">
+      <div className="sticky top-[57px] z-20 -mx-2 mb-8 flex items-center justify-between border-y border-edge bg-canvas/98 dark:bg-canvas/98 px-3 py-2.5 backdrop-blur-md shadow-xs print:hidden">
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => setActiveTab('verdict')}
             className={`rounded-md px-3 py-1 font-mono text-[11px] uppercase tracking-wider transition-colors ${
               activeTab === 'verdict'
-                ? 'bg-signal text-ink font-semibold'
-                : 'text-muted hover:text-ece9f0'
+                ? 'bg-signal text-white font-semibold shadow-xs'
+                : 'text-muted hover:text-content hover:bg-well'
             }`}
           >
             Overview & Facts
@@ -576,8 +593,8 @@ export function ProfileView({
             onClick={() => setActiveTab('evidence')}
             className={`rounded-md px-3 py-1 font-mono text-[11px] uppercase tracking-wider transition-colors ${
               activeTab === 'evidence'
-                ? 'bg-signal text-ink font-semibold'
-                : 'text-muted hover:text-ece9f0'
+                ? 'bg-signal text-white font-semibold shadow-xs'
+                : 'text-muted hover:text-content hover:bg-well'
             }`}
           >
             Evidence & Live Audit
@@ -586,8 +603,8 @@ export function ProfileView({
             onClick={() => setActiveTab('signals')}
             className={`rounded-md px-3 py-1 font-mono text-[11px] uppercase tracking-wider transition-colors ${
               activeTab === 'signals'
-                ? 'bg-signal text-ink font-semibold'
-                : 'text-muted hover:text-ece9f0'
+                ? 'bg-signal text-white font-semibold shadow-xs'
+                : 'text-muted hover:text-content hover:bg-well'
             }`}
           >
             Codebase Signals
@@ -596,8 +613,8 @@ export function ProfileView({
             onClick={() => setActiveTab('interview')}
             className={`rounded-md px-3 py-1 font-mono text-[11px] uppercase tracking-wider transition-colors ${
               activeTab === 'interview'
-                ? 'bg-signal text-ink font-semibold'
-                : 'text-muted hover:text-ece9f0'
+                ? 'bg-signal text-white font-semibold shadow-xs'
+                : 'text-muted hover:text-content hover:bg-well'
             }`}
           >
             15-Min Phone Screen
@@ -700,10 +717,10 @@ export function ProfileView({
 
                 <div>
                   <span
-                    className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1 font-mono text-[11px] print:px-2 print:py-0.5 print:text-[10px] ${
+                    className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1 font-mono text-[11px] font-semibold print:px-2 print:py-0.5 print:text-[10px] ${
                       profile.liveAppAudit.isLive
-                        ? 'border-emerald-600/50 bg-emerald-950/30 text-emerald-400 print:border-emerald-300 print:bg-emerald-50 print:text-emerald-800'
-                        : 'border-rose-600/50 bg-rose-950/30 text-rose-400 print:border-rose-300 print:bg-rose-50 print:text-rose-800'
+                        ? 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-600/50 dark:bg-emerald-950/30 dark:text-emerald-300 print:border-emerald-300 print:bg-emerald-50 print:text-emerald-800'
+                        : 'border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-600/50 dark:bg-rose-950/30 dark:text-rose-300 print:border-rose-300 print:bg-rose-50 print:text-rose-800'
                     }`}
                   >
                     <span className="flex-none flex items-center">
@@ -734,22 +751,22 @@ export function ProfileView({
                   </div>
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {profile.liveAppAudit.detectedStack.framework && (
-                      <span className="rounded bg-signal/10 px-2 py-0.5 text-signal border border-signal/20 text-[11px] font-semibold print:border-amber-300 print:bg-amber-50 print:text-amber-900">
+                      <span className="rounded bg-orange-50 px-2 py-0.5 text-orange-800 border border-orange-200 text-[11px] font-semibold dark:border-signal/20 dark:bg-signal/10 dark:text-signal print:border-amber-300 print:bg-amber-50 print:text-amber-900">
                         {profile.liveAppAudit.detectedStack.framework}
                       </span>
                     )}
                     {profile.liveAppAudit.detectedStack.styling?.map((s, i) => (
-                      <span key={i} className="rounded bg-surface px-2 py-0.5 text-ece9f0 border border-edge text-[11px] print:border-zinc-300 print:bg-white print:text-zinc-800">
+                      <span key={i} className="rounded bg-well px-2 py-0.5 text-content border border-edge text-[11px] font-medium print:border-zinc-300 print:bg-white print:text-zinc-800">
                         {s}
                       </span>
                     ))}
                     {profile.liveAppAudit.detectedStack.toolsAndLibraries?.map((t, i) => (
-                      <span key={i} className="rounded bg-surface px-2 py-0.5 text-muted border border-edge text-[11px] print:border-zinc-300 print:bg-white print:text-zinc-600">
+                      <span key={i} className="rounded bg-well px-2 py-0.5 text-content border border-edge text-[11px] font-medium print:border-zinc-300 print:bg-white print:text-zinc-600">
                         {t}
                       </span>
                     ))}
                     {profile.liveAppAudit.detectedStack.backendSignals?.map((b, i) => (
-                      <span key={i} className="rounded bg-blue-950/40 px-2 py-0.5 text-blue-300 border border-blue-800/40 text-[11px] print:border-blue-200 print:bg-blue-50 print:text-blue-800">
+                      <span key={i} className="rounded bg-blue-50 text-blue-800 border border-blue-200 text-[11px] font-semibold dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800/40 print:border-blue-200 print:bg-blue-50 print:text-blue-800">
                         {b}
                       </span>
                     ))}
@@ -810,10 +827,10 @@ export function ProfileView({
                         <span
                           className={`inline-flex items-center gap-1 rounded-md px-2.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider print:px-1.5 print:py-0.5 ${
                             isVerified
-                              ? 'border border-emerald-500/30 bg-emerald-950/40 text-emerald-400 print:border-emerald-300 print:bg-emerald-50 print:text-emerald-800'
+                              ? 'border border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-950/40 dark:text-emerald-300 print:border-emerald-300 print:bg-emerald-50 print:text-emerald-800'
                               : isObserved
-                                ? 'border border-blue-500/30 bg-blue-950/40 text-blue-300 print:border-blue-300 print:bg-blue-50 print:text-blue-800'
-                                : 'border border-amber-500/30 bg-amber-950/40 text-amber-300 print:border-amber-300 print:bg-amber-50 print:text-amber-800'
+                                ? 'border border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-500/30 dark:bg-blue-950/40 dark:text-blue-300 print:border-blue-300 print:bg-blue-50 print:text-blue-800'
+                                : 'border border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-950/40 dark:text-amber-300 print:border-amber-300 print:bg-amber-50 print:text-amber-800'
                           }`}
                         >
                           <span className="inline-flex items-center gap-1">

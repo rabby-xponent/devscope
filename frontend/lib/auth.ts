@@ -35,16 +35,21 @@ export function authBackend(): AuthBackend {
 
 // --- Supabase client (lazy, browser-only) -----------------------------------
 
-let sbClient: import('@supabase/supabase-js').SupabaseClient | null = null;
+let sbClient: any = null;
 
-async function supabase(): Promise<import('@supabase/supabase-js').SupabaseClient | null> {
+async function supabase(): Promise<any> {
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return null;
   if (typeof window === 'undefined') return null;
   if (!sbClient) {
-    const { createClient } = await import('@supabase/supabase-js');
-    sbClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: { detectSessionInUrl: true, persistSession: true },
-    });
+    try {
+      // @ts-ignore
+      const { createClient } = await import('@supabase/supabase-js');
+      sbClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: { detectSessionInUrl: true, persistSession: true },
+      });
+    } catch {
+      return null;
+    }
   }
   return sbClient;
 }

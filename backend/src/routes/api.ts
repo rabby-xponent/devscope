@@ -16,7 +16,7 @@ router.get('/generate', async (req: Request, res: Response) => {
   const liveUrl = req.query.liveUrl ? String(req.query.liveUrl).trim() : undefined;
   const roleTitle = req.query.roleTitle ? String(req.query.roleTitle).trim() : undefined;
   const jobDescription = req.query.jd ? String(req.query.jd).trim() : undefined;
-  const force = req.query.force === 'true' || Boolean(liveUrl) || Boolean(jobDescription);
+  const force = req.query.force === 'true';
 
   if (!username || !/^[a-zA-Z0-9_-]+$/.test(username)) {
     res.status(400).json({ error: 'Valid username required' });
@@ -27,7 +27,14 @@ router.get('/generate', async (req: Request, res: Response) => {
   // and blocked/cached requests must not start the agent.
   let cached: DevProfile | null = null;
   if (!force) {
-    cached = await readCache(username);
+    const candidate = await readCache(username);
+    if (candidate) {
+      const needsLiveAudit = Boolean(liveUrl) && (!candidate.liveAppAudit || !candidate.liveAppAudit.isLive);
+      const needsJdFit = Boolean(jobDescription) && !candidate.requisitionFit;
+      if (!needsLiveAudit && !needsJdFit) {
+        cached = candidate;
+      }
+    }
   }
 
   let gateBlock: { code: 'demo_exhausted' | 'rate_limited'; message: string } | null = null;
