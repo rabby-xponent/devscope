@@ -12,6 +12,12 @@ import {
 } from './tools/github.tool';
 import { searchHackerNews, searchDevto, webSearch } from './tools/external.tool';
 import { SYNTHESIS_PROMPT } from './prompts';
+import {
+  validateProfileSynthesis,
+  formatIssues,
+  summarizeValidation,
+  type ValidationResult,
+} from './profile-schema';
 import { DevProfile, TraceEvent } from '../types/profile';
 import { LLMGateway } from '../llm/llm-gateway';
 import { inspectLiveUrl, normalizeUrl } from './tools/live-url.tool';
@@ -73,14 +79,52 @@ export class AgentService {
     try {
       const synthesized = await this.synthesizeProfile(username, collectedData, emit, t0);
       finalized = this.finalizeSynthesizedProfile(synthesized, username, githubData, collectedData);
+
+      // Schema proof: the prompt asks for a shape, this proves it. One
+      // bounded repair pass on structural errors; if the model still cannot
+      // produce a conformant object we throw into the deterministic fallback
+      // rather than shipping a broken dossier to a recruiter.
+      let validation = validateProfileSynthesis(finalized);
+      emit({
+        type: 'thinking',
+        timestamp: new Date().toISOString(),
+        thinking: `Output validation — ${summarizeValidation(validation)}.`,
+      });
+      console.log(`[schema] ${summarizeValidation(validation)}`);
+
+      if (!validation.ok) {
+        emit({
+          type: 'thinking',
+          timestamp: new Date().toISOString(),
+          thinking: `Correcting ${validation.errors.length} schema issue(s) with one repair pass...`,
+        });
+        const repaired = await this.repairSynthesis(finalized, validation, emit);
+        if (repaired) {
+          finalized = this.finalizeSynthesizedProfile(repaired, username, githubData, collectedData);
+          validation = validateProfileSynthesis(finalized);
+        }
+        console.log(`[schema] after repair: ${summarizeValidation(validation)}`);
+        if (!validation.ok) {
+          throw new Error(`schema_invalid after repair: ${formatIssues(validation.errors)}`);
+        }
+      }
+      if (validation.warnings.length > 0) {
+        // Quality deviations ship but are visible in logs and the eval harness.
+        console.warn(`[schema] warnings:\n${formatIssues(validation.warnings)}`);
+      }
     } catch (synthesisErr: any) {
       console.warn(`[agent] LLM synthesis failed (${synthesisErr.message}). Generating deterministic fallback profile.`);
       emit({
         type: 'thinking',
         timestamp: new Date().toISOString(),
-        thinking: 'AI synthesis providers reached capacity; generating candidate dossier from verified deterministic codebase and production signals.',
+        thinking: 'AI synthesis output did not meet the profile contract; generating candidate dossier from verified deterministic codebase and production signals.',
       });
       finalized = this.createDeterministicFallbackProfile(username, githubData, repoData, collectedData);
+      const fallbackValidation = validateProfileSynthesis(finalized);
+      if (!fallbackValidation.ok) {
+        // Our own fallback must hold the same contract — log loudly if not.
+        console.error(`[schema] deterministic fallback violates contract:\n${formatIssues(fallbackValidation.errors)}`);
+      }
     }
 
     console.log(`[perf] total: ${Date.now() - t0}ms`);
@@ -540,6 +584,51 @@ export class AgentService {
         ` | tail: ${JSON.stringify(text.slice(-200))}`
     );
     return this.parseProfileJson(text);
+  }
+
+  /**
+   * One bounded repair pass: send the invalid object back with the exact
+   * validator errors and ask for a corrected full JSON object. Deliberately
+   * NOT a loop — a model that needs two repairs is a model we should not
+   * trust with the third attempt either, and the deterministic fallback is
+   * honest output rather than an increasingly mutated guess.
+   */
+  private async repairSynthesis(
+    current: any,
+    validation: ValidationResult,
+    emit: EventEmitter
+  ): Promise<any | null> {
+    const repairMessages: ChatMessage[] = [
+      { role: 'system', content: SYNTHESIS_PROMPT },
+      {
+        role: 'user',
+        content:
+          `Your previous response was a valid JSON object but violates the required schema. ` +
+          `Fix ONLY the listed issues and return the COMPLETE corrected JSON object ` +
+          `(same shape, all fields present, raw JSON only).\n\n` +
+          `Schema violations:\n${formatIssues(validation.errors)}\n\n` +
+          `Previous output:\n${JSON.stringify(current)}`,
+      },
+    ];
+
+    try {
+      const response = await this.gateway.complete(
+        {
+          messages: repairMessages,
+          tools: [],
+          max_tokens: 4096,
+          timeoutMs: SYNTHESIS_TIMEOUT_MS,
+          response_format: { type: 'json_object' },
+          provider: { allow_fallbacks: true, require_parameters: true },
+        },
+        emit
+      );
+      const text = response.choices[0].message.content || '';
+      return this.parseProfileJson(text);
+    } catch (err: any) {
+      console.warn(`[schema] repair pass failed (${err.message}) — falling back.`);
+      return null;
+    }
   }
 
   private finalizeSynthesizedProfile(
