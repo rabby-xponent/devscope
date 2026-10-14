@@ -7,14 +7,58 @@ import proofRoutes from './proofs/proof.routes';
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-const allowedOrigins = (process.env.FRONTEND_URL || '*')
-  .split(',')
+/**
+ * Normalize an origin for comparison: lowercase host, strip trailing slash and
+ * default ports. Prevents exact-string CORS mismatches like
+ * `https://foo.vercel.app/` vs `https://foo.vercel.app`.
+ */
+const normalizeOrigin = (origin: string): string => {
+  try {
+    const u = new URL(origin.trim());
+    const port = u.port && u.port !== '80' && u.port !== '443' ? `:${u.port}` : '';
+    return `${u.protocol}//${u.hostname.toLowerCase()}${port}`;
+  } catch {
+    return origin.trim().toLowerCase().replace(/\/$/, '');
+  }
+};
+
+// FRONTEND_URL (single value, legacy) + ALLOWED_ORIGINS (comma-separated) both
+// feed the allowlist. Production frontends move around (apex vs www, Vercel
+// project domains, preview URLs), so being too strict here silently kills the
+// entire product with a dataless EventSource error.
+const allowedOrigins = [
+  ...(process.env.FRONTEND_URL || '').split(','),
+  ...(process.env.ALLOWED_ORIGINS || '').split(','),
+]
   .map((o) => o.trim())
-  .filter(Boolean);
+  .filter(Boolean)
+  .map(normalizeOrigin);
+
+// Opt-in wildcard: allow all Vercel preview deployments (NOT the `*` CORS
+// wildcard — an explicit allowlist response header is still emitted per
+// request). Preview URLs are random and unguessable, so this is low risk.
+const allowVercelPreviews = process.env.ALLOW_VERCEL_PREVIEWS === 'true';
+const isVercelPreview = (origin: string) => /^[a-z0-9-]+\.vercel\.app$/.test(origin);
+
+if (process.env.NODE_ENV === 'production' && allowedOrigins.length === 0) {
+  console.warn(
+    '[cors] No FRONTEND_URL / ALLOWED_ORIGINS configured — all cross-origin requests will be blocked.'
+  );
+}
 
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: (origin, cb) => {
+      const clean = origin ? normalizeOrigin(origin) : '';
+      if (!clean || allowedOrigins.includes(clean) || (allowVercelPreviews && isVercelPreview(clean))) {
+        cb(null, origin || true);
+      } else {
+        console.warn(`[cors] Blocked request from unlisted origin: ${origin}`);
+        // Reflecting nothing = browser blocks it. Still call cb so the request
+        // proceeds server-side (route-level auth can decide more).
+        cb(null, false);
+      }
+    },
     credentials: true, // EventSource/fetch from the frontend must be able to carry the demo cookie
   })
 );

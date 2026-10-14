@@ -171,6 +171,14 @@ export default function ProfilePage() {
                 </div>
               </details>
             )}
+            {error.code === 'connection_blocked' && (
+              <p className="mt-4 rounded-lg border border-edge/60 bg-well/60 p-3 font-mono text-[11px] leading-relaxed text-muted">
+                admin fix: add <span className="text-signal">this site's origin</span> to the backend
+                env <span className="text-signal">ALLOWED_ORIGINS</span> (or fix
+                <span className="text-signal"> NEXT_PUBLIC_API_URL</span> on the frontend) and
+                redeploy both services.
+              </p>
+            )}
           </div>
         )}
 

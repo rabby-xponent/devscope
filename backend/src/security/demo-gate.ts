@@ -43,7 +43,13 @@ export function parseDemoCookie(header: string | undefined): string[] {
 
 export function buildDemoCookie(handles: string[]): string {
   const value = encodeURIComponent(JSON.stringify(handles));
-  return `${COOKIE_NAME}=${value}; Path=/; Max-Age=${COOKIE_MAX_AGE_SECONDS}; HttpOnly; SameSite=Lax`;
+  // SameSite=None; Secure is required cross-site (Vercel frontend → Render
+  // backend): Lax cookies are never sent with EventSource/fetch cross-site
+  // requests and many browsers refuse to store them at all.
+  const crossSite = process.env.NODE_ENV === 'production';
+  const sameSite = crossSite ? 'SameSite=None' : 'SameSite=Lax';
+  const secure = crossSite ? '; Secure' : '';
+  return `${COOKIE_NAME}=${value}; Path=/; Max-Age=${COOKIE_MAX_AGE_SECONDS}; HttpOnly; ${sameSite}${secure}`;
 }
 
 /**

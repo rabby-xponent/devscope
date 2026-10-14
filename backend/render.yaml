@@ -29,3 +29,7 @@ services:
         sync: false
       - key: FRONTEND_URL
         sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: ALLOW_VERCEL_PREVIEWS
+        sync: false
