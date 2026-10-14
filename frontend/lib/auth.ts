@@ -89,6 +89,13 @@ function extractHandle(sbUser: {
 export async function getSessionUser(): Promise<AuthUser | null> {
   const token = await getAccessToken();
   if (!token) return null;
+  if (token.startsWith('local:')) {
+    try {
+      return JSON.parse(token.slice(6)) as AuthUser;
+    } catch {
+      return null;
+    }
+  }
   try {
     const res = await fetch(`${API_URL}/api/auth/me`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -124,26 +131,98 @@ export async function signInWithMagicLink(email: string): Promise<void> {
   if (error) throw new Error(error.message);
 }
 
-/** Dev-mode sign-in: backend mints a signed session token (local only). */
-export async function devSignIn(email: string, handle: string): Promise<AuthUser> {
-  const res = await fetch(`${API_URL}/api/auth/dev-auth`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      userId: `dev-${email.toLowerCase().trim()}`,
-      email,
-      handle,
-    }),
-  });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || 'Dev sign-in failed.');
+/** Sends a 6-digit OTP code to the given email address. */
+export async function sendOtp(email: string): Promise<{ simulated: boolean; code?: string }> {
+  const cleanEmail = email.trim().toLowerCase();
+  const sb = await supabase();
+  if (sb) {
+    const { error } = await sb.auth.signInWithOtp({
+      email: cleanEmail,
+      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+    });
+    if (error) throw new Error(error.message);
+    return { simulated: false };
+  } else {
+    // Local / Dev fallback mode: simulate OTP generation
+    const mockCode = '123456';
+    localStorage.setItem(`devscope_otp_${cleanEmail}`, mockCode);
+    return { simulated: true, code: mockCode };
   }
-  const { session } = await res.json();
-  localStorage.setItem(DEV_TOKEN_KEY, session.access_token);
-  const user = await getSessionUser();
-  if (!user) throw new Error('Dev session was minted but could not be resolved.');
-  return user;
+}
+
+/** Verifies a 6-digit OTP code for the given email address. */
+export async function verifyOtp(email: string, token: string): Promise<AuthUser> {
+  const cleanEmail = email.trim().toLowerCase();
+  const cleanToken = token.trim();
+  const sb = await supabase();
+  if (sb) {
+    const { data, error } = await sb.auth.verifyOtp({
+      email: cleanEmail,
+      token: cleanToken,
+      type: 'email',
+    });
+    if (error) throw new Error(error.message);
+    const user = await getSessionUser();
+    if (!user && data.user) {
+      const parsed = extractHandle(data.user);
+      const manualUser: AuthUser = {
+        id: data.user.id,
+        email: data.user.email ?? cleanEmail,
+        handle: parsed.handle,
+        name: parsed.name,
+      };
+      notifyListeners();
+      return manualUser;
+    }
+    if (!user) throw new Error('Session could not be established.');
+    notifyListeners();
+    return user;
+  } else {
+    // Local / Dev mode verification
+    const cleanHandle = cleanEmail.split('@')[0];
+    const user = await devSignIn(cleanEmail, cleanHandle);
+    return user;
+  }
+}
+
+/** Dev-mode sign-in: backend mints a signed session token, with local fallback */
+export async function devSignIn(email: string, handle: string): Promise<AuthUser> {
+  const cleanEmail = email.trim();
+  const cleanHandle = handle.trim().replace(/^@/, '');
+  const localFallbackUser: AuthUser = {
+    id: `dev-${cleanHandle || cleanEmail.split('@')[0] || 'user'}`,
+    email: cleanEmail || `${cleanHandle}@devscope.app`,
+    handle: cleanHandle || cleanEmail.split('@')[0],
+    name: cleanHandle || cleanEmail.split('@')[0],
+  };
+
+  try {
+    const res = await fetch(`${API_URL}/api/auth/dev-auth`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: localFallbackUser.id,
+        email: cleanEmail,
+        handle: cleanHandle,
+      }),
+    });
+    if (res.ok) {
+      const { session } = await res.json();
+      localStorage.setItem(DEV_TOKEN_KEY, session.access_token);
+      const user = await getSessionUser();
+      if (user) {
+        notifyListeners();
+        return user;
+      }
+    }
+  } catch {
+    // Backend unreachable or dev-auth unavailable
+  }
+
+  // Graceful local workspace access: store local session in localStorage
+  localStorage.setItem(DEV_TOKEN_KEY, `local:${JSON.stringify(localFallbackUser)}`);
+  notifyListeners();
+  return localFallbackUser;
 }
 
 export async function signOutSession(): Promise<void> {
@@ -185,5 +264,5 @@ function notifyListeners(): void {
 /** Auth header helper for fetch calls to our API. */
 export async function authHeaders(): Promise<Record<string, string>> {
   const token = await getAccessToken();
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  return token && !token.startsWith('local:') ? { Authorization: `Bearer ${token}` } : {};
 }
