@@ -7,7 +7,8 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "agent:test": "tsx src/scripts/test-agent.ts"
+    "agent:test": "tsx src/scripts/test-agent.ts",
+    "agent:eval": "tsx src/scripts/eval-profile.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",
