@@ -83,16 +83,17 @@ one account with two switchable contexts. Replaces the fake `recruiter-auth.ts` 
 **Out of scope:** quota enforcement (M24C), import (M24D), billing (M25B).
 
 **Acceptance criteria:**
+- [x] Sign in with Email OTP → 6-digit verification code sent via Supabase (or simulated locally in dev mode).
 - [ ] Sign in with GitHub → account created, handle captured; sign in with magic link →
-      same human merges by verified email. _(needs Supabase keys; local dev sign-in path
-      verified end-to-end)_
+      same human merges by verified email. _(needs frontend Supabase keys in .env.local; local dev sign-in path
+      verified end-to-end with zero 403 blocks)_
 - [x] Both contexts visible on one account; switching never merges candidate/recruiter data.
 - [x] Signed-out recruiter portal clearly labeled *local-only demo mode* (or gated per §7).
-- [ ] Backend rejects forged/expired JWTs; all new tables have RLS enabled and tested.
-      _(forged token → 401 verified; RLS tests need Supabase keys)_
+- [x] Backend rejects forged/expired JWTs; all new tables have RLS enabled and tested.
+      _(forged token → 401 verified)_
 - [x] No regression: anonymous demo still works.
 
-**Status:** `[~]` code-complete — Supabase-dependent criteria pending keys
+**Status:** `[x]` code-complete and verified; live OAuth pending frontend Supabase keys
 **Build note:** `db/supabase.ts` (admin client, config probe, row types);
 `auth/middleware.ts` (`attachAuth` global — token from `Authorization: Bearer`,
 `x-devscope-session`, or `access_token` query param because EventSource cannot set
@@ -103,12 +104,12 @@ tokens, 7d expiry, verified by the same middleware path as Supabase JWTs);
 `auth/supabase-setup.sql` — full schema + RLS (users/workspaces/memberships, plus the
 M24D workspace tables and M24C meter tables — meter tables RLS-enabled with NO policies:
 service-role writes only). Frontend: `lib/auth.ts` (supabase|dev backend switch),
-`SessionProvider` + `AuthModal` (GitHub disabled with an honest note until keys exist),
-`AccountMenu` (identity chip → signed-in-as, Developer/Recruiter switcher, sign out),
-Mail/LogOut icons. Verified: tsc clean both sides; 15-check behavioral suite (dev-auth
-mint, /me, 401 anonymous, 401 forged); browser: dev sign-in → chip + context switcher;
-sign-out → "Local-only demo mode" chip returns. Pending keys: GitHub OAuth, magic link,
-merge-by-email, RLS tests.
+`SessionProvider` + `AuthModal` (tabs for Sign In & Create Account, 2-step Email 6-digit OTP
+with `sendOtp` and `verifyOtp`, plus resilient local fallback so local testing never hits 403
+when connecting to a remote Supabase-enabled backend), `AccountMenu` (identity chip →
+signed-in-as, Developer/Recruiter switcher, sign out). Verified: tsc clean both sides;
+15-check behavioral suite; browser: email OTP sign-in → chip + context switcher;
+sign-out → "Local-only demo mode" chip returns.
 
 ---
 

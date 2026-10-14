@@ -1,8 +1,8 @@
 # DevScope — Build Tracker & Technical Changelog
 
 > Real-time tracker of implemented features, bug fixes, schema evolutions, and upcoming roadmap milestones.  
-> **Current Version:** `v1.1.0` (Recruiter Intelligence & Private Developer Hardening)  
-> **Status:** All Phase 1 milestones completed and verified against production builds.
+> **Current Version:** `v1.2.0` (Monetization UI, Cache Architecture & Production Resilience)  
+> **Status:** Phase 1–5 milestones completed; Monetization UI & Multi-Signal Intelligence fully hardened.
 
 ---
 
@@ -11,10 +11,11 @@
 | Subsystem | Health | Current Model / Tech | Key Changes |
 |---|---|---|---|
 | **LLM Gateway** | 🟢 Healthy | `gemini-3.8-flash` (Primary), Groq & OpenRouter failovers | Model slugs updated; auto-failover on empty/reasoning responses; JSON mode enforced. |
-| **Synthesis Agent** | 🟢 Healthy | ReAct + Two-phase compression (Cache v4) | Private/corporate developer bias removed; 15-minute phone screen guide generated. |
+| **Synthesis Agent** | 🟢 Healthy | ReAct + Two-phase compression (Cache v5) | Private/corporate developer bias removed; 15-minute phone screen guide generated. |
 | **Investigation Tools** | 🟢 Healthy | 11 deterministic pre-fetch tools | Fast parallel pre-fetch (~1.6s execution). |
-| **Frontend UI** | 🟢 Healthy | Next.js 14 (App Router) + Tailwind CSS | Recruiter action buttons (Copy Brief, Print PDF); Persona badges; Screen Guide cards. |
-| **File Cache** | 🟢 Healthy | File-based JSON (`./cache/profiles/`) | `CACHE_VERSION = 5` with automatic invalidation of older schemas. |
+| **Frontend UI** | 🟢 Healthy | Next.js 14 (App Router) + Tailwind CSS | 3-tier Pricing Section; 6-digit Email OTP Auth; drop-up Selects; solid sticky subnavs. |
+| **Cache & Performance**| 🟢 Healthy | File-based JSON (`./cache/profiles/`) + Memory LRU | Sub-10ms response on cached profiles; fixed query param cache bypass bug. |
+| **Auth & Workspace** | 🟢 Healthy | Supabase Auth + Resilient Local Fallback | Dual-mode GitHub OAuth & 6-digit Email OTP with zero 403 blocks during local testing. |
 | **Quality Contract** | 🟢 Healthy | `profile-schema.ts` + `npm run agent:eval` | Typed validation post-synthesis; one bounded repair pass; offline fixture regression. |
 
 ---
@@ -496,3 +497,30 @@ pie title Roadmap Milestone Status
 > first-pass, 30.2s; temp harness fed a deliberately broken object (bad enum, percentage >100,
 > non-array `topRepos`, "9204 mentions" in the HN URL field, string `recentlyActive`, bad
 > seniority) → validator caught 6/6, repair pass resolved 6/6 → `schema ok` (harness removed).
+
+---
+
+### Milestone 28 — Production Resilience, Sub-10ms Cache, Transparent Pricing & Email OTP
+
+* **Cache Architecture & Rerun Elimination:**
+  - Diagnosed and resolved the cache rerun issue in `backend/src/routes/api.ts`: removed the accidental bypass condition (`|| Boolean(liveUrl) || Boolean(jobDescription)`), preventing cached profiles from triggering redundant full LLM investigations on reloads.
+  - Implemented an in-memory hot cache (`memoryCache` LRU layer) in `backend/src/cache/cache.service.ts` alongside file-based disk storage, dropping cached audit response times to sub-10ms.
+* **CORS & Multi-Environment Compatibility:**
+  - Added dynamic localhost regex checks in `backend/src/index.ts` to allow local development frontends (`http://localhost:3000`) to seamlessly query the deployed Render backend without CORS blocks.
+* **Transparent Pricing & Package Matrix:**
+  - Built `frontend/components/PricingSection.tsx` featuring 3 predictable tiers:
+    * **Free Starter ($0):** 3 candidate audits / month, public repos, basic metrics.
+    * **Developer Pro ($14/mo or $120/yr):** Unlimited audits, private pre-flight, PDF export, shareable badges.
+    * **Recruiter & Team ($29/seat/mo or $290/seat/yr):** 15-min screening guide, Claim Matrix, team export.
+  - Symmetrical toggle with dynamic savings badges: `✦ Up to 29% off with Annual` and truthful plan-specific badges (`Save $48/year (29% off)` for Pro, `Save $58/seat/year (2 months free)` for Team).
+* **Dual-Mode Auth & 6-Digit Email OTP:**
+  - Overhauled `frontend/components/AuthModal.tsx` and `frontend/lib/auth.ts`:
+    * Added dedicated **Sign In** and **Create Account** tabs.
+    * Implemented **2-step Email OTP (One-Time Password)** flow (`sendOtp` and `verifyOtp`) with 6-digit input verification.
+    * Added resilient local fallback so entering a work email/handle grants instant workspace access without failing with 403 when testing locally with a remote Supabase-configured backend.
+* **UI Hardening & Viewport Protection:**
+  - Upgraded `<Select />` in `frontend/components/ui.tsx` with intelligent auto **drop-up** calculation (`spaceBelow < 240`) to prevent dropdown clipping in floating action bars.
+  - Streamlined top navigation: converted theme toggle to icon-only, unified navigation anchors (`How It Works`, `Features`, `Pricing`, `Build Dossier ↗`), and enforced `whitespace-nowrap` across all links and buttons.
+  - Fixed semi-transparent sticky subnav bleed-through on candidate profile evaluation views.
+  - Standardized author attribution to LinkedIn profile (`https://www.linkedin.com/in/golamrabby-/`).
+
