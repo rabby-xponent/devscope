@@ -30,6 +30,14 @@ export interface ProofSnapshot {
   roleTitle: string;
   /** Freeform note from the developer, shown on the page */
   note?: string;
+  /**
+   * Free-tier attribution (§11 decision 12): the public page renders its
+   * "Built with DevScope" footer line while this is true. Stamped at publish
+   * time from the tier registry, so a Pro publish is unbranded forever even if
+   * the plan changes later. Absent (pre-registry snapshots) means branded —
+   * those pages were published before paid plans existed.
+   */
+  branded?: boolean;
   /** The full vetted audit (claim matrix, live app audit, fit, panel…) */
   profile: DevProfile;
 }

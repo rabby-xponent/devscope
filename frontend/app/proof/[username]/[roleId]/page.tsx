@@ -162,18 +162,26 @@ export default function ProofPage() {
         <header className="fade-up mb-8 rounded-xl border border-edge bg-card p-6 shadow-card print:rounded-none print:border-0 print:p-0">
           <div className="flex flex-wrap items-start justify-between gap-6">
             <div className="flex items-start gap-4">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={profile.github.avatarUrl}
-                alt=""
-                className="h-14 w-14 flex-none rounded-full border border-edge object-cover"
-              />
+              {/* Snapshots are file-backed artifacts that outlive code versions,
+                  so a missing GitHub block must not white-screen the page. */}
+              {profile.github?.avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={profile.github.avatarUrl}
+                  alt=""
+                  className="h-14 w-14 flex-none rounded-full border border-edge object-cover"
+                />
+              ) : (
+                <div className="flex h-14 w-14 flex-none items-center justify-center rounded-full border border-edge bg-well font-mono text-lg uppercase text-muted">
+                  {(profile.github?.name || profile.username || '?').slice(0, 2)}
+                </div>
+              )}
               <div>
                 <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted">
                   Pre-flight audit · proof of evidence
                 </p>
                 <h1 className="mt-1 text-2xl font-semibold tracking-tight">
-                  {profile.github.name || profile.username}
+                  {profile.github?.name || profile.username}
                   <span className="ml-2 font-mono text-sm font-normal text-muted">
                     @{profile.username}
                   </span>
@@ -403,6 +411,13 @@ export default function ProofPage() {
             )}
           </div>
         </div>
+
+        {/* ── Free-tier attribution (§11 decision 12) ──────────────────── */}
+        {snap.branded !== false && (
+          <p className="mt-8 border-t border-edge pt-4 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-muted">
+            Built with DevScope
+          </p>
+        )}
 
         {/* ── Footer CTA (hidden in print) ─────────────────────────────── */}
         <footer className="mt-10 flex flex-wrap items-center justify-between gap-4 border-t border-edge pt-6 print:hidden">

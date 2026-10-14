@@ -7,6 +7,8 @@ import {
   dueDefenseCards,
   gradeDefenseCard,
 } from '@/lib/target-roles';
+import { useCapabilityLock } from '@/components/FeatureLock';
+import { useEntitlements } from '@/hooks/useEntitlements';
 
 const CONFIDENCE_META: Record<
   DefenseCard['confidence'],
@@ -37,6 +39,12 @@ export default function DefenseHub({ cards }: { cards: DefenseCard[] }) {
   const [localCards, setLocalCards] = useState<DefenseCard[]>(cards);
   const [practiceIndex, setPracticeIndex] = useState<number | null>(null);
   const [revealed, setRevealed] = useState(false);
+
+  // `practice.full` is Pro (view-only on Free): the deck and every past review
+  // stay visible and readable — only grading/practice is gated (§7).
+  const { entitlements } = useEntitlements();
+  const practiceLock = useCapabilityLock(entitlements, 'practice.full');
+  const practiceLocked = practiceLock.locked;
 
   const due = useMemo(() => dueDefenseCards(localCards), [localCards]);
   const solidCount = localCards.filter((c) => c.confidence === 'solid').length;
@@ -176,18 +184,28 @@ export default function DefenseHub({ cards }: { cards: DefenseCard[] }) {
           <button
             type="button"
             disabled={due.length === 0}
+            title={practiceLocked ? practiceLock.verdict.reason || undefined : undefined}
             onClick={() => {
+              if (practiceLocked) {
+                practiceLock.onRequest();
+                return;
+              }
               setPracticeIndex(0);
               setRevealed(false);
             }}
             className={`flex items-center gap-1.5 rounded-xl px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider transition-colors outline-none focus-visible:ring-2 focus-visible:ring-signal/40 ${
-              due.length > 0
+              due.length > 0 && !practiceLocked
                 ? 'bg-signal text-[#0c0b0e] shadow-xs hover:bg-signal/90'
                 : 'cursor-not-allowed border border-edge bg-well text-muted/60'
             }`}
           >
-            <Icon.Zap className="h-3.5 w-3.5" />
+            {practiceLocked ? (
+              <Icon.Lock className="h-3.5 w-3.5" />
+            ) : (
+              <Icon.Zap className="h-3.5 w-3.5" />
+            )}
             {due.length > 0 ? `Practice (${due.length})` : 'All caught up'}
+            {practiceLocked && practiceLock.lock}
           </button>
         </div>
       </div>

@@ -14,7 +14,8 @@
 | **Synthesis Agent** | 🟢 Healthy | ReAct + Two-phase compression (Cache v4) | Private/corporate developer bias removed; 15-minute phone screen guide generated. |
 | **Investigation Tools** | 🟢 Healthy | 11 deterministic pre-fetch tools | Fast parallel pre-fetch (~1.6s execution). |
 | **Frontend UI** | 🟢 Healthy | Next.js 14 (App Router) + Tailwind CSS | Recruiter action buttons (Copy Brief, Print PDF); Persona badges; Screen Guide cards. |
-| **File Cache** | 🟢 Healthy | File-based JSON (`./cache/profiles/`) | `CACHE_VERSION = 4` with automatic invalidation of older schemas. |
+| **File Cache** | 🟢 Healthy | File-based JSON (`./cache/profiles/`) | `CACHE_VERSION = 5` with automatic invalidation of older schemas. |
+| **Quality Contract** | 🟢 Healthy | `profile-schema.ts` + `npm run agent:eval` | Typed validation post-synthesis; one bounded repair pass; offline fixture regression. |
 
 ---
 
@@ -470,3 +471,28 @@ pie title Roadmap Milestone Status
   * Portfolio what-if simulator (projected fit impact of proposed evidence work).
   * Machine-readable Proof Page (JSON-LD) for agent-to-agent screening interoperability.
   * Individual opt-out registry + profile visibility controls (trust positioning).
+- [x] **Milestone 27 — Engine output contract & quality eval (core engine):**
+  * Typed schema validation of the synthesized dossier with error/warning severity.
+  * One bounded LLM repair pass on structural violations; deterministic fallback beyond that.
+  * Eval harness: offline regression over cached profiles + `--live` audits.
+
+> **Build note (Milestone 27):** The synthesis prompt asks for a shape; nothing proved it.
+> `backend/src/agent/profile-schema.ts` now proves it — dependency-free (like `config/tiers.ts`)
+> validator over the synthesized section: `error` = structurally wrong (wrong type, bad enum,
+> out-of-range number, non-URL in `webPresence.hackerNews`), `warning` = quality/grounding
+> deviation (count drift from prompt rules, thin evidence strings). `agent.service.ts` validates
+> after `finalizeSynthesizedProfile`, emits `Output validation — …` on the trace, and on errors
+> runs exactly one repair pass (`repairSynthesis` — sends the object back with the validator's
+> issue list, same 90s/json_object constraints); a still-invalid result throws into the existing
+> deterministic fallback, whose own output is also validated (logged loudly if it ever drifts).
+> Repair is deliberately not a loop: a model needing two repairs shouldn't get a third guess.
+> `backend/src/scripts/eval-profile.ts` (`npm run agent:eval`): offline mode validates every
+> cached profile against the schema and skips fixtures whose `cacheVersion` ≠ `CACHE_VERSION`
+> (same staleness rule as `cache.service.ts:22` — found this because 8/9 June fixtures failed
+> on three recruiterPanel fields the current prompt requires); `--live <user>` runs a real audit
+> through the full pipeline (validation + repair visible on the trace) and exits non-zero on any
+> schema error — warnings never fail the build. Verified: both typechecks clean; offline eval
+> 1/1 current-version fixtures pass (8 stale skipped); live `--gaearon` audit → `schema ok`
+> first-pass, 30.2s; temp harness fed a deliberately broken object (bad enum, percentage >100,
+> non-array `topRepos`, "9204 mentions" in the HN URL field, string `recentlyActive`, bad
+> seniority) → validator caught 6/6, repair pass resolved 6/6 → `schema ok` (harness removed).

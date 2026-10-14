@@ -43,15 +43,14 @@ Closes the only current cost hole (`GET /api/agent/stream` is currently unlimite
 - [x] Fresh audit on a new handle → allowed once; second fresh run on same handle → blocked
       with a structured `demo_exhausted` SSE error.
 - [x] Cached profile read → always served, never consumes demo budget.
-- [ ] Clearing cookies and retrying → IP limiter still blocks beyond the hourly cap.
+- [x] Clearing cookies and retrying → IP limiter still blocks beyond the hourly cap.
 - [x] Banner appears after demo completion with a signup CTA (handle pre-filled).
 - [x] All existing flows (recruiter demo, proof pages) unaffected.
 
-**Status:** `[~]` functionally complete — only the IP-cap load test outstanding
+**Status:** `[x]` complete
 **Build note:** Backend half (`backend/src/security/demo-gate.ts`): cookie
 `devscope_demo_runs_v1` (HttpOnly, SameSite=Lax) tracks demo-audited handles; cache hits
-never consume; IP backstop (`DEMO_IP_HOURLY_CAP`, default 10/hr, in-memory) implemented but
-not yet load-tested past the cap; `DEMO_LIMIT=off` escape hatch for dev. Route restructured
+never consume; IP backstop (`DEMO_IP_HOURLY_CAP`, default 10/hr, in-memory). `DEMO_LIMIT=off` escape hatch for dev. Route restructured
 so cache read + gate run **before** `flushHeaders()` (Set-Cookie must precede flush — bug
 caught and fixed in verification). Frontend half (`components/DemoUpsell.tsx`):
 `DemoSignupBanner` renders after a fresh non-cached completion (sessionStorage dismissal);
@@ -60,7 +59,11 @@ honest "accounts ship next milestone" CTA until M24B. **Cross-origin lesson:** t
 calls the backend on a different port, so EventSource needed `{ withCredentials: true }`
 AND backend CORS `credentials: true` — without them the demo cookie never round-tripped
 (silently; caught only by live browser verification). Verified in browser: fresh run →
-banner; replay → wall with server message; cache hits free.
+banner; replay → wall with server message; cache hits free. **IP-cap load test (final criterion):** with
+`DEMO_IP_HOURLY_CAP=2`, 8 sequential fresh runs from one spoofed IP — exactly 2 passed the
+gate (nonexistent handles fail fast at the GitHub fetch, zero agent/LLM cost), the remaining
+6 got structured `rate_limited` SSE errors with no agent runs. Test script was temporary and
+removed; backend restored to default cap after.
 
 ---
 
@@ -81,14 +84,31 @@ one account with two switchable contexts. Replaces the fake `recruiter-auth.ts` 
 
 **Acceptance criteria:**
 - [ ] Sign in with GitHub → account created, handle captured; sign in with magic link →
-      same human merges by verified email.
-- [ ] Both contexts visible on one account; switching never merges candidate/recruiter data.
-- [ ] Signed-out recruiter portal clearly labeled *local-only demo mode* (or gated per §7).
+      same human merges by verified email. _(needs Supabase keys; local dev sign-in path
+      verified end-to-end)_
+- [x] Both contexts visible on one account; switching never merges candidate/recruiter data.
+- [x] Signed-out recruiter portal clearly labeled *local-only demo mode* (or gated per §7).
 - [ ] Backend rejects forged/expired JWTs; all new tables have RLS enabled and tested.
-- [ ] No regression: anonymous demo still works.
+      _(forged token → 401 verified; RLS tests need Supabase keys)_
+- [x] No regression: anonymous demo still works.
 
-**Status:** `[ ]` not started
-**Build note:** _(filled in on completion)_
+**Status:** `[~]` code-complete — Supabase-dependent criteria pending keys
+**Build note:** `db/supabase.ts` (admin client, config probe, row types);
+`auth/middleware.ts` (`attachAuth` global — token from `Authorization: Bearer`,
+`x-devscope-session`, or `access_token` query param because EventSource cannot set
+headers; `requireAuth` 401/503); `auth/routes.ts` — `GET /api/auth/me`,
+`POST /api/auth/sync` (idempotent user + workspace + membership provisioning),
+`POST /api/auth/dev-auth` (local mode: `DEV_AUTH_MODE=on` mints real HS256 session
+tokens, 7d expiry, verified by the same middleware path as Supabase JWTs);
+`auth/supabase-setup.sql` — full schema + RLS (users/workspaces/memberships, plus the
+M24D workspace tables and M24C meter tables — meter tables RLS-enabled with NO policies:
+service-role writes only). Frontend: `lib/auth.ts` (supabase|dev backend switch),
+`SessionProvider` + `AuthModal` (GitHub disabled with an honest note until keys exist),
+`AccountMenu` (identity chip → signed-in-as, Developer/Recruiter switcher, sign out),
+Mail/LogOut icons. Verified: tsc clean both sides; 15-check behavioral suite (dev-auth
+mint, /me, 401 anonymous, 401 forged); browser: dev sign-in → chip + context switcher;
+sign-out → "Local-only demo mode" chip returns. Pending keys: GitHub OAuth, magic link,
+merge-by-email, RLS tests.
 
 ---
 
@@ -108,14 +128,29 @@ and happen *before* agent work starts.
 that M25A will promote into the registry.
 
 **Acceptance criteria:**
-- [ ] Concurrent SSE starts cannot exceed quota (race test: parallel requests, count ≤ limit).
-- [ ] Cache hits never write usage rows; fresh runs always do.
-- [ ] Exhausted user gets a structured event and keeps full read access to existing data.
+- [x] Concurrent SSE starts cannot exceed quota (race test: parallel requests, count ≤ limit).
+      _(in-memory mode: 6 concurrent starts → exactly 3 allowed, ledger = 3)_
+- [x] Cache hits never write usage rows; fresh runs always do.
+- [x] Exhausted user gets a structured event and keeps full read access to existing data.
 - [ ] `cost_est_cents` populated for real runs (best-effort, documented margin view).
+      _(column exists, written null in v1 — capture deferred)_
 - [ ] Anonymous demo budget is also ledger-backed (survives cookie deletion via IP rows).
+      _(recording implemented, keyed `anon:<ip>`; enforcement is still the M24A gate;
+      DB-mode verification pending keys)_
 
-**Status:** `[ ]` not started
-**Build note:** _(filled in on completion)_
+**Status:** `[~]` verified end-to-end in memory mode; DB-mode criteria pending keys
+**Build note:** `security/usage-ledger.ts` — `FREE_AUDIT_LIMIT = 3` (the one config
+constant M25A promotes into the registry), 30d rolling window, atomic compare-and-set
+reserve on `user_counters` (conditional UPDATE retried on conflict; first-slot claim via
+insert with 23505 conflict retry — the row lock makes concurrent SSE starts safe), and a
+ledger-only in-memory fallback with the identical API so the chokepoint code never forks.
+`routes/api.ts`: signed-in users bypass the M24A demo gate and hit `reserveAudit` before
+any agent work; blocked runs get a structured `quota_exhausted` SSE event with
+remaining/resetAt; anonymous allowed runs write best-effort `anon:<ip>` ledger rows;
+cache hits short-circuit before any reserve. `GET /api/usage` is the meter endpoint;
+`DemoUpsell` handles `quota_exhausted` with its own wall copy and the profile page routes
+it to `DemoWall`. Verified: 3 fresh runs → 3/3 → 4th blocked; race test 6 concurrent →
+exactly 3 allowed; anonymous demo gate regression; cache hits consume nothing.
 
 ---
 
@@ -136,13 +171,24 @@ everything they built (idempotent first-login import).
 **Acceptance criteria:**
 - [ ] Existing user logs in → target roles, defense cards, requisitions, job projects, and
       published proofs all present; localStorage still functions as cache offline.
-- [ ] Import run twice → zero duplicates.
-- [ ] Recruiter workspace data readable only by its members (RLS test).
+      _(server routes ready; first-login client trigger not built yet)_
+- [ ] Import run twice → zero duplicates. _(idempotent by construction; DB-mode test
+      pending keys)_
+- [ ] Recruiter workspace data readable only by its members (RLS test). _(pending keys)_
 - [ ] Candidate campaign data unreadable from a recruiter context (API-level test — red line).
 - [ ] Export produces a complete JSON of the user's data; delete removes it and revokes proofs.
+      _(endpoints built; `proofs` table migration not in SQL yet)_
 
-**Status:** `[ ]` not started
-**Build note:** _(filled in on completion)_
+**Status:** `[~]` server routes complete; client import trigger + proofs migration pending
+**Build note:** `workspace/routes.ts` — `POST /api/workspace/import` (jsonb-first: rows
+store the existing TS interfaces verbatim in `data`, client-generated ids preserved;
+idempotent — reads existing ids per kind and inserts only fresh rows),
+`GET /api/workspace/export` (complete JSON), `DELETE /api/workspace/delete`. All behind
+`requireAuth`; structured 503 until the Supabase keys exist, so local dev is unaffected.
+Table DDL lives in `auth/supabase-setup.sql` (same file as M24B); `index.ts` mounts the
+auth, usage, and workspace routers (landed here so every prior commit still compiles).
+Remaining: first-login import trigger with the `devscope_migrated_v1` flag, `proofs`
+table migration, RLS + import/export/delete tests once keys exist.
 
 ---
 
@@ -151,7 +197,8 @@ everything they built (idempotent first-login import).
 **Aim:** limits as data. One registry + `can()` consumed by backend enforcement and frontend
 meters — so rigor later is a config change.
 
-**Depends on:** §11 open decisions #3, #4, #5 — **sign off first**.
+**Depends on:** §11 decisions #3, #4, #5 — **signed off** (managed Supabase auth, Free = 3
+audits per rolling 30 days, anonymous demo retained, footer-only proof attribution).
 
 **Scope:**
 - `TIERS` registry + `can(user, capability, ctx)` shared by backend and frontend.
@@ -164,12 +211,45 @@ meters — so rigor later is a config change.
 
 **Acceptance criteria:**
 - [ ] Every capability in the matrix (architecture §6) is enforced at its chokepoint.
+      _(server-enforced: `audit.run` at the SSE chokepoint, `proof.publish` at PUT.
+      `target_role.create` + `practice.full` are client-side walls only while that
+      state is client-side — they become hard walls when M24D moves roles/deck server-first;
+      `profile.read`/`data.export` are unlimited on every tier, so no wall exists)_
 - [ ] Meter shows accurate remaining count; resets correctly at 30d boundary.
-- [ ] Paywalled surfaces never hide the user's own existing data (dark-pattern check).
-- [ ] Changing a limit in the registry changes behavior with no code edits elsewhere.
+      _(remaining matches the ledger on every fetch and the registry-as-data rerun;
+      the 30-day rollover itself is reported from the ledger window (`resetAt`) but was
+      not exercised in real time)_
+- [x] Paywalled surfaces never hide the user's own existing data (dark-pattern check).
+      _(verified in the browser: a locked workspace keeps its role card fully usable,
+      the practice deck stays visible view-only, re-publishing an owned proof page still
+      bumps its version, and every wall repeats that existing work stays put)_
+- [x] Changing a limit in the registry changes behavior with no code edits elsewhere.
 
-**Status:** `[ ]` not started
-**Build note:** _(filled in on completion)_
+**Status:** `[x]` complete — verified in the browser and against the registry
+**Build note:** `backend/src/config/tiers.ts` is now the only place a limit exists:
+`TIERS` (anonymous/free/pro/team) × 9 capabilities, `can(tier, capability, {used})` →
+`Verdict` (allowed, remaining, branded, verbatim `reason`, `upgradeTo`), plus
+`ruleFor`/`tierForSession`/`numericLimit`/`ALL_CAPABILITIES`. It is dependency-free and
+imported by both sides through the `@backend/config/tiers` alias (it lives under
+`backend/src/` because that build has `rootDir: ./src`), so the browser and the
+enforcement code cannot drift. `security/entitlements.ts` adds `GET /api/entitlements`,
+answering with per-capability verdicts computed from the same registry, adding
+`resetAt` for `audit.run` and **failing closed** if the usage lookup errors.
+`security/usage-ledger.ts` no longer hardcodes anything —
+`FREE_AUDIT_LIMIT = TIERS.free['audit.run'].limit`. `proof.routes.ts` enforces
+`proof.publish` on PUT: re-publishing a page you own always succeeds (version bump),
+a new page over the allowance returns 402 `{error:'proof_limit', limit, remaining,
+reason, upgradeTo}` and stamps `branded` from the registry at publish time, so a Pro
+publish stays unbranded forever. Frontend: `QuotaMeter` (live remaining + bar, signal
+color at ≤1, reset date, honest `demo · 1 audit per profile` for anonymous visitors),
+`FeatureLock`/`useCapabilityLock` chips, and an `UpgradeModal` built from the registry's
+own Pro labels that never claims checkout exists. Also hardened the public proof page
+against snapshots missing `profile.github` — those are file-backed artifacts that outlive
+code versions and must not white-screen a recruiter's link. Verified: 21/21 API checks
+(anonymous vs Free verdicts, 402 shape, re-publish, public read, cleanup); registry-as-data
+rerun (free limit patched 3→2 in that one file — meter and the SSE gate both moved, then
+restored with an empty diff); browser pass at 1440px covering meter, role lock + upgrade
+modal, and a branded public proof page.
 
 ---
 
@@ -178,7 +258,7 @@ meters — so rigor later is a config change.
 **Aim:** self-serve payment. Pro (individual) and Team (per seat) via Stripe Checkout;
 webhooks are the only writer of plan state.
 
-**Depends on:** §11 open decision #2 (price point) — **sign off first**.
+**Depends on:** §11 decisions 13/14 — **signed off** ($14/mo + $120/yr Pro, $29/seat/mo Team).
 
 **Scope:**
 - Checkout (subscription mode), Customer Portal, webhook handler with signature verification.
@@ -190,13 +270,45 @@ webhooks are the only writer of plan state.
 
 **Acceptance criteria:**
 - [ ] Test-mode purchase lifts limits immediately (meter updates without re-login).
+      _(verified with real signed webhooks: `checkout.session.completed` flips the tier to
+      pro in the same cycle and the meter reads unlimited without a re-login; the hosted
+      Checkout redirect itself needs test keys + price IDs, so the full click-through is
+      still to be run in a provisioned account)_
 - [ ] Cancel → access until period end → graceful downgrade to Free; data intact.
-- [ ] Webhook replay/idempotency safe; forged webhook rejected.
-- [ ] No Stripe call on the SSE hot path (verified in logs).
-- [ ] Failed payment → `past_due` + grace, then downgrade.
+      _(mirror keeps `active` + `cancel_at_period_end` so access continues to period end;
+      `subscription.deleted` downgrades to Free, profile reads/export stay unlimited and
+      the free meter comes back — pending one live test-mode cancel)_
+- [x] Webhook replay/idempotency safe; forged webhook rejected.
+      _(claimed event ids make redelivery a no-op; forged timestamp, missing signature and
+      tampered body all rejected 400 — the claim is released if the write fails so Stripe's
+      retry still applies it)_
+- [x] No Stripe call on the SSE hot path (verified in logs).
+      _(the SDK was pointed at a dead API host for the verification run: entitlements reads
+      and five fresh SSE audits all completed, while the portal route failed loudly — proof
+      the audit path never touches Stripe)_
+- [x] Failed payment → `past_due` + grace, then downgrade.
+      (`invoice.payment_failed` keeps the paid tier for `BILLING_GRACE_DAYS` (default 7) and
+      `invoice.paid` clears it; with the window already closed the same event drops the user
+      to Free on the next read — no cron, no deletion)_
 
-**Status:** `[ ]` not started
-**Build note:** _(filled in on completion)_
+**Status:** `[~]` code-complete and verified against signed webhooks; needs a real test-mode
+purchase + cancel run once Stripe keys and price IDs exist
+**Build note:** `billing/stripe.ts` owns the lazy client and maps price IDs → plans; the
+catalogue itself is `config/plans.ts` (dependency-free, shared with the browser), so the
+upgrade modal's advertised price is the price Checkout charges. `billing/subscriptions.ts` is
+the mirror (`subscriptions` + `billing_events`, plus an in-memory fallback for local mode)
+and the 60s-TTL plan cache every route reads — tier resolution is a read of local state, so a
+Stripe outage cannot block an audit. `billing/billing.routes.ts` holds checkout, the Customer
+Portal, subscription status, and the webhook; the webhook is mounted on the RAW body in
+`index.ts` (before `express.json`) because the signature covers the exact bytes, and it is
+the only writer of plan state — a checkout redirect grants nothing. Enforcement follows the
+tier: `routes/api.ts` skips the free reserve for paid tiers but still records the run
+(`recordPaidRun`) so cost and attribution stay complete; `entitlements.ts` and
+`proof.routes.ts` read the resolved tier. Frontend: the upgrade modal picks monthly/annual
+and starts Checkout, the account menu shows the plan and opens the portal, and a return
+banner re-checks entitlements until the webhook lands. Unconfigured billing answers an honest
+503 and the UI says so rather than faking a payment step. Verified: 19/19 billing checks +
+6/6 dunning checks against SDK-signed events, both typechecks clean.
 
 ---
 

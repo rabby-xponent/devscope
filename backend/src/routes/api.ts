@@ -4,6 +4,9 @@ import { readCache, writeCache } from '../cache/cache.service';
 import { DevProfile, TraceEvent } from '../types/profile';
 import { sanitizeErrorMessage } from '../utils/error-formatter';
 import { evaluateDemoRun, isDemoGateEnabled } from '../security/demo-gate';
+import { reserveAudit, recordAnonymousRun, recordPaidRun } from '../security/usage-ledger';
+import { getPlanState } from '../billing/subscriptions';
+import { can } from '../config/tiers';
 
 const router = Router();
 const agent = new AgentService();
@@ -29,12 +32,34 @@ router.get('/generate', async (req: Request, res: Response) => {
 
   let gateBlock: { code: 'demo_exhausted' | 'rate_limited'; message: string } | null = null;
   let gateCookie: string | null = null;
-  if (!cached && isDemoGateEnabled()) {
+  let quotaBlock: { message: string; resetAt: string | null } | null = null;
+
+  if (!cached && req.auth) {
+    // Signed-in users skip the anonymous demo gate (M24B); the tier registry
+    // decides whether the free meter applies at all (M25A), and the ledger's
+    // atomic check-and-reserve runs BEFORE agent work (M24C). The plan comes
+    // from the local subscriptions mirror behind a 60s cache — never a Stripe
+    // call on this path (M25B, architecture §8).
+    const plan = await getPlanState(req.auth.userId, true);
+    if (can(plan.tier, 'audit.run').limit === 'unlimited') {
+      void recordPaidRun(req.auth.userId, username);
+    } else {
+      const verdict = await reserveAudit(req.auth.userId, username);
+      if (!verdict.allowed) {
+        quotaBlock = {
+          message: `You've used all ${verdict.limit} free audits in this rolling 30-day window. Everything already generated stays viewable — upgrade lifts the limit.`,
+          resetAt: verdict.resetAt,
+        };
+      }
+    }
+  } else if (!cached && isDemoGateEnabled()) {
     const ip =
       (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.ip || 'unknown';
     const verdict = evaluateDemoRun(req.headers.cookie, ip, username);
     if (verdict.allowed) {
       gateCookie = verdict.setCookie;
+      // Anonymous demo runs are metered too (IP-keyed; survives cookie deletion).
+      void recordAnonymousRun(ip, username);
     } else {
       gateBlock = {
         code: verdict.reason,
@@ -79,7 +104,6 @@ router.get('/generate', async (req: Request, res: Response) => {
     }
 
     // Anonymous demo gate (M24A): fresh runs cost an LLM call, so bound them.
-    // Authenticated users (M24B+) will skip this once identity exists.
     if (gateBlock) {
       clearInterval(heartbeat);
       send({
@@ -87,6 +111,22 @@ router.get('/generate', async (req: Request, res: Response) => {
         timestamp: new Date().toISOString(),
         code: gateBlock.code,
         message: gateBlock.message,
+      });
+      res.end();
+      return;
+    }
+
+    // Signed-in quota wall (M24C): structured event, never hides existing data.
+    if (quotaBlock) {
+      clearInterval(heartbeat);
+      send({
+        type: 'error',
+        timestamp: new Date().toISOString(),
+        code: 'quota_exhausted',
+        message: quotaBlock.message,
+        technicalDetails: quotaBlock.resetAt
+          ? `Quota resets on a rolling 30-day window (oldest audit leaves at ${quotaBlock.resetAt}).`
+          : undefined,
       });
       res.end();
       return;

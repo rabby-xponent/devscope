@@ -25,6 +25,8 @@ export interface ProofSnapshotClient {
   roleId: string;
   roleTitle: string;
   note?: string;
+  /** Free-tier attribution flag (§11 decision 12); absent means branded. */
+  branded?: boolean;
   version: number;
   publishedAt: number;
   updatedAt: number;
@@ -61,7 +63,15 @@ export async function publishProofPage(input: {
   );
   if (!res.ok) {
     const detail = await res.json().catch(() => ({}));
-    throw new Error(detail.error || `Publish failed (${res.status})`);
+    // A `proof_limit` response carries the registry's own locked reason; surface
+    // it verbatim (and keep the code so the UI can open the upgrade modal).
+    const err = new Error(detail.reason || detail.error || `Publish failed (${res.status})`) as Error & {
+      code?: string;
+      upgradeTo?: string;
+    };
+    if (detail.error) err.code = detail.error;
+    if (detail.upgradeTo) err.upgradeTo = detail.upgradeTo;
+    throw err;
   }
   return res.json();
 }

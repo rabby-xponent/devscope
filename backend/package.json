@@ -7,18 +7,23 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "agent:test": "tsx src/scripts/test-agent.ts"
+    "agent:test": "tsx src/scripts/test-agent.ts",
+    "agent:eval": "tsx src/scripts/eval-profile.ts"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.117.2",
     "axios": "^1.7.9",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
-    "openai": "^4.77.0"
+    "jsonwebtoken": "^9.0.3",
+    "openai": "^4.77.0",
+    "stripe": "^17.7.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^22.10.5",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3"
