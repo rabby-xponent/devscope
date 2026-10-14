@@ -1,0 +1,222 @@
+'use client';
+
+/**
+ * Engineering Dossier (portfolio section).
+ *
+ * A recruiter-facing window into HOW the product was built: the decisions
+ * behind it, the tests that prove them, and the stack. The section itself is
+ * a compact invitation; clicking anywhere on it opens a right-side drawer —
+ * a drawer rather than a centered modal because the content is long and
+ * scroll-worthy, and a small modal would turn reading into scroll-jail.
+ *
+ * All content lives in `lib/dossier.ts` — adding a decision or stat never
+ * touches this component.
+ */
+
+import React, { useEffect } from 'react';
+import { Icon } from '@/components/icons';
+import {
+  DOSSIER_STATS,
+  DOSSIER_DECISIONS,
+  DOSSIER_VERIFICATION,
+  DOSSIER_STACK,
+  DossierDecision,
+} from '@/lib/dossier';
+
+const DECISION_ICONS: Record<DossierDecision['icon'], React.ComponentType<{ className?: string }>> = {
+  zap: Icon.Zap,
+  scale: Icon.Scale,
+  lock: Icon.Lock,
+  target: Icon.Target,
+  briefcase: Icon.Briefcase,
+  users: Icon.Users,
+  check: Icon.Check,
+  info: Icon.Info,
+};
+
+function DossierDrawer({ onClose }: { onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-sm"
+      onClick={onClose}
+      role="presentation"
+    >
+      <aside
+        role="dialog"
+        aria-modal="true"
+        aria-label="Engineering dossier"
+        onClick={(e) => e.stopPropagation()}
+        className="fade-up h-full w-full max-w-2xl overflow-y-auto border-l border-slate-200 dark:border-edge bg-[#faf9f5] dark:bg-[#0c0b0e]"
+      >
+        {/* Header */}
+        <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-slate-200/80 dark:border-edge/80 bg-[#faf9f5]/95 dark:bg-[#0c0b0e]/95 px-6 py-5 backdrop-blur-md sm:px-8">
+          <div>
+            <div className="flex items-center gap-2 font-mono text-[10px] font-semibold uppercase tracking-widest text-[#ea580c] dark:text-signal">
+              <span>●</span> Engineering Dossier
+            </div>
+            <h3 className="mt-1.5 font-sans text-xl font-extrabold tracking-tight text-slate-900 dark:text-[#ece9f0]">
+              How this was built
+            </h3>
+            <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-slate-500 dark:text-muted">
+              Decisions · Verification · Stack
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close dossier"
+            className="flex h-8 w-8 flex-none items-center justify-center rounded-lg border border-slate-200 dark:border-edge text-slate-500 dark:text-muted transition-colors hover:border-[#ea580c]/50 hover:text-[#ea580c] dark:hover:text-signal"
+          >
+            <Icon.X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="px-6 py-6 sm:px-8">
+          {/* Stats */}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {DOSSIER_STATS.map((stat) => (
+              <div
+                key={stat.label}
+                className="rounded-xl border border-slate-200 dark:border-edge bg-white dark:bg-surface/60 p-3.5"
+              >
+                <div className="font-mono text-lg font-bold text-[#ea580c] dark:text-signal">{stat.value}</div>
+                <div className="mt-0.5 font-mono text-[10px] uppercase tracking-wider text-slate-500 dark:text-muted">
+                  {stat.label}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Decisions */}
+          <h4 className="mt-8 font-mono text-[10px] font-semibold uppercase tracking-widest text-slate-500 dark:text-muted">
+            Key decisions
+          </h4>
+          <div className="mt-3 space-y-3">
+            {DOSSIER_DECISIONS.map((d) => {
+              const DecisionIcon = DECISION_ICONS[d.icon];
+              return (
+                <div
+                  key={d.id}
+                  className="rounded-2xl border border-slate-200 dark:border-edge bg-white dark:bg-surface/60 p-5"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-8 w-8 flex-none items-center justify-center rounded-lg border border-signal/25 bg-signal/10 text-[#ea580c] dark:text-signal">
+                      <DecisionIcon className="h-4 w-4" />
+                    </span>
+                    <h5 className="text-sm font-bold text-slate-900 dark:text-[#ece9f0]">{d.title}</h5>
+                  </div>
+                  <p className="mt-3 text-sm leading-relaxed text-slate-700 dark:text-content">{d.decision}</p>
+                  <p className="mt-2.5 border-l-2 border-[#ea580c]/40 dark:border-signal/40 pl-3 font-sans text-xs leading-relaxed text-slate-500 dark:text-muted">
+                    {d.why}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Verification */}
+          <h4 className="mt-8 font-mono text-[10px] font-semibold uppercase tracking-widest text-slate-500 dark:text-muted">
+            How we know it works
+          </h4>
+          <div className="mt-3 space-y-2.5">
+            {DOSSIER_VERIFICATION.map((v) => (
+              <div
+                key={v.title}
+                className="flex items-start gap-3 rounded-xl border border-slate-200 dark:border-edge bg-white dark:bg-surface/60 p-4"
+              >
+                <Icon.CheckCircle className="mt-0.5 h-4 w-4 flex-none text-[#ea580c] dark:text-signal" />
+                <div>
+                  <div className="text-sm font-semibold text-slate-900 dark:text-[#ece9f0]">{v.title}</div>
+                  <div className="mt-0.5 text-xs leading-relaxed text-slate-600 dark:text-muted">{v.detail}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Stack */}
+          <h4 className="mt-8 font-mono text-[10px] font-semibold uppercase tracking-widest text-slate-500 dark:text-muted">
+            Stack
+          </h4>
+          <div className="mt-3 flex flex-wrap gap-2 pb-2">
+            {DOSSIER_STACK.map((item) => (
+              <span
+                key={item}
+                className="rounded-full border border-slate-200 dark:border-edge bg-white dark:bg-surface/60 px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-slate-600 dark:text-muted"
+              >
+                {item}
+              </span>
+            ))}
+          </div>
+
+          <p className="mt-8 border-t border-slate-200 dark:border-edge pt-4 font-sans text-[11px] leading-relaxed text-slate-500 dark:text-muted/80">
+            Every claim above corresponds to shipped, tested behavior — this dossier doubles as the
+            project&apos;s engineering changelog. Built by Golam Rabby.
+          </p>
+        </div>
+      </aside>
+    </div>
+  );
+}
+
+export function EngineeringDossier({ onOpen }: { onOpen: () => void }) {
+  return (
+    <section id="engineering" className="py-20 sm:py-28 border-b border-slate-200 dark:border-edge/60 bg-[#faf9f5] dark:bg-[#0c0b0e]">
+      <div className="mx-auto max-w-6xl px-6">
+        <div className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-[#ea580c] dark:text-signal font-semibold">
+          <span>●</span> Engineering Dossier
+        </div>
+
+        <h2 className="mt-4 font-sans text-3xl font-extrabold tracking-tight sm:text-4xl text-slate-900 dark:text-[#ece9f0]">
+          See exactly <span className="text-[#ea580c] dark:text-signal">how it was built.</span>
+        </h2>
+        <p className="mt-4 max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-muted">
+          Not a feature list — the engineering decisions behind it, the tests that prove them, and
+          the stack they run on. Open the dossier.
+        </p>
+
+        <button
+          type="button"
+          onClick={onOpen}
+          className="group mt-8 grid w-full grid-cols-2 gap-3 rounded-2xl border border-slate-200 dark:border-edge bg-white dark:bg-surface/60 p-6 text-left shadow-sm transition-all hover:border-[#ea580c]/50 dark:hover:border-signal/50 hover:shadow-md sm:grid-cols-3 lg:grid-cols-6"
+          aria-haspopup="dialog"
+        >
+          {DOSSIER_STATS.map((stat) => (
+            <div key={stat.label} className="px-1">
+              <div className="font-mono text-xl font-bold text-[#ea580c] dark:text-signal">{stat.value}</div>
+              <div className="mt-0.5 font-mono text-[10px] uppercase tracking-wider text-slate-500 dark:text-muted">
+                {stat.label}
+              </div>
+            </div>
+          ))}
+          <div className="col-span-2 flex items-center gap-1.5 font-mono text-[10px] font-semibold uppercase tracking-wider text-[#ea580c] dark:text-signal sm:col-span-3 lg:col-span-6">
+            Open the build dossier
+            <Icon.ArrowUpRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          </div>
+        </button>
+      </div>
+
+    </section>
+  );
+}
+
+/**
+ * The drawer itself — controlled by the page (`open` state), rendered as a
+ * fixed overlay so it never disturbs the section layout.
+ */
+export function EngineeringDossierDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
+  if (!open) return null;
+  return <DossierDrawer onClose={onClose} />;
+}

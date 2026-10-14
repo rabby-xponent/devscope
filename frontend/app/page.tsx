@@ -10,6 +10,7 @@ import {
   DeveloperWorkspaceProfile,
 } from '@/lib/workspace-profiles';
 import { ThemeToggle } from '@/lib/theme';
+import { EngineeringDossier, EngineeringDossierDrawer } from '@/components/EngineeringDossier';
 
 const CANDIDATE_ARCHETYPES = [
   {
@@ -40,6 +41,9 @@ export default function Home() {
 
   // Developer identity (username memory + portfolio URL for the audit box)
   const [devProfile, setDevProfile] = useState<DeveloperWorkspaceProfile | null>(null);
+
+  // Engineering dossier drawer (portfolio section)
+  const [dossierOpen, setDossierOpen] = useState(false);
 
   const router = useRouter();
 
@@ -91,6 +95,9 @@ export default function Home() {
             </a>
             <a href="#features" className="transition-colors hover:text-[#ea580c] dark:hover:text-signal">
               What You Get
+            </a>
+            <a href="#engineering" className="transition-colors hover:text-[#ea580c] dark:hover:text-signal">
+              Engineering
             </a>
           </div>
 
@@ -675,6 +682,9 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Engineering Dossier (portfolio) */}
+      <EngineeringDossier onOpen={() => setDossierOpen(true)} />
+
       {/* Bottom CTA Section */}
       <section className="py-20 text-center bg-[#faf9f5] dark:bg-[#0c0b0e]">
         <div className="mx-auto max-w-3xl px-6">
@@ -718,6 +728,9 @@ export default function Home() {
           </span>
         </div>
       </footer>
+
+      {/* Engineering dossier drawer */}
+      <EngineeringDossierDrawer open={dossierOpen} onClose={() => setDossierOpen(false)} />
 
     </main>
   );
