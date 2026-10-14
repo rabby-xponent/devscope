@@ -62,14 +62,14 @@ export default function CandidateCompareModal({
         </div>
 
         {/* Scrollable Matrix Content */}
-        <div className="flex-1 overflow-y-auto p-6 thin-scroll space-y-6">
+        <div className="flex-1 overflow-y-auto overflow-x-auto p-4 sm:p-6 thin-scroll space-y-6">
           {/* Comparison Grid */}
           <div
             className={`grid gap-4 ${
               candidates.length === 2
                 ? 'grid-cols-1 md:grid-cols-2'
-                : 'grid-cols-1 md:grid-cols-3'
-            }`}
+                : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+            } min-w-0`}
           >
             {candidates.map((cand, idx) => {
               const isOverqualified =
@@ -82,7 +82,7 @@ export default function CandidateCompareModal({
               return (
                 <div
                   key={cand.id}
-                  className="flex flex-col rounded-2xl border border-edge bg-well p-5 space-y-4 relative"
+                  className="flex flex-col min-w-[280px] rounded-2xl border border-edge bg-well p-5 space-y-4 relative"
                 >
                   {/* Rank tag */}
                   <div className="flex items-center justify-between">

@@ -81,10 +81,11 @@ export default function NewJobModal({ isOpen, onClose, onCreate }: NewJobModalPr
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-md animate-in">
-      <div className="flex max-h-[90vh] w-full max-w-xl flex-col rounded-2xl border border-edge bg-card text-content p-6 shadow-pop">
-        <div className="flex items-center justify-between border-b border-edge pb-3">
+      <div className="flex max-h-[90vh] w-full max-w-xl flex-col rounded-2xl border border-edge bg-card text-content shadow-pop overflow-hidden">
+        {/* Pinned Header */}
+        <div className="flex items-center justify-between border-b border-edge px-6 py-4 bg-well">
           <div className="flex items-center gap-2.5">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-edge bg-well text-muted">
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-edge bg-card text-muted">
               <Icon.Folder className="h-4.5 w-4.5" />
             </span>
             <div>
@@ -99,13 +100,14 @@ export default function NewJobModal({ isOpen, onClose, onCreate }: NewJobModalPr
           <button
             onClick={onClose}
             aria-label="Close"
-            className="rounded-lg p-1.5 text-muted transition-colors hover:bg-well hover:text-content"
+            className="rounded-lg p-1.5 text-muted transition-colors hover:bg-card hover:text-content"
           >
             <Icon.X className="h-4 w-4" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-4 flex-1 space-y-4 overflow-y-auto thin-scroll pr-1">
+        <form onSubmit={handleSubmit} className="flex flex-1 flex-col overflow-hidden">
+          <div className="flex-1 space-y-4 overflow-y-auto p-6 thin-scroll">
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
               <label className={labelClass}>Job Title *</label>
@@ -211,7 +213,10 @@ export default function NewJobModal({ isOpen, onClose, onCreate }: NewJobModalPr
             />
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-2 border-t border-edge">
+          </div>
+
+          {/* Pinned Footer */}
+          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-edge bg-well">
             <button
               type="button"
               onClick={onClose}

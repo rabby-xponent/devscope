@@ -61,7 +61,14 @@ export function Select({
   const [highlight, setHighlight] = useState(-1);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
-  const [coords, setCoords] = useState<{ top: number; left: number; width: number } | null>(null);
+  const [coords, setCoords] = useState<{
+    top?: number;
+    bottom?: number;
+    left?: number;
+    right?: number;
+    width: number;
+    dropUp: boolean;
+  } | null>(null);
   const [mounted, setMounted] = useState(false);
   const listId = useId();
 
@@ -73,8 +80,35 @@ export function Select({
     const el = triggerRef.current;
     if (!el) return;
     const r = el.getBoundingClientRect();
-    setCoords({ top: r.bottom + 6, left: r.left, width: r.width });
-  }, []);
+    const spaceBelow = window.innerHeight - r.bottom;
+    const spaceAbove = r.top;
+    const dropUp = spaceBelow < 240 && spaceAbove > spaceBelow;
+
+    // Boundary clamping
+    const alignRight = align === 'right' || r.left + r.width > window.innerWidth - 20;
+    const left = alignRight ? undefined : Math.max(12, r.left);
+    const right = alignRight ? Math.max(12, window.innerWidth - r.right) : undefined;
+
+    if (dropUp) {
+      setCoords({
+        bottom: window.innerHeight - r.top + 6,
+        top: undefined,
+        left,
+        right,
+        width: r.width,
+        dropUp: true,
+      });
+    } else {
+      setCoords({
+        top: r.bottom + 6,
+        bottom: undefined,
+        left,
+        right,
+        width: r.width,
+        dropUp: false,
+      });
+    }
+  }, [align]);
 
   useLayoutEffect(() => {
     if (!open) return;
@@ -214,12 +248,13 @@ export function Select({
               onKeyDown={onListKeyDown}
               style={{
                 position: 'fixed',
-                top: coords.top,
-                left: align === 'left' ? coords.left : undefined,
-                right: align === 'right' ? window.innerWidth - coords.left - coords.width : undefined,
+                top: coords.top !== undefined ? coords.top : undefined,
+                bottom: coords.bottom !== undefined ? coords.bottom : undefined,
+                left: coords.left !== undefined ? coords.left : undefined,
+                right: coords.right !== undefined ? coords.right : undefined,
                 minWidth: coords.width,
               }}
-              className={`z-[70] max-h-72 overflow-y-auto rounded-xl border border-edge bg-card p-1 shadow-pop thin-scroll animate-in ${menuClassName}`}
+              className={`z-[100] max-h-72 overflow-y-auto rounded-xl border border-edge bg-card p-1 shadow-pop thin-scroll animate-in ${menuClassName}`}
             >
               {options.map((opt, idx) => {
                 const isSelected = opt.value === value;
