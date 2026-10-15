@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { AgentService } from '../agent/agent.service';
+import { deepAuditService } from '../agent/deep-audit.service';
 import { readCache, writeCache } from '../cache/cache.service';
 import { DevProfile, TraceEvent } from '../types/profile';
 import { sanitizeErrorMessage } from '../utils/error-formatter';
@@ -165,6 +166,53 @@ router.get('/profile/:username', async (req: Request, res: Response) => {
     return;
   }
   res.json({ cached: true, cachedAt: cached.generatedAt, profile: cached });
+});
+
+// --- Tier 2: Deep Autonomous Code Audit SSE Stream -------------------------
+
+router.get('/deep-audit', async (req: Request, res: Response) => {
+  const owner = String(req.query.owner || '').trim();
+  const repo = String(req.query.repo || '').trim();
+  const jd = req.query.jd ? String(req.query.jd).trim() : undefined;
+
+  if (!owner || !repo) {
+    res.status(400).json({ error: 'owner and repo query parameters are required' });
+    return;
+  }
+
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
+  res.flushHeaders();
+
+  const send = (event: any) => {
+    res.write(`data: ${JSON.stringify(event)}\n\n`);
+  };
+
+  const heartbeat = setInterval(() => {
+    res.write(': keepalive\n\n');
+  }, 4000);
+
+  req.on('close', () => {
+    clearInterval(heartbeat);
+  });
+
+  try {
+    const report = await deepAuditService.runAudit(owner, repo, send, jd);
+    clearInterval(heartbeat);
+    send({ type: 'deep_audit_complete', timestamp: new Date().toISOString(), report });
+    res.end();
+  } catch (err: any) {
+    clearInterval(heartbeat);
+    send({
+      type: 'error',
+      timestamp: new Date().toISOString(),
+      message: err.message || 'Deep code audit failed.',
+      technicalDetails: err.stack,
+    });
+    res.end();
+  }
 });
 
 export default router;

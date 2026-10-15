@@ -524,3 +524,34 @@ pie title Roadmap Milestone Status
   - Fixed semi-transparent sticky subnav bleed-through on candidate profile evaluation views.
   - Standardized author attribution to LinkedIn profile (`https://www.linkedin.com/in/golamrabby-/`).
 
+---
+
+### Milestone 29 — Tier 2 Deep Autonomous Code Audit, Code Defense & Bangladesh MFS Monetization
+
+* **Core Engine Evolution (Two-Tier Architecture):**
+  - Resolved the tension between the fast ~2s overview and genuine autonomous investigation by establishing a formal **Two-Tier Engine**:
+    * **Tier 1 (Instant Scan):** High-speed deterministic pre-fetch + free/community LLM synthesis.
+    * **Tier 2 (Deep Autonomous Code Audit):** True multi-turn ReAct loop traversing source trees, reading real files in `src/`, and inspecting authored patch diffs.
+* **Deep Code Inspection Tools:**
+  - `browse_repo_tree` (`backend/src/agent/tools/github.tool.ts`): Explores directories, flags architectural folders (`src`, `lib`, `routes`, `controllers`, `models`, `tests`), and detects key configuration files.
+  - `read_source_file` (`backend/src/agent/tools/github.tool.ts`): Reads up to 350 lines with 1-based line numbers for direct citation.
+  - `inspect_commit_diffs` (`backend/src/agent/tools/github.tool.ts`): Inspects authored patch diffs (filtering minified bundles/lockfiles) to assess commit cleanliness, error handling, and test discipline.
+  - Registered all tools in `definitions.ts` and `executor.ts`.
+* **Autonomous ReAct Audit Service (`backend/src/agent/deep-audit.service.ts`):**
+  - Implemented multi-turn ReAct loop orchestrating dynamic tool calls, bounded to 5 turns.
+  - Generates `DeepCodeAuditReport`: Architecture grade (A/B/C/D), entrypoints, code cleanliness, testing discipline, originality vs. tutorial verdict, and 3 adversarial code defense questions citing exact files/lines.
+  - Added deterministic fallback audit when upstream providers are exhausted.
+  - Mounted SSE streaming endpoint `GET /api/deep-audit` in `backend/src/routes/api.ts`.
+* **Bangladesh Mobile Financial Services (MFS) Monetization:**
+  - Implemented zero-overhead bootstrapping payment architecture supporting **bKash, Nagad, and Rocket** manual verification.
+  - **24-Hour Instant Provisional Access:** On submitting a valid phone number and TrxID, users receive immediate provisional Pro access without waiting hours for manual review.
+  - Persistent JSON ledger (`cache/mfs-payments.json`) with admin approval endpoints (`POST /api/billing/mfs/submit`, `GET /api/billing/mfs/status`, `GET /api/billing/mfs/admin/list`, `POST /api/billing/mfs/admin/verify`).
+  - Catalog pricing in BDT (`৳৩৯৯/মাস`, `৳৩,৪৯০/বছর`, `৳১,৯৯৯/মাস`).
+* **Frontend UI Hardening & Zero-Gimmick Design:**
+  - Created `frontend/components/BkashNagadModal.tsx`: High-contrast dark well design (`bg-zinc-950`), one-click copyable account numbers, and zero AI-gimmick emojis.
+  - Updated `frontend/components/PricingSection.tsx` with a clean `[ ৳ BDT (বিকাশ / নগদ) ]` vs `[ $ USD (Card) ]` currency toggle.
+  - Added `frontend/components/DeepCodeAuditModal.tsx` and `frontend/hooks/useDeepAuditStream.ts`: Real-time agent trace streaming, architecture ledger, and interactive **Practice Defense Mode** with instant feedback.
+  - Integrated `Tier 2 Code Audit` button directly into the profile evaluation navigation.
+  - Verification: `npx tsc --noEmit` compiles cleanly with 0 errors across both `backend` and `frontend`.
+
+

@@ -127,7 +127,7 @@ export function UpgradeModal({
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="flex h-7 w-7 items-center justify-center rounded-lg border border-edge text-muted transition-colors hover:text-content"
+            className="flex h-7 w-7 items-center justify-center rounded-lg border border-edge bg-well/50 text-muted transition-colors hover:border-signal/50 hover:bg-well hover:text-signal"
           >
             <Icon.X className="h-3.5 w-3.5" />
           </button>
@@ -155,17 +155,16 @@ export function UpgradeModal({
                 onClose();
                 openSignIn();
               }}
-              className="flex items-center justify-center gap-1.5 rounded-xl bg-signal px-4 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-[#0c0b0e] shadow-xs transition-all hover:bg-signal/90 active:scale-[0.99]"
+              className="flex items-center justify-center gap-1.5 rounded-xl bg-signal px-4 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-xs transition-all hover:bg-signal/90 active:scale-[0.99]"
             >
-              <Icon.Sparkle className="h-3.5 w-3.5" />
-              Create your free account
+              <span>Create your free account</span>
             </button>
           ) : onPaidTier ? (
             <button
               type="button"
               onClick={handlePortal}
               disabled={busy}
-              className="flex items-center justify-center gap-1.5 rounded-xl bg-signal px-4 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-[#0c0b0e] shadow-xs transition-all hover:bg-signal/90 disabled:opacity-60"
+              className="flex items-center justify-center gap-1.5 rounded-xl bg-signal px-4 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-xs transition-all hover:bg-signal/90 disabled:opacity-60"
             >
               {busy ? 'Opening…' : 'Manage billing'}
             </button>
@@ -205,9 +204,8 @@ export function UpgradeModal({
                 type="button"
                 onClick={handleCheckout}
                 disabled={busy}
-                className="flex items-center justify-center gap-1.5 rounded-xl bg-signal px-4 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-[#0c0b0e] shadow-xs transition-all hover:bg-signal/90 disabled:opacity-60 active:scale-[0.99]"
+                className="flex items-center justify-center gap-1.5 rounded-xl bg-signal px-4 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-xs transition-all hover:bg-signal/90 disabled:opacity-60 active:scale-[0.99]"
               >
-                <Icon.Sparkle className="h-3.5 w-3.5" />
                 {busy ? 'Opening checkout…' : `Pay with Card — ${PLANS[plan].display}`}
               </button>
 

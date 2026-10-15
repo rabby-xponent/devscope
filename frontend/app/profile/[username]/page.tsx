@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useDevScopeStream } from '@/hooks/useDevScopeStream';
 import { AgentTrace } from '@/components/AgentTrace';
 import { AgentProgress } from '@/components/AgentProgress';
 import { ProfileView } from '@/components/ProfileView';
+import { DeepCodeAuditModal } from '@/components/DeepCodeAuditModal';
 import { Icon } from '@/components/icons';
 import { getRequisitionById } from '@/lib/requisitions';
 import { getJobProjectById, addCandidateToProject } from '@/lib/job-projects';
@@ -51,6 +52,7 @@ export default function ProfilePage() {
   }
 
   const { status, trace, profile, cached, error, generate, reset } = useDevScopeStream();
+  const [showDeepAudit, setShowDeepAudit] = useState(false);
 
   useEffect(() => {
     if (username) generate(username, false, liveUrl, activeJd, activeTitle);
@@ -110,15 +112,24 @@ export default function ProfilePage() {
             <span className="h-2 w-2 rounded-full bg-signal" />
             devscope
           </Link>
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-4">
             {status === 'complete' && (
-              <button
-                onClick={() => generate(username, true, liveUrl, activeJd, activeTitle)}
-                className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider text-muted transition-colors hover:text-signal"
-              >
-                <Icon.Refresh className="h-3 w-3" />
-                regenerate
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={() => setShowDeepAudit(true)}
+                  className="rounded-md border border-[#ea580c]/50 bg-[#ea580c]/10 hover:bg-[#ea580c]/20 px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-wider text-[#ea580c] dark:text-signal transition-colors flex items-center gap-1.5 shadow-xs"
+                >
+                  <span>Tier 2 Code Audit</span>
+                </button>
+                <button
+                  onClick={() => generate(username, true, liveUrl, activeJd, activeTitle)}
+                  className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider text-muted transition-colors hover:text-signal"
+                >
+                  <Icon.Refresh className="h-3 w-3" />
+                  regenerate
+                </button>
+              </>
             )}
             <Link
               href="/"
@@ -236,6 +247,16 @@ export default function ProfilePage() {
           </a>
         </p>
       </footer>
+
+      {showDeepAudit && (
+        <DeepCodeAuditModal
+          isOpen={showDeepAudit}
+          onClose={() => setShowDeepAudit(false)}
+          owner={username}
+          repos={profile?.openSourceImpact?.topRepos}
+          jobDescription={activeJd}
+        />
+      )}
     </main>
   );
 }
