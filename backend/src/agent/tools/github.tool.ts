@@ -415,3 +415,213 @@ export async function getPRActivity(username: string) {
     recentPRTitles: [...recentPRTitles].slice(0, 10),
   };
 }
+
+/**
+ * Deep Code Inspection Tools (Tier 2 Agentic Core)
+ */
+
+export interface RepoTreeItem {
+  name: string;
+  path: string;
+  type: 'dir' | 'file';
+  size?: number;
+}
+
+export async function browseRepoTree(
+  owner: string,
+  repo: string,
+  path: string = '',
+  branch?: string
+): Promise<{
+  owner: string;
+  repo: string;
+  path: string;
+  items: RepoTreeItem[];
+  keyArchitectureFolders: string[];
+  configFiles: string[];
+}> {
+  try {
+    const url = `${GH_API}/repos/${owner}/${repo}/contents/${path.replace(/^\//, '')}`;
+    const params: Record<string, string> = {};
+    if (branch) params.ref = branch;
+
+    const { data } = await githubAxios.get(url, { params });
+    if (!Array.isArray(data)) {
+      return {
+        owner,
+        repo,
+        path,
+        items: [{ name: data.name, path: data.path, type: 'file', size: data.size }],
+        keyArchitectureFolders: [],
+        configFiles: [],
+      };
+    }
+
+    const items: RepoTreeItem[] = data.map((item: any) => ({
+      name: item.name,
+      path: item.path,
+      type: item.type === 'dir' ? 'dir' : 'file',
+      size: item.size,
+    }));
+
+    const keyArchNames = new Set(['src', 'lib', 'app', 'core', 'routes', 'controllers', 'models', 'services', 'components', 'tests', 'test', 'internal', 'pkg']);
+    const configNames = new Set(['package.json', 'tsconfig.json', 'go.mod', 'Cargo.toml', 'requirements.txt', 'Dockerfile', 'docker-compose.yml', 'schema.prisma', 'next.config.js', 'vite.config.ts']);
+
+    const keyArchitectureFolders = items.filter(i => i.type === 'dir' && keyArchNames.has(i.name.toLowerCase())).map(i => i.path);
+    const configFiles = items.filter(i => i.type === 'file' && configNames.has(i.name.toLowerCase())).map(i => i.path);
+
+    return {
+      owner,
+      repo,
+      path,
+      items,
+      keyArchitectureFolders,
+      configFiles,
+    };
+  } catch (err: any) {
+    if (err.response?.status === 404) {
+      return { owner, repo, path, items: [], keyArchitectureFolders: [], configFiles: [] };
+    }
+    throw err;
+  }
+}
+
+export async function readSourceFile(
+  owner: string,
+  repo: string,
+  path: string,
+  branch?: string
+): Promise<{
+  owner: string;
+  repo: string;
+  path: string;
+  language: string;
+  totalLines: number;
+  content: string;
+  isTruncated: boolean;
+}> {
+  try {
+    const url = `${GH_API}/repos/${owner}/${repo}/contents/${path.replace(/^\//, '')}`;
+    const params: Record<string, string> = {};
+    if (branch) params.ref = branch;
+
+    const { data } = await githubAxios.get(url, { params });
+    if (data.type !== 'file' || !data.content) {
+      return {
+        owner,
+        repo,
+        path,
+        language: 'unknown',
+        totalLines: 0,
+        content: `Error: ${path} is not a valid text file.`,
+        isTruncated: false,
+      };
+    }
+
+    const raw = Buffer.from(data.content, 'base64').toString('utf8');
+    const ext = path.split('.').pop()?.toLowerCase() || 'txt';
+    const lines = raw.split(/\r?\n/);
+    const MAX_LINES = 350;
+    const isTruncated = lines.length > MAX_LINES;
+    const sliced = lines.slice(0, MAX_LINES);
+
+    // Format with line numbers for exact LLM citation
+    const formatted = sliced.map((line, idx) => `${idx + 1}: ${line}`).join('\n');
+
+    return {
+      owner,
+      repo,
+      path,
+      language: ext,
+      totalLines: lines.length,
+      content: formatted,
+      isTruncated,
+    };
+  } catch (err: any) {
+    return {
+      owner,
+      repo,
+      path,
+      language: 'unknown',
+      totalLines: 0,
+      content: `Failed to read file ${path}: ${err.message}`,
+      isTruncated: false,
+    };
+  }
+}
+
+export async function inspectCommitDiffs(
+  owner: string,
+  repo: string,
+  author?: string,
+  count: number = 3
+): Promise<{
+  repo: string;
+  author?: string;
+  analyzedCommits: Array<{
+    sha: string;
+    message: string;
+    date: string;
+    additions: number;
+    deletions: number;
+    filesChanged: Array<{
+      filename: string;
+      patchSnippet?: string;
+    }>;
+  }>;
+}> {
+  try {
+    const params: Record<string, any> = { per_page: Math.min(count, 5) };
+    if (author) params.author = author;
+
+    const { data: commits } = await githubAxios.get(`${GH_API}/repos/${owner}/${repo}/commits`, { params });
+    if (!Array.isArray(commits)) return { repo, author, analyzedCommits: [] };
+
+    const analyzedCommits = await Promise.all(
+      commits.slice(0, count).map(async (c: any) => {
+        try {
+          const { data: detail } = await githubAxios.get(`${GH_API}/repos/${owner}/${repo}/commits/${c.sha}`);
+          const ignoreExts = ['.lock', '.min.js', '.min.css', '.svg', '.png', '.jpg', '.json'];
+          const relevantFiles = (detail.files || [])
+            .filter((f: any) => !ignoreExts.some(ext => f.filename.endsWith(ext)))
+            .slice(0, 4)
+            .map((f: any) => ({
+              filename: f.filename,
+              patchSnippet: f.patch ? f.patch.slice(0, 800) : undefined,
+            }));
+
+          return {
+            sha: c.sha.slice(0, 7),
+            message: c.commit?.message?.split('\n')[0] || 'No commit message',
+            date: c.commit?.author?.date || '',
+            additions: detail.stats?.additions || 0,
+            deletions: detail.stats?.deletions || 0,
+            filesChanged: relevantFiles,
+          };
+        } catch {
+          return {
+            sha: c.sha.slice(0, 7),
+            message: c.commit?.message?.split('\n')[0] || 'Commit details unavailable',
+            date: c.commit?.author?.date || '',
+            additions: 0,
+            deletions: 0,
+            filesChanged: [],
+          };
+        }
+      })
+    );
+
+    return {
+      repo,
+      author,
+      analyzedCommits,
+    };
+  } catch (err: any) {
+    return {
+      repo,
+      author,
+      analyzedCommits: [],
+    };
+  }
+}
+

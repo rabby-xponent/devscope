@@ -106,3 +106,53 @@ export async function fetchSubscription(): Promise<SubscriptionStatus | null> {
 export function isPerSeat(plan: PlanId): boolean {
   return PLANS[plan].perSeat;
 }
+
+// --- Bangladesh MFS (bKash / Nagad / Rocket) --------------------------------
+
+export type MfsProvider = 'bkash' | 'nagad' | 'rocket';
+
+export interface MfsSubmitPayload {
+  provider: MfsProvider;
+  senderNumber: string;
+  trxId: string;
+  planId: PlanId;
+  userHandle?: string;
+  userEmail?: string;
+}
+
+export interface MfsSubmitResponse {
+  success: boolean;
+  message: string;
+  record: any;
+  instantAccessGranted: boolean;
+}
+
+export interface MfsStatusResponse {
+  hasPending: boolean;
+  latestRecord: any | null;
+  accounts: {
+    bkash: { number: string; type: string; note: string };
+    nagad: { number: string; type: string; note: string };
+    rocket: { number: string; type: string; note: string };
+  };
+}
+
+/** Submit a manual bKash/Nagad TrxID for instant provisional activation */
+export async function submitMfsPayment(payload: MfsSubmitPayload): Promise<MfsSubmitResponse> {
+  return post<MfsSubmitResponse>('/api/billing/mfs/submit', payload);
+}
+
+/** Fetch current user MFS payment status and account numbers */
+export async function fetchMfsStatus(userId?: string): Promise<MfsStatusResponse | null> {
+  try {
+    const query = userId ? `?userId=${encodeURIComponent(userId)}` : '';
+    const res = await fetch(`${API_URL}/api/billing/mfs/status${query}`, {
+      headers: await authHeaders(),
+      cache: 'no-store',
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as MfsStatusResponse;
+  } catch {
+    return null;
+  }
+}

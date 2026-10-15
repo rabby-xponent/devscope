@@ -19,6 +19,7 @@ import { Capability, ruleFor } from '@backend/config/tiers';
 import type { EntitlementEntry } from '@/lib/entitlements';
 import { useSession } from '@/components/SessionProvider';
 import { PLANS, PlanId, startCheckout, startPortal, BillingError } from '@/lib/billing';
+import { BkashNagadModal } from '@/components/BkashNagadModal';
 
 /** What Pro adds over Free, read straight from the registry. */
 function proHighlights(capability: Capability | null): string[] {
@@ -54,6 +55,7 @@ export function UpgradeModal({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [unavailable, setUnavailable] = useState(false);
+  const [showBkashModal, setShowBkashModal] = useState(false);
   const onPaidTier = verdict.tier === 'pro' || verdict.tier === 'team';
 
   useEffect(() => {
@@ -206,16 +208,34 @@ export function UpgradeModal({
                 className="flex items-center justify-center gap-1.5 rounded-xl bg-signal px-4 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-[#0c0b0e] shadow-xs transition-all hover:bg-signal/90 disabled:opacity-60 active:scale-[0.99]"
               >
                 <Icon.Sparkle className="h-3.5 w-3.5" />
-                {busy ? 'Opening checkout…' : `Upgrade to Pro — ${PLANS[plan].display}`}
+                {busy ? 'Opening checkout…' : `Pay with Card — ${PLANS[plan].display}`}
+              </button>
+
+              {/* Bangladesh MFS Option */}
+              <button
+                type="button"
+                onClick={() => setShowBkashModal(true)}
+                className="flex items-center justify-center gap-2 rounded-xl border border-[#ea580c]/50 bg-[#ea580c]/10 hover:bg-[#ea580c]/20 px-4 py-2.5 font-mono text-xs font-bold text-[#ea580c] dark:text-signal transition-all"
+              >
+                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#ea580c] text-white text-[10px]">৳</span>
+                <span>বিকাশ বা নগদ দিয়ে আপগ্রেড ({PLANS[plan].displayBdt})</span>
               </button>
             </>
           )}
 
           {unavailable && (
-            <p className="rounded-xl border border-edge bg-well px-4 py-2.5 text-center font-mono text-[11px] leading-relaxed text-muted">
-              Self-serve checkout is not switched on this deployment yet — no card required to
-              stay on Free.
-            </p>
+            <div className="rounded-xl border border-edge bg-well p-3 text-center space-y-2">
+              <p className="font-mono text-[11px] leading-relaxed text-muted">
+                ইন্টারন্যাশনাল কার্ড পেমেন্ট সক্রিয় নেই। বাংলাদেশী ব্যবহারকারীরা বিকাশ/নগদে তাৎক্ষণিক প্রো এক্টিভ করতে পারেন:
+              </p>
+              <button
+                type="button"
+                onClick={() => setShowBkashModal(true)}
+                className="w-full rounded-lg bg-signal/20 border border-signal/40 py-2 font-mono text-xs font-bold text-signal hover:bg-signal/30 transition-all"
+              >
+                বিকাশ / নগদ দিয়ে আনলক করুন (৳৩৯৯/মাস) ⚡
+              </button>
+            </div>
           )}
           {error && (
             <p className="rounded-xl border border-signal/40 bg-signal/10 px-4 py-2.5 text-center font-mono text-[11px] leading-relaxed text-signal">
@@ -231,6 +251,18 @@ export function UpgradeModal({
             Keep working on Free
           </button>
         </div>
+
+        {showBkashModal && (
+          <BkashNagadModal
+            isOpen={showBkashModal}
+            defaultPlan={plan}
+            onClose={() => setShowBkashModal(false)}
+            onSuccess={() => {
+              setShowBkashModal(false);
+              onClose();
+            }}
+          />
+        )}
 
         <p className="mt-4 border-t border-edge pt-3 font-sans text-[11px] leading-relaxed text-muted/80">
           Everything you have already built stays exactly where it is — limits apply to new

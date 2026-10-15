@@ -164,6 +164,58 @@ export const toolDefinitions = [
       },
     },
   },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'browse_repo_tree',
+      description:
+        'Explore directory structure of a repository. Discovers key architectural directories (src, lib, app, tests) and configuration files (package.json, Dockerfile, etc.).',
+      parameters: {
+        type: 'object',
+        properties: {
+          owner: { type: 'string' },
+          repo: { type: 'string' },
+          path: { type: 'string', description: 'Subdirectory path, or empty for root.' },
+        },
+        required: ['owner', 'repo'],
+      },
+    },
+  },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'read_source_file',
+      description:
+        'Read exact source code of a file with line numbers (up to 350 lines). Use to inspect architecture, error handling, state management, and real implementation depth.',
+      parameters: {
+        type: 'object',
+        properties: {
+          owner: { type: 'string' },
+          repo: { type: 'string' },
+          path: { type: 'string', description: 'Path to source file in repo (e.g. src/index.ts).' },
+        },
+        required: ['owner', 'repo', 'path'],
+      },
+    },
+  },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'inspect_commit_diffs',
+      description:
+        'Inspect real authored commit diffs and patch snippets by the candidate to evaluate coding style, testing discipline, and error handling.',
+      parameters: {
+        type: 'object',
+        properties: {
+          owner: { type: 'string' },
+          repo: { type: 'string' },
+          author: { type: 'string', description: 'GitHub username of author.' },
+          count: { type: 'number', description: 'Number of recent commits to inspect (default 3).' },
+        },
+        required: ['owner', 'repo'],
+      },
+    },
+  },
 ];
 
 export function summarizeToolResult(name: string, result: any): string {
@@ -201,6 +253,12 @@ export function summarizeToolResult(name: string, result: any): string {
       return result.isLive
         ? `Live ${result.detectedStack?.framework || 'Web App'} (${result.responseTimeMs}ms, ${result.hostingPlatform || 'hosted'})`
         : `Inspection finished: HTTP ${result.status}`;
+    case 'browse_repo_tree':
+      return `Scanned ${result.items?.length || 0} items in ${result.path || 'root'} (${result.keyArchitectureFolders?.length || 0} arch folders)`;
+    case 'read_source_file':
+      return `Read ${result.path} (${result.totalLines} lines, ${result.language})${result.isTruncated ? ' [truncated]' : ''}`;
+    case 'inspect_commit_diffs':
+      return `Analyzed ${result.analyzedCommits?.length || 0} recent commit diffs for ${result.repo}`;
     default:
       return 'Done';
   }

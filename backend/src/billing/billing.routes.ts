@@ -42,6 +42,8 @@ import {
   successUrl,
 } from './stripe';
 
+import { mfsPaymentService, MfsProvider } from './mfs-payment.service';
+
 const router = Router();
 
 const BILLING_OFF = {
@@ -179,6 +181,94 @@ router.get('/subscription', requireAuth, async (req: Request, res: Response) => 
       perSeat: p.perSeat,
     })),
   });
+});
+
+// --- Bangladesh MFS (bKash / Nagad / Rocket) Flow ---------------------------
+
+/** POST /api/billing/mfs/submit — Submit MFS TrxID and get 24h provisional access */
+router.post('/mfs/submit', async (req: Request, res: Response) => {
+  const { provider, senderNumber, trxId, planId, userHandle, userEmail, userId } = req.body || {};
+  const effectiveUserId = req.auth?.userId || userId || (userHandle ? `gh_${userHandle}` : 'anonymous_dev');
+
+  if (!provider || !senderNumber || !trxId || !planId) {
+    res.status(400).json({
+      error: 'missing_fields',
+      message: 'Provider (bKash/Nagad), Sender Number, Transaction ID, and Plan are required.',
+    });
+    return;
+  }
+
+  try {
+    const result = await mfsPaymentService.submitPayment({
+      userId: effectiveUserId,
+      userHandle: req.auth?.handle || userHandle,
+      userEmail: req.auth?.email || userEmail,
+      provider: provider as MfsProvider,
+      senderNumber: String(senderNumber),
+      trxId: String(trxId),
+      planId: planId as PlanId,
+    });
+
+    res.json({
+      success: true,
+      message: 'পেমেন্ট ভেরিফিকেশন সফলভাবে সাবমিট হয়েছে। আপনাকে তাৎক্ষণিক ২৪ ঘণ্টার প্রভিশনাল প্রো অ্যাক্সেস দেওয়া হলো!',
+      record: result.record,
+      instantAccessGranted: result.instantAccessGranted,
+    });
+  } catch (err: any) {
+    res.status(400).json({
+      error: 'submission_failed',
+      message: err.message || 'Payment submission failed.',
+    });
+  }
+});
+
+/** GET /api/billing/mfs/status — Get current user MFS payment & account details */
+router.get('/mfs/status', async (req: Request, res: Response) => {
+  const queryUserId = typeof req.query.userId === 'string' ? req.query.userId : undefined;
+  const effectiveUserId = req.auth?.userId || queryUserId || 'anonymous_dev';
+
+  try {
+    const status = await mfsPaymentService.getUserPaymentStatus(effectiveUserId);
+    res.json(status);
+  } catch (err: any) {
+    res.status(500).json({ error: 'status_check_failed', message: err.message });
+  }
+});
+
+/** GET /api/billing/mfs/admin/list — Admin view of all submitted transactions */
+router.get('/mfs/admin/list', async (req: Request, res: Response) => {
+  try {
+    const status = typeof req.query.status === 'string' ? (req.query.status as any) : undefined;
+    const items = await mfsPaymentService.listPayments({ status });
+    res.json({ count: items.length, items });
+  } catch (err: any) {
+    res.status(500).json({ error: 'list_failed', message: err.message });
+  }
+});
+
+/** POST /api/billing/mfs/admin/verify — Admin approve or reject transaction */
+router.post('/mfs/admin/verify', async (req: Request, res: Response) => {
+  const { paymentId, action, notes, adminKey } = req.body || {};
+
+  // Simple admin protection if set in env
+  const expectedKey = process.env.ADMIN_SECRET_KEY;
+  if (expectedKey && adminKey !== expectedKey) {
+    res.status(403).json({ error: 'unauthorized', message: 'Invalid admin credentials.' });
+    return;
+  }
+
+  if (!paymentId || !action || !['approve', 'reject'].includes(action)) {
+    res.status(400).json({ error: 'invalid_request', message: 'paymentId and action (approve|reject) are required.' });
+    return;
+  }
+
+  try {
+    const updated = await mfsPaymentService.verifyPayment(paymentId, action, 'admin', notes);
+    res.json({ success: true, record: updated });
+  } catch (err: any) {
+    res.status(400).json({ error: 'verification_failed', message: err.message });
+  }
 });
 
 // --- Webhook ----------------------------------------------------------------

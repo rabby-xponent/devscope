@@ -4,9 +4,12 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Icon } from '@/components/icons';
 import { useSession } from '@/components/SessionProvider';
+import { BkashNagadModal } from '@/components/BkashNagadModal';
 
 export function PricingSection() {
   const [annual, setAnnual] = useState(false);
+  const [currency, setCurrency] = useState<'bdt' | 'usd'>('bdt');
+  const [showBkashModal, setShowBkashModal] = useState(false);
   const { user, openSignIn } = useSession();
 
   const handleFreeCta = () => {
@@ -16,6 +19,10 @@ export function PricingSection() {
   };
 
   const handleProCta = () => {
+    if (currency === 'bdt') {
+      setShowBkashModal(true);
+      return;
+    }
     if (!user) {
       openSignIn();
     } else {
@@ -35,18 +42,45 @@ export function PricingSection() {
             Predictable plans for <span className="text-[#ea580c] dark:text-signal">builders & hiring teams.</span>
           </h2>
           <p className="mt-4 text-sm sm:text-base leading-relaxed text-slate-600 dark:text-muted">
-            No token surprises or hidden API meters. Start free with 3 audits every month, go Pro for unlimited pre-flights, or supercharge your recruitment pipeline.
+            No token surprises or hidden API meters. Start free with 3 audits every month, go Pro for unlimited deep code audits & interview drills, or empower your team.
           </p>
 
-          {/* Monthly / Annual Toggle */}
-          <div className="mt-8 inline-flex items-center gap-2.5">
+          {/* Currency + Monthly/Annual Toggles */}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            {/* Currency Pill */}
+            <div className="inline-flex items-center rounded-full border border-slate-200 dark:border-edge bg-white dark:bg-surface/80 p-1 shadow-xs">
+              <button
+                type="button"
+                onClick={() => setCurrency('bdt')}
+                className={`rounded-full px-3.5 py-1.5 font-mono text-xs font-semibold tracking-wider transition-all flex items-center gap-1.5 ${
+                  currency === 'bdt'
+                    ? 'bg-[#ea580c] dark:bg-signal text-white dark:text-ink shadow-xs'
+                    : 'text-slate-600 dark:text-muted hover:text-slate-900 dark:hover:text-[#ece9f0]'
+                }`}
+              >
+                <span>৳ BDT (বিকাশ / নগদ)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setCurrency('usd')}
+                className={`rounded-full px-3.5 py-1.5 font-mono text-xs font-semibold tracking-wider transition-all ${
+                  currency === 'usd'
+                    ? 'bg-[#ea580c] dark:bg-signal text-white dark:text-ink shadow-xs'
+                    : 'text-slate-600 dark:text-muted hover:text-slate-900 dark:hover:text-[#ece9f0]'
+                }`}
+              >
+                <span>$ USD (Card)</span>
+              </button>
+            </div>
+
+            {/* Monthly / Annual Toggle */}
             <div className="inline-flex items-center rounded-full border border-slate-200 dark:border-edge bg-white dark:bg-surface/80 p-1 shadow-xs">
               <button
                 type="button"
                 onClick={() => setAnnual(false)}
-                className={`rounded-full px-5 py-1.5 font-mono text-xs font-semibold uppercase tracking-wider transition-all ${
+                className={`rounded-full px-4 py-1.5 font-mono text-xs font-semibold uppercase tracking-wider transition-all ${
                   !annual
-                    ? 'bg-[#ea580c] dark:bg-signal text-white dark:text-ink shadow-xs'
+                    ? 'bg-slate-900 dark:bg-[#ece9f0] text-white dark:text-ink shadow-xs'
                     : 'text-slate-600 dark:text-muted hover:text-slate-900 dark:hover:text-[#ece9f0]'
                 }`}
               >
@@ -55,9 +89,9 @@ export function PricingSection() {
               <button
                 type="button"
                 onClick={() => setAnnual(true)}
-                className={`rounded-full px-5 py-1.5 font-mono text-xs font-semibold uppercase tracking-wider transition-all ${
+                className={`rounded-full px-4 py-1.5 font-mono text-xs font-semibold uppercase tracking-wider transition-all ${
                   annual
-                    ? 'bg-[#ea580c] dark:bg-signal text-white dark:text-ink shadow-xs'
+                    ? 'bg-slate-900 dark:bg-[#ece9f0] text-white dark:text-ink shadow-xs'
                     : 'text-slate-600 dark:text-muted hover:text-slate-900 dark:hover:text-[#ece9f0]'
                 }`}
               >
@@ -75,7 +109,7 @@ export function PricingSection() {
               }`}
             >
               <Icon.Sparkle className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
-              <span>{annual ? 'Annual discounts active' : 'Up to 29% off with Annual'}</span>
+              <span>{annual ? (currency === 'bdt' ? '২৭% ছাড় সক্রিয়' : 'Annual discounts active') : (currency === 'bdt' ? 'বাৎসরিক প্রায় ২৭% সাশ্রয়' : 'Up to 29% off with Annual')}</span>
             </button>
           </div>
         </div>
@@ -160,20 +194,24 @@ export function PricingSection() {
               </div>
               <div className="mt-4 flex flex-wrap items-baseline gap-2">
                 <span className="font-sans text-4xl font-extrabold tracking-tight text-slate-900 dark:text-[#ece9f0]">
-                  {annual ? '$10' : '$14'}
+                  {currency === 'bdt'
+                    ? (annual ? '৳৩,৪৯০' : '৳৩৯৯')
+                    : (annual ? '$10' : '$14')}
                 </span>
                 <span className="font-mono text-xs text-slate-500 dark:text-muted">
-                  / month {annual ? '(billed $120/yr)' : ''}
+                  {currency === 'bdt'
+                    ? (annual ? '/ বছর' : '/ মাস')
+                    : (annual ? '/ month (billed $120/yr)' : '/ month')}
                 </span>
               </div>
               {annual ? (
                 <div className="mt-2 inline-flex items-center gap-1 rounded-md border border-emerald-300 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/15 px-2 py-0.5 font-mono text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
                   <Icon.Check className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
-                  Save $48/year (29% off)
+                  {currency === 'bdt' ? '৳১,২৯৮ সাশ্রয় (প্রায় ২৭% অফ)' : 'Save $48/year (29% off)'}
                 </div>
               ) : (
                 <div className="mt-2 text-[11px] font-mono text-slate-500 dark:text-muted">
-                  Billed monthly, cancel anytime
+                  {currency === 'bdt' ? 'বিকাশ বা নগদে সহজ পেমেন্ট' : 'Billed monthly, cancel anytime'}
                 </div>
               )}
               <p className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-muted">
@@ -187,6 +225,14 @@ export function PricingSection() {
                 <ul className="space-y-2.5 font-mono text-xs text-slate-600 dark:text-muted">
                   <li className="flex items-start gap-2">
                     <Icon.Check className="h-4 w-4 flex-none text-[#ea580c] dark:text-signal mt-0.5" />
+                    <span><strong className="text-slate-900 dark:text-[#ece9f0]">Tier 2 Deep Code Audit</strong> (real source & diff inspection)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Icon.Check className="h-4 w-4 flex-none text-[#ea580c] dark:text-signal mt-0.5" />
+                    <span><strong className="text-slate-900 dark:text-[#ece9f0]">Interactive Code Defense</strong> (adversarial mock interview)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Icon.Check className="h-4 w-4 flex-none text-[#ea580c] dark:text-signal mt-0.5" />
                     <span><strong className="text-slate-900 dark:text-[#ece9f0]">Unlimited</strong> candidate & self audits</span>
                   </li>
                   <li className="flex items-start gap-2">
@@ -195,36 +241,34 @@ export function PricingSection() {
                   </li>
                   <li className="flex items-start gap-2">
                     <Icon.Check className="h-4 w-4 flex-none text-[#ea580c] dark:text-signal mt-0.5" />
-                    <span><strong className="text-slate-900 dark:text-[#ece9f0]">Unlimited</strong> public verified Proof Pages</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Icon.Check className="h-4 w-4 flex-none text-[#ea580c] dark:text-signal mt-0.5" />
-                    <span><strong>15-Min Phone Screen Defense Simulator</strong></span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Icon.Check className="h-4 w-4 flex-none text-[#ea580c] dark:text-signal mt-0.5" />
                     <span><strong>Priority Multi-Model LLM Gateway</strong></span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Icon.Check className="h-4 w-4 flex-none text-[#ea580c] dark:text-signal mt-0.5" />
-                    <span>Enterprise & private work recognition</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Icon.Check className="h-4 w-4 flex-none text-[#ea580c] dark:text-signal mt-0.5" />
-                    <span>High-contrast PDF Dossier export</span>
+                    <span>High-contrast Executive PDF Dossier export</span>
                   </li>
                 </ul>
               </div>
             </div>
 
-            <div className="mt-8 pt-4">
+            <div className="mt-8 pt-4 space-y-2">
               <button
                 type="button"
                 onClick={handleProCta}
-                className="w-full rounded-xl bg-[#ea580c] hover:bg-[#c2410c] dark:bg-signal dark:hover:bg-signal/90 px-4 py-3 font-mono text-xs font-bold uppercase tracking-wider text-white dark:text-ink shadow-md transition-all active:scale-95"
+                className="w-full rounded-xl bg-[#ea580c] hover:bg-[#c2410c] dark:bg-signal dark:hover:bg-signal/90 px-4 py-3 font-mono text-xs font-bold uppercase tracking-wider text-white dark:text-ink shadow-md transition-all active:scale-95 flex items-center justify-center gap-2"
               >
-                {user ? 'Go to Developer Workspace →' : 'Upgrade to Pro →'}
+                <span>{currency === 'bdt' ? 'বিকাশ বা নগদে প্রো নিন →' : (user ? 'Go to Developer Workspace →' : 'Upgrade to Pro →')}</span>
               </button>
+
+              {currency !== 'bdt' && (
+                <button
+                  type="button"
+                  onClick={() => setShowBkashModal(true)}
+                  className="w-full text-center font-mono text-[11px] text-[#ea580c] dark:text-signal hover:underline py-1"
+                >
+                  🇧🇩 বিকাশ / নগদ দিয়ে ৳৩৯৯/মাস পেমেন্ট করুন
+                </button>
+              )}
             </div>
           </div>
 
@@ -236,20 +280,24 @@ export function PricingSection() {
               </div>
               <div className="mt-4 flex flex-wrap items-baseline gap-2">
                 <span className="font-sans text-4xl font-extrabold tracking-tight text-slate-900 dark:text-[#ece9f0]">
-                  {annual ? '$24' : '$29'}
+                  {currency === 'bdt'
+                    ? (annual ? '৳১৮,৯৯০' : '৳১,৯৯৯')
+                    : (annual ? '$24' : '$29')}
                 </span>
                 <span className="font-mono text-xs text-slate-500 dark:text-muted">
-                  / seat / mo {annual ? '(billed $290/yr)' : ''}
+                  {currency === 'bdt'
+                    ? (annual ? '/ বছর' : '/ মাস')
+                    : (annual ? '/ seat / mo (billed $290/yr)' : '/ seat / mo')}
                 </span>
               </div>
               {annual ? (
                 <div className="mt-2 inline-flex items-center gap-1 rounded-md border border-emerald-300 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/15 px-2 py-0.5 font-mono text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
                   <Icon.Check className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
-                  Save $58/seat/year (2 months free)
+                  {currency === 'bdt' ? 'বাৎসরিক প্রায় ২০% সাশ্রয়' : 'Save $58/seat/year (2 months free)'}
                 </div>
               ) : (
                 <div className="mt-2 text-[11px] font-mono text-slate-500 dark:text-muted">
-                  Per seat, billed monthly
+                  {currency === 'bdt' ? 'টিম অ্যাক্সেস ও আনলিমিটেড পাইপলাইন' : 'Per seat, billed monthly'}
                 </div>
               )}
               <p className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-muted">
@@ -298,10 +346,19 @@ export function PricingSection() {
 
         {/* Guarantees / Trust footer */}
         <div className="mt-12 rounded-xl border border-slate-200 dark:border-edge/60 bg-white/60 dark:bg-surface/30 p-4 text-center font-mono text-xs text-slate-600 dark:text-muted">
-          <span>🔒 Cancel or modify anytime with 1-click.</span>
+          <span>🔒 Cancel or modify anytime.</span>
           <span className="mx-2 hidden sm:inline">·</span>
           <span className="block sm:inline mt-1 sm:mt-0">Zero risk: All profiles previously generated remain readable forever.</span>
         </div>
+
+        {/* bKash & Nagad Modal */}
+        {showBkashModal && (
+          <BkashNagadModal
+            isOpen={showBkashModal}
+            defaultPlan={annual ? 'pro_annual' : 'pro_monthly'}
+            onClose={() => setShowBkashModal(false)}
+          />
+        )}
       </div>
     </section>
   );

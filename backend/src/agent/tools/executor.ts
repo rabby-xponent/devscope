@@ -9,6 +9,9 @@ import {
   getAggregatedLanguages,
   getCommitActivity,
   getPRActivity,
+  browseRepoTree,
+  readSourceFile,
+  inspectCommitDiffs,
 } from './github.tool';
 
 export async function executeTool(name: string, input: Record<string, any>): Promise<any> {
@@ -37,6 +40,12 @@ export async function executeTool(name: string, input: Record<string, any>): Pro
       return webSearch(input.query);
     case 'inspect_live_url':
       return inspectLiveUrl(input.url);
+    case 'browse_repo_tree':
+      return browseRepoTree(input.owner, input.repo, input.path, input.branch);
+    case 'read_source_file':
+      return readSourceFile(input.owner, input.repo, input.path, input.branch);
+    case 'inspect_commit_diffs':
+      return inspectCommitDiffs(input.owner, input.repo, input.author, input.count);
     default:
       throw new Error(`Unknown tool: ${name}`);
   }
