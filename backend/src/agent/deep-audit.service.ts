@@ -1,5 +1,5 @@
 /**
- * DevScope Tier 2: Deep Autonomous Code-Auditing Agent
+ * GitGrill Tier 2: Deep Autonomous Code-Auditing & Grill Agent
  * Multi-turn ReAct loop that traverses source trees, inspects actual code files,
  * evaluates authored commit diffs, and synthesizes an adversarial interview defense playbook.
  */
@@ -48,7 +48,7 @@ export interface DeepCodeAuditReport {
   defensePlaybook: CodeDefenseItem[];
 }
 
-const DEEP_AUDIT_SYSTEM_PROMPT = `You are DevScope's Staff Technical Auditor.
+const DEEP_AUDIT_SYSTEM_PROMPT = `You are GitGrill's Staff Technical Auditor.
 Your mission is to perform a deep technical due-diligence audit of a developer's repository by actively exploring their code.
 
 You have access to tools:

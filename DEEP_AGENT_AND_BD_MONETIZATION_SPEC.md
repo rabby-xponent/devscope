@@ -1,20 +1,20 @@
-# DevScope — Deep Agentic Core & Bangladesh Monetization Architecture
+# GitGrill — Deep Agentic Core & Bangladesh Monetization Architecture
 
 > **Document Version:** v1.0 · October 2026  
-> **Mission:** Transform DevScope from a surface-level metadata scraper into a **Deep Autonomous Code-Auditing Agent & Technical Interview Defense Engine**, powered by a **Bangladesh-first, zero-overhead monetization system (bKash / Nagad TrxID verification)**.
+> **Mission:** Transform GitGrill from a surface-level metadata scraper into a **Deep Autonomous Code-Auditing Agent & Technical Interview Defense Engine**, powered by a **Bangladesh-first, zero-overhead monetization system (bKash / Nagad TrxID verification)**.
 
 ---
 
 ## 1. Executive Strategy & Architectural Re-alignment
 
 ### 1.1 The Honest Pivot
-DevScope originally envisioned a ReAct agent, but optimized for speed and free-tier stability by hardcoding deterministic pre-fetches. While this produced a fast ~2s overview, it stripped the engine of autonomous reasoning and deep code intelligence.
+GitGrill originally envisioned a ReAct agent, but optimized for speed and free-tier stability by hardcoding deterministic pre-fetches. While this produced a fast ~2s overview, it stripped the engine of autonomous reasoning and deep code intelligence.
 
 We are now instituting a **Two-Tier Engine**:
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
-│                        DEVSCOPE TWO-TIER ENGINE                        │
+│                        GITGRILL TWO-TIER ENGINE                        │
 ├────────────────────────────────────────────────────────────────────────┤
 │ TIER 1: INSTANT SIGNAL SCAN (Free & Fast · ~2s)                        │
 │ • Deterministic pre-fetch (Profile, Repo list, Commit stats, Web info) │

@@ -322,13 +322,13 @@ export function ProfileView({
       <div className="hidden border-b-2 border-zinc-900 pb-3 mb-6 print:flex print:items-center print:justify-between print-avoid-break">
         <div>
           <div className="flex items-center gap-2">
-            <span className="font-mono text-base font-bold tracking-widest text-zinc-900">DEVSCOPE</span>
+            <span className="font-mono text-base font-bold tracking-widest text-zinc-900">GITGRILL</span>
             <span className="font-mono text-[10px] uppercase tracking-wider text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-300 font-semibold">
               Candidate Intelligence Dossier
             </span>
           </div>
           <p className="font-mono text-[10px] text-zinc-500 mt-1">
-            Automated Engineering Assessment & Recruiter Brief · devscope.app
+            Automated Engineering Assessment & Recruiter Brief · gitgrill.app
           </p>
         </div>
         <div className="text-right font-mono text-[10px] text-zinc-600">
@@ -1173,7 +1173,7 @@ export function ProfileView({
       {/* Executive Branded Print Footer (Visible ONLY when printed/saved as PDF) */}
       <div className="hidden border-t border-zinc-300 pt-3 mt-6 print:flex print:items-center print:justify-between font-mono text-[9px] text-zinc-500 print-avoid-break">
         <span>CONFIDENTIAL · Generated for Hiring Committee Evaluation</span>
-        <span>DevScope Engineering Intelligence Dossier · @{profile.username}</span>
+        <span>GitGrill Engineering Intelligence Dossier · @{profile.username}</span>
       </div>
     </article>
   );

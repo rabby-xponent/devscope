@@ -16,8 +16,10 @@ export interface SavedRequisition {
   allowPrivateRepos: boolean;
 }
 
-const STORAGE_KEY = 'devscope_saved_requisitions_v1';
-const ACTIVE_ROLE_KEY = 'devscope_active_role_id_v1';
+const STORAGE_KEY = 'gitgrill_saved_requisitions_v1';
+const LEGACY_STORAGE_KEY = 'devscope_saved_requisitions_v1';
+const ACTIVE_ROLE_KEY = 'gitgrill_active_role_id_v1';
+const LEGACY_ACTIVE_ROLE_KEY = 'devscope_active_role_id_v1';
 
 export const DEFAULT_REQUISITIONS: SavedRequisition[] = [
   {
@@ -100,7 +102,7 @@ Requirements:
 export function getSavedRequisitions(): SavedRequisition[] {
   if (typeof window === 'undefined') return DEFAULT_REQUISITIONS;
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
     if (!raw) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_REQUISITIONS));
       return DEFAULT_REQUISITIONS;
@@ -157,7 +159,7 @@ export function deleteRequisition(id: string): void {
 export function getActiveRequisitionId(): string | null {
   if (typeof window === 'undefined') return null;
   try {
-    return localStorage.getItem(ACTIVE_ROLE_KEY) || 'req_senior_fullstack';
+    return localStorage.getItem(ACTIVE_ROLE_KEY) || localStorage.getItem(LEGACY_ACTIVE_ROLE_KEY) || 'req_senior_fullstack';
   } catch {
     return null;
   }

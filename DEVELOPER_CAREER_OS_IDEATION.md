@@ -1,4 +1,4 @@
-# DevScope — Developer Career OS: Ideation & Build Plan (2026–2027)
+# GitGrill — Developer Career OS: Ideation & Build Plan (2026–2027)
 
 > Companion document to `DEVSCOPE_SPEC.md` (system spec), `product_roadmap_and_plan.md` (2026 roadmap),
 > and `BUILD_TRACKER.md` (build log). This document is the **product thesis + build plan for the

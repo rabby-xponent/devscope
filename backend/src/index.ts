@@ -79,7 +79,7 @@ app.use(
 app.post('/api/billing/webhook', express.raw({ type: 'application/json' }), stripeWebhookHandler);
 
 app.use(express.json());
-app.use(attachAuth); // resolve req.auth from Bearer/x-devscope-session when present
+app.use(attachAuth); // resolve req.auth from Bearer/x-gitgrill-session (or x-devscope-session) when present
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -94,5 +94,5 @@ app.use('/api/workspace', workspaceRoutes);
 app.use('/api/billing', billingRoutes);
 
 app.listen(PORT, () => {
-  console.log(`DevScope backend running on port ${PORT}`);
+  console.log(`GitGrill backend running on port ${PORT}`);
 });

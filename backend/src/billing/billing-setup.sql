@@ -1,4 +1,4 @@
--- DevScope billing tables (M25B — MONETIZATION_ARCHITECTURE.md §8)
+-- GitGrill billing tables (M25B — MONETIZATION_ARCHITECTURE.md §8)
 --
 -- Run this in the Supabase SQL editor, after backend/src/auth/supabase-setup.sql.
 --

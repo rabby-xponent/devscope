@@ -1,7 +1,7 @@
 /**
  * Stripe client + price resolution (M25B — MONETIZATION_ARCHITECTURE.md §8).
  *
- * One lazy client, one place that maps a Stripe price ID to a DevScope plan
+ * One lazy client, one place that maps a Stripe price ID to a GitGrill plan
  * (the catalogue itself lives in `config/plans.ts`, shared with the browser).
  * The hot path never touches this module's client — plan state is read from the
  * local `subscriptions` mirror, so an SSE audit never waits on Stripe and never

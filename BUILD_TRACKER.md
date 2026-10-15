@@ -1,8 +1,8 @@
-# DevScope — Build Tracker & Technical Changelog
+# GitGrill (formerly DevScope) — Build Tracker & Technical Changelog
 
 > Real-time tracker of implemented features, bug fixes, schema evolutions, and upcoming roadmap milestones.  
-> **Current Version:** `v1.2.0` (Monetization UI, Cache Architecture & Production Resilience)  
-> **Status:** Phase 1–5 milestones completed; Monetization UI & Multi-Signal Intelligence fully hardened.
+> **Current Version:** `v1.3.0` (Complete Rebrand to GitGrill, Deep Code Defense & Dual Monetization)  
+> **Status:** All core intelligence, code defense, local/Stripe billing, and branding hardened.
 
 ---
 
@@ -555,6 +555,25 @@ pie title Roadmap Milestone Status
   - Optional `ADMIN_SECRET_KEY` gate with localStorage persistence.
   - Added direct link in [`AccountMenu.tsx`](file:///e:/rabby-xponent/Projects/devscope/frontend/components/AccountMenu.tsx) dropdown.
   - Verification: `npx tsc --noEmit` compiles cleanly with 0 errors across both `backend` and `frontend`.
+
+---
+
+### Milestone 30 — Complete Rebrand to GitGrill 🔥
+
+* **Context & Domain Alignment:**
+  - Pivoted product identity from generic `DevScope` to **GitGrill** (`gitgrill.app`) to match the "Code Defense & Grilling" value proposition.
+* **Frontend Overhaul:**
+  - Rebranded all navigation bars, hero copies, proof pages, recruiter portals, career centers, print PDF templates, and tooltips.
+  - Upgraded theme and local workspace storage keys with transparent fallback migration (`gitgrill_*` with read fallback to `devscope_*`).
+  - Added `useGitGrillStream` export alias in [`useDevScopeStream.ts`](file:///e:/rabby-xponent/Projects/devscope/frontend/hooks/useDevScopeStream.ts).
+* **Backend Overhaul:**
+  - Renamed package definitions to `gitgrill-backend` and service name in `render.yaml`.
+  - Updated User-Agent identifiers to `GitGrill/1.0` and `GitGrill-Bot/1.0`.
+  - Updated Stripe and session metadata to support `gitgrill_user_id` and `x-gitgrill-session` with seamless backward compatibility.
+  - System prompt in Tier 2 ReAct agent calibrated to *"GitGrill's Staff Technical Auditor"*.
+* **Documentation:**
+  - Standardized all architecture guides, roadmaps, and specs to GitGrill.
+
 
 
 

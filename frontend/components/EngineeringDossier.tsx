@@ -4,7 +4,7 @@
  * Engineering Dossier (Portfolio & Recruiter Architecture Window).
  *
  * Designed specifically for Engineering Managers and Technical Recruiters:
- * gives a complete architectural breakdown of how DevScope was engineered,
+ * gives a complete architectural breakdown of how GitGrill was engineered,
  * the core trade-offs, the two-tier agentic loop, dual fintech engine,
  * and test verifications without needing to click through 15 separate pages.
  */
@@ -125,7 +125,7 @@ function DossierDrawer({ onClose }: { onClose: () => void }) {
                 i
               </span>
               <p className="font-sans text-xs leading-relaxed text-muted">
-                <strong className="text-content font-semibold">For Technical Interviewers & Recruiters:</strong> This dossier provides an instant, comprehensive view of DevScope's core systems engineering, multi-turn ReAct agent loop, circuit-breaker LLM gateway, and dual-currency monetization architecture.
+                <strong className="text-content font-semibold">For Technical Interviewers & Recruiters:</strong> This dossier provides an instant, comprehensive view of GitGrill's core systems engineering, multi-turn ReAct agent loop, circuit-breaker LLM gateway, and dual-currency monetization architecture.
               </p>
             </div>
           </div>
@@ -155,7 +155,7 @@ function DossierDrawer({ onClose }: { onClose: () => void }) {
                   Subsystem Architecture
                 </h4>
                 <p className="mt-1 text-xs text-muted leading-relaxed">
-                  How DevScope decouples ingestion, autonomous agentic auditing, resilient AI gateways, and multi-currency billing:
+                  How GitGrill decouples ingestion, autonomous agentic auditing, resilient AI gateways, and multi-currency billing:
                 </p>
               </div>
 
@@ -348,7 +348,7 @@ function DossierDrawer({ onClose }: { onClose: () => void }) {
               </a>.
             </span>
             <span className="font-mono text-[10px] text-muted">
-              DevScope Architecture v2.0
+              GitGrill Architecture v2.0
             </span>
           </div>
         </div>

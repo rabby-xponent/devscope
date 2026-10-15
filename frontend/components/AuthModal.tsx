@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Modern Authentication Modal (DevScope).
+ * Modern Authentication Modal (GitGrill).
  * - GitHub OAuth
  * - Email + 6-digit OTP (One-Time Password) for Sign In & Sign Up
  * - Supabase when configured, seamless instant fallback locally
@@ -113,7 +113,7 @@ export default function AuthModal({
           <div className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-signal shadow-[0_0_8px_#ea580c]" />
             <span className="font-mono text-xs font-bold tracking-widest text-content uppercase">
-              DEVSCOPE ACCESS
+              GITGRILL ACCESS
             </span>
           </div>
           <button
@@ -169,7 +169,7 @@ export default function AuthModal({
               {step === 'otp'
                 ? 'Check your email for code'
                 : mode === 'signin'
-                  ? 'Welcome back to DevScope'
+                  ? 'Welcome back to GitGrill'
                   : 'Create your workspace'}
             </h2>
             <p className="mt-1 font-sans text-xs leading-relaxed text-muted">

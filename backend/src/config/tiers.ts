@@ -1,6 +1,6 @@
 /**
  * Capability & tier registry (M25A — MONETIZATION_BUILD_TRACKER.md,
- * architecture §6). THE single source of limits in DevScope.
+ * architecture §6). THE single source of limits in GitGrill.
  *
  * Backend enforcement (usage ledger, proof publish, entitlements) and frontend
  * meters (QuotaMeter, FeatureLock chips) both import this file. Nothing else may
@@ -58,7 +58,7 @@ const PRO_RULES = {
   'proof.publish': {
     limit: 'unlimited',
     branded: false,
-    label: 'Unlimited proof pages, no DevScope branding',
+    label: 'Unlimited proof pages, no GitGrill branding',
   },
   'practice.full': { limit: 'unlimited', label: 'Full spaced-repetition practice with grading' },
   'screen.simulated': { limit: 'unlimited', label: 'Simulated phone screens' },
@@ -103,7 +103,7 @@ export const TIERS = {
       limit: 1,
       branded: true,
       label: '1 active proof page, branded',
-      lockedReason: 'Free workspaces keep 1 active proof page. Pro publishes unlimited pages with no DevScope branding. Pages you already published stay live.',
+      lockedReason: 'Free workspaces keep 1 active proof page. Pro publishes unlimited pages with no GitGrill branding. Pages you already published stay live.',
     },
     'practice.full': {
       limit: 'view_only',
@@ -127,7 +127,7 @@ export interface Verdict {
   /** Remaining allowance; `null` when the capability is not numerically metered. */
   remaining: number | null;
   limit: Limit;
-  /** True when artifacts this capability creates carry DevScope attribution. */
+  /** True when artifacts this capability creates carry GitGrill attribution. */
   branded: boolean;
   /** Verbatim, renderable explanation when `allowed` is false. */
   reason: string | null;

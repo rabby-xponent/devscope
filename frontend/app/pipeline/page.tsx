@@ -85,7 +85,7 @@ function PipelineContent() {
             <Link href="/" className="flex items-center gap-2.5">
               <span className="h-2.5 w-2.5 rounded-full bg-signal shadow-[0_0_10px_rgb(var(--signal-rgb)/0.5)]" />
               <span className="font-mono text-sm font-bold tracking-[0.25em] text-content">
-                DEVSCOPE
+                GITGRILL
               </span>
             </Link>
             <span className="text-edge">/</span>

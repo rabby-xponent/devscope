@@ -1,7 +1,7 @@
 import type { Config } from 'tailwindcss';
 
 /**
- * DevScope design tokens.
+ * GitGrill design tokens.
  *
  * Every color is backed by a CSS variable defined in `globals.css`
  * (`:root` for light, `html.dark` for dark) so a single class like

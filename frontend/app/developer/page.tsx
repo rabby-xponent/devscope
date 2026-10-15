@@ -161,7 +161,7 @@ function DeveloperCareerContent() {
           <div className="flex items-center gap-4">
             <Link href="/" className="flex items-center gap-2.5">
               <span className="h-2.5 w-2.5 rounded-full bg-signal shadow-[0_0_10px_rgb(var(--signal-rgb)/0.5)]" />
-              <span className="font-mono text-sm font-bold tracking-[0.25em] text-content">DEVSCOPE</span>
+              <span className="font-mono text-sm font-bold tracking-[0.25em] text-content">GITGRILL</span>
             </Link>
             <span className="text-edge">/</span>
             <div className="flex items-center gap-2">
@@ -206,7 +206,7 @@ function DeveloperCareerContent() {
             </h1>
             <p className="max-w-2xl font-sans text-xs leading-relaxed text-muted">
               Track every role you&apos;re chasing, audit yourself against each JD before you apply,
-              close the gaps DevScope finds, and watch your fit scores move as your evidence grows.
+              close the gaps GitGrill finds, and watch your fit scores move as your evidence grows.
             </p>
           </div>
 
@@ -328,7 +328,7 @@ function DeveloperCareerContent() {
               </h3>
               <p className="mx-auto mt-1 max-w-sm font-sans text-xs leading-relaxed text-muted">
                 {roles.length === 0
-                  ? 'Add the job you\'re chasing next. DevScope audits you against its exact requirements and tracks your progress across the whole campaign.'
+                  ? 'Add the job you\'re chasing next. GitGrill audits you against its exact requirements and tracks your progress across the whole campaign.'
                   : 'Try clearing the search or status filter.'}
               </p>
               {roles.length === 0 && (

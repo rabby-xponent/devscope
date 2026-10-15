@@ -1,5 +1,5 @@
-# DevScope — Project Specification
-> Version 1.0 · June 2026 · Author: Golam Rabby
+# GitGrill (formerly DevScope) — Project Specification
+> Version 1.0 · June 2026 (Rebranded October 2026) · Author: Golam Rabby
 
 ---
 

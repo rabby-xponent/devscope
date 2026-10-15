@@ -1,4 +1,4 @@
-# DevScope Agent Architecture
+# GitGrill Agent Architecture
 
 The agent uses a **two-phase architecture** to stay within LLM token limits (especially on free-tier providers like Groq).
 

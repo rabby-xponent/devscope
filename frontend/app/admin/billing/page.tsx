@@ -25,7 +25,7 @@ export default function AdminBillingPage() {
 
   // Load saved admin key from localStorage
   useEffect(() => {
-    const saved = localStorage.getItem('devscope_admin_key');
+    const saved = localStorage.getItem('gitgrill_admin_key') || localStorage.getItem('devscope_admin_key');
     if (saved) setAdminKey(saved);
   }, []);
 
@@ -51,7 +51,7 @@ export default function AdminBillingPage() {
 
   const handleSaveAdminKey = (newKey: string) => {
     setAdminKey(newKey);
-    localStorage.setItem('devscope_admin_key', newKey);
+    localStorage.setItem('gitgrill_admin_key', newKey);
     setShowKeyInput(false);
   };
 

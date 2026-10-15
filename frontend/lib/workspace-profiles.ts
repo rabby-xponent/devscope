@@ -32,16 +32,19 @@ export interface DeveloperWorkspaceProfile {
   recentAudits: DeveloperAuditHistory[];
 }
 
-const RECRUITER_KEY = 'devscope_recruiter_profile_v1';
-const DEVELOPER_KEY = 'devscope_developer_profile_v1';
-const ACTIVE_WORKSPACE_KEY = 'devscope_active_workspace_v1';
+const RECRUITER_KEY = 'gitgrill_recruiter_profile_v1';
+const LEGACY_RECRUITER_KEY = 'devscope_recruiter_profile_v1';
+const DEVELOPER_KEY = 'gitgrill_developer_profile_v1';
+const LEGACY_DEVELOPER_KEY = 'devscope_developer_profile_v1';
+const ACTIVE_WORKSPACE_KEY = 'gitgrill_active_workspace_v1';
+const LEGACY_ACTIVE_WORKSPACE_KEY = 'devscope_active_workspace_v1';
 
 export type WorkspaceMode = 'recruiter' | 'developer';
 
 export function getActiveWorkspaceMode(): WorkspaceMode {
   if (typeof window === 'undefined') return 'recruiter';
   try {
-    const saved = localStorage.getItem(ACTIVE_WORKSPACE_KEY);
+    const saved = localStorage.getItem(ACTIVE_WORKSPACE_KEY) || localStorage.getItem(LEGACY_ACTIVE_WORKSPACE_KEY);
     return saved === 'developer' ? 'developer' : 'recruiter';
   } catch {
     return 'recruiter';
@@ -66,7 +69,7 @@ export function getRecruiterProfile(): RecruiterWorkspaceProfile {
 
   if (typeof window === 'undefined') return defaultProfile;
   try {
-    const raw = localStorage.getItem(RECRUITER_KEY);
+    const raw = localStorage.getItem(RECRUITER_KEY) || localStorage.getItem(LEGACY_RECRUITER_KEY);
     if (!raw) return defaultProfile;
     const parsed = JSON.parse(raw);
     return { ...defaultProfile, ...parsed };
@@ -117,7 +120,7 @@ export function getDeveloperProfile(): DeveloperWorkspaceProfile {
 
   if (typeof window === 'undefined') return defaultProfile;
   try {
-    const raw = localStorage.getItem(DEVELOPER_KEY);
+    const raw = localStorage.getItem(DEVELOPER_KEY) || localStorage.getItem(LEGACY_DEVELOPER_KEY);
     if (!raw) return defaultProfile;
     const parsed = JSON.parse(raw);
     return { ...defaultProfile, ...parsed };

@@ -227,3 +227,5 @@ export function useDevScopeStream() {
 
   return { status, trace, profile, cached, error, generate, reset };
 }
+
+export const useGitGrillStream = useDevScopeStream;

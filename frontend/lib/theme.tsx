@@ -17,14 +17,15 @@ const ThemeContext = createContext<ThemeContextType>({
   setTheme: () => {},
 });
 
-const THEME_STORAGE_KEY = 'devscope_theme_v2';
+const THEME_STORAGE_KEY = 'gitgrill_theme_v2';
+const LEGACY_THEME_KEY = 'devscope_theme_v2';
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>('light');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem(THEME_STORAGE_KEY) as Theme | null;
+    const saved = (localStorage.getItem(THEME_STORAGE_KEY) || localStorage.getItem(LEGACY_THEME_KEY)) as Theme | null;
     const initialTheme: Theme = saved === 'dark' ? 'dark' : 'light';
     setThemeState(initialTheme);
     applyTheme(initialTheme);

@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: devscope-backend
+    name: gitgrill-backend
     env: node
     buildCommand: npm install && npm run build
     startCommand: npm start

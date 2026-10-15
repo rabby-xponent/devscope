@@ -1,4 +1,4 @@
-# DevScope — Monetization Build Tracker (Milestones 24–25)
+# GitGrill — Monetization Build Tracker (Milestones 24–25)
 
 > **Companion to:** `BUILD_TRACKER.md` (overall build history) and
 > `MONETIZATION_ARCHITECTURE.md` (the spec — source of truth for *why* and *what*).

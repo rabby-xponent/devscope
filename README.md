@@ -1,8 +1,8 @@
-# DevScope
+# GitGrill
 
-> GitHub developer intelligence agent. Point it at a username — an AI agent investigates their repos, commits, READMEs, and web presence, then writes a structured developer profile. Watch the agent work in real time.
+> GitHub developer intelligence & code defense agent. Point it at a username — an AI agent investigates their repos, commits, READMEs, and web presence, then writes a structured developer profile. Watch the agent work in real time.
 
-DevScope is an agentic AI system built on a provider-agnostic ReAct loop (using the OpenAI SDK pointed at any compatible endpoint — Multi-provider LLM gateway with automatic failover (Groq -> OpenRouter -> DeepSeek -> Gemini)). The agent calls tools to gather evidence about a developer, then synthesizes everything into a readable profile. The generation process streams live to the browser over Server-Sent Events, so you can watch each tool call as it happens.
+GitGrill is an agentic AI system built on a provider-agnostic ReAct loop (using the OpenAI SDK pointed at any compatible endpoint — Multi-provider LLM gateway with automatic failover (Groq -> OpenRouter -> DeepSeek -> Gemini)). The agent calls tools to gather evidence about a developer, then synthesizes everything into a readable profile. The generation process streams live to the browser over Server-Sent Events, so you can watch each tool call as it happens.
 
 ![stack](https://img.shields.io/badge/stack-Next.js%20%2B%20Express-f0a04b) ![agent](https://img.shields.io/badge/agent-Gemini%202.5%20Flash-f0a04b) ![cost](https://img.shields.io/badge/cost-free%20tier-3b6d11)
 
@@ -35,7 +35,7 @@ See [`DEVSCOPE_SPEC.md`](./DEVSCOPE_SPEC.md) for the full product and architectu
 ## Project structure
 
 ```
-devscope/
+gitgrill/
 ├── backend/         Express API + agent (TypeScript)
 │   └── src/
 │       ├── agent/   ReAct loop, tools, system prompt
@@ -44,7 +44,7 @@ devscope/
 └── frontend/        Next.js app (App Router)
     ├── app/         Landing page + profile page
     ├── components/  AgentTrace, ProfileView
-    └── hooks/       useDevScopeStream (EventSource)
+    └── hooks/       useGitGrillStream / useDevScopeStream (EventSource)
 ```
 
 ---

@@ -25,7 +25,7 @@ function printProviderConfiguration() {
 
 async function main() {
   const username = process.argv[2] || 'rabby-xponent';
-  console.log(`\n=== DevScope agent test: ${username} ===\n`);
+  console.log(`\n=== GitGrill agent test: ${username} ===\n`);
 
   const activeCount = printProviderConfiguration();
   if (activeCount === 0) {

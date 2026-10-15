@@ -60,8 +60,10 @@ export interface JobProject {
   candidates: JobCandidateRecord[];
 }
 
-const STORAGE_KEY = 'devscope_job_projects_v3';
-const ACTIVE_JOB_KEY = 'devscope_active_job_id_v3';
+const STORAGE_KEY = 'gitgrill_job_projects_v3';
+const LEGACY_STORAGE_KEY = 'devscope_job_projects_v3';
+const ACTIVE_JOB_KEY = 'gitgrill_active_job_id_v3';
+const LEGACY_ACTIVE_JOB_KEY = 'devscope_active_job_id_v3';
 
 export const DEFAULT_JOB_PROJECTS: JobProject[] = [
   {
@@ -335,7 +337,7 @@ Requirements:
 export function getJobProjects(): JobProject[] {
   if (typeof window === 'undefined') return DEFAULT_JOB_PROJECTS;
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
     if (!raw) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_JOB_PROJECTS));
       return DEFAULT_JOB_PROJECTS;
@@ -418,7 +420,7 @@ export function deleteJobProject(id: string): void {
 export function getActiveJobProjectId(): string {
   if (typeof window === 'undefined') return DEFAULT_JOB_PROJECTS[0].id;
   try {
-    const saved = localStorage.getItem(ACTIVE_JOB_KEY);
+    const saved = localStorage.getItem(ACTIVE_JOB_KEY) || localStorage.getItem(LEGACY_ACTIVE_JOB_KEY);
     return saved || DEFAULT_JOB_PROJECTS[0].id;
   } catch {
     return DEFAULT_JOB_PROJECTS[0].id;
@@ -554,7 +556,7 @@ export function generateCandidateSlackBrief(
 
   const stars = candidate.starRating ? '★'.repeat(candidate.starRating) : 'Not rated';
 
-  return `*DevScope Candidate Brief: @${candidate.username}*
+  return `*GitGrill Candidate Brief: @${candidate.username}*
 *Role:* ${project.title} (${project.department})
 *Match Score:* ${candidate.fitScore}% (${candidate.verdict.replace(/_/g, ' ').toUpperCase()})
 *Seniority:* ${candidate.seniorityEstimate.toUpperCase()} (Target: ${project.requisition.seniorityTarget.toUpperCase()})
@@ -568,7 +570,7 @@ export function generateCandidateSlackBrief(
 *Calibrated Phone-Screen Probes for Hiring Team:*
 ${project.guardrails.customInterviewProbes.map((probe, i) => `${i + 1}. ${probe}`).join('\n')}
 
-_Dossier audited via DevScope RecruiterOS_`;
+_Dossier audited via GitGrill RecruiterOS_`;
 }
 
 export function exportPipelineToMarkdown(project: JobProject): string {
@@ -592,7 +594,7 @@ export function exportPipelineToMarkdown(project: JobProject): string {
 
   lines.push('');
   lines.push('---');
-  lines.push('*Generated via DevScope RecruiterOS*');
+  lines.push('*Generated via GitGrill RecruiterOS*');
   return lines.join('\n');
 }
 

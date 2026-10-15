@@ -1,4 +1,4 @@
-# DevScope — Demo → Product: Identity, Metering & Monetization Architecture
+# GitGrill — Demo → Product: Identity, Metering & Monetization Architecture
 
 > **Status:** FINAL v1.0 · October 2026
 > **Relationship to other docs:** This is the source of truth for Milestones 24–25 and

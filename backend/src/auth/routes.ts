@@ -145,7 +145,7 @@ router.post('/dev-auth', (req: Request, res: Response) => {
   const userId = (body.userId || '').trim() || 'dev-user-00000000';
   const email = (body.email || '').trim() || 'dev@localhost';
   const handle = (body.handle || '').trim().replace(/^@/, '') || null;
-  const secret = process.env.SUPABASE_JWT_SECRET || 'devscope-dev-auth-secret-do-not-use-in-prod';
+  const secret = process.env.SUPABASE_JWT_SECRET || process.env.DEV_AUTH_SECRET || 'gitgrill-dev-auth-secret-do-not-use-in-prod';
   const token = jwt.sign({ sub: userId, email, handle, role: 'authenticated' }, secret, {
     expiresIn: '7d',
   });

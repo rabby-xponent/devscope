@@ -84,7 +84,7 @@ export default function Home() {
           <Link href="/" className="flex items-center gap-2.5 shrink-0">
             <span className="h-2.5 w-2.5 rounded-full bg-[#ea580c] dark:bg-signal shadow-[0_0_10px_rgba(234,88,12,0.4)] dark:shadow-[0_0_10px_#f0a04b]" />
             <span className="font-mono text-sm font-bold tracking-[0.25em] text-slate-900 dark:text-[#ece9f0]">
-              DEVSCOPE
+              GITGRILL
             </span>
           </Link>
 
@@ -148,7 +148,7 @@ export default function Home() {
               </h1>
 
               <p className="mt-5 max-w-xl text-[16px] leading-relaxed text-slate-600 dark:text-muted">
-                Resume keywords and vanity commit streaks lie. DevScope cross-examines real GitHub codebases, inspects live deployed applications, and builds calibrated dossiers with a 15-minute phone screen guide.
+                Resume keywords and vanity commit streaks lie. GitGrill cross-examines real GitHub codebases, inspects live deployed applications, and builds calibrated dossiers with a 15-minute phone screen guide.
               </p>
 
               {/* Assessment Console & Portals */}
@@ -552,7 +552,7 @@ export default function Home() {
               }}
               className="text-[#f97316] underline hover:text-white"
             >
-              Solve It with DevScope ↑
+              Solve It with GitGrill ↑
             </button>
           </div>
         </div>
@@ -723,7 +723,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t border-slate-200 dark:border-edge/60 py-8 text-center font-mono text-xs text-slate-500 dark:text-muted/60 bg-[#faf9f5] dark:bg-[#0c0b0e]">
         <div className="mx-auto max-w-6xl px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <span>DevScope · Technical Ground-Truth Intelligence for Engineering Hiring</span>
+          <span>GitGrill · Technical Ground-Truth Intelligence & Code Defense</span>
           <span>
             developed by{' '}
             <a

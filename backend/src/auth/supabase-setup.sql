@@ -1,4 +1,4 @@
--- DevScope Supabase setup (M24B — MONETIZATION_BUILD_TRACKER.md)
+-- GitGrill Supabase setup (M24B — MONETIZATION_BUILD_TRACKER.md)
 -- Run once in the Supabase SQL editor after creating the project.
 -- jsonb-first by design (MONETIZATION_ARCHITECTURE.md §4); normalization can wait.
 

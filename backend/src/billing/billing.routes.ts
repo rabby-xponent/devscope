@@ -71,7 +71,12 @@ async function resolveCustomer(
   const created = await stripe.customers.create({
     email: email ?? undefined,
     name: handle ?? undefined,
-    metadata: { devscope_user_id: userId, devscope_handle: handle ?? '' },
+    metadata: {
+      gitgrill_user_id: userId,
+      devscope_user_id: userId,
+      gitgrill_handle: handle ?? '',
+      devscope_handle: handle ?? '',
+    },
   });
   return created.id;
 }
@@ -112,11 +117,18 @@ router.post('/checkout', requireAuth, async (req: Request, res: Response) => {
       customer,
       client_reference_id: auth.userId,
       line_items: [{ price, quantity: seats }],
-      // Both metadata hops matter: the checkout event carries the plan, and the
-      // subscription event carries the user, so either delivery order resolves.
-      metadata: { devscope_user_id: auth.userId, plan, seats: String(seats) },
+      metadata: {
+        gitgrill_user_id: auth.userId,
+        devscope_user_id: auth.userId,
+        plan,
+        seats: String(seats),
+      },
       subscription_data: {
-        metadata: { devscope_user_id: auth.userId, plan },
+        metadata: {
+          gitgrill_user_id: auth.userId,
+          devscope_user_id: auth.userId,
+          plan,
+        },
       },
       allow_promotion_codes: true,
       success_url: successUrl(),
@@ -298,7 +310,7 @@ async function applyEvent(event: Stripe.Event): Promise<boolean> {
   switch (event.type) {
     case 'checkout.session.completed': {
       const session = event.data.object as Stripe.Checkout.Session;
-      const userId = session.client_reference_id || session.metadata?.devscope_user_id;
+      const userId = session.client_reference_id || session.metadata?.gitgrill_user_id || session.metadata?.devscope_user_id;
       if (!userId) {
         console.warn('[billing] checkout.session.completed without a user id');
         return false;
@@ -317,9 +329,9 @@ async function applyEvent(event: Stripe.Event): Promise<boolean> {
     case 'customer.subscription.updated':
     case 'customer.subscription.deleted': {
       const sub = event.data.object as Stripe.Subscription;
-      const userId = sub.metadata?.devscope_user_id;
+      const userId = sub.metadata?.gitgrill_user_id || sub.metadata?.devscope_user_id;
       if (!userId) {
-        console.warn(`[billing] ${event.type} without devscope_user_id metadata`);
+        console.warn(`[billing] ${event.type} without gitgrill_user_id / devscope_user_id metadata`);
         return false;
       }
       const item = sub.items?.data?.[0];

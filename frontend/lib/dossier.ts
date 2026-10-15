@@ -2,7 +2,7 @@
  * Engineering dossier content (portfolio section on the public home page).
  *
  * Single source of truth for the recruiter-facing architectural dossier.
- * Explains how DevScope works under the hood, the core engineering decisions,
+ * Explains how GitGrill works under the hood, the core engineering decisions,
  * verification benchmarks, and technical trade-offs.
  */
 
@@ -78,7 +78,7 @@ export const DOSSIER_DECISIONS: DossierDecision[] = [
     icon: 'target',
     title: 'Two-Tier Engine: Fast Scan vs Autonomous ReAct Deep Audit',
     decision:
-      'DevScope separates instant 30-second deterministic profiling (Tier 1) from multi-turn autonomous deep codebase due-diligence (Tier 2). The deep auditor runs a true ReAct loop (Reasoning + Acting) with dynamic tools rather than pre-fetching or one-shot summarization.',
+      'GitGrill separates instant 30-second deterministic profiling (Tier 1) from multi-turn autonomous deep codebase due-diligence (Tier 2). The deep auditor runs a true ReAct loop (Reasoning + Acting) with dynamic tools rather than pre-fetching or one-shot summarization.',
     why:
       'Sending entire codebases in a single prompt exhausts context windows and causes hallucinations. Dynamic repo browsing mirrors human Staff Engineer due-diligence: inspecting entrypoints, checking error handling styles, and probing commit diffs only where suspicious.',
     verifiedBy: 'Implemented in backend/src/agent/deep-audit.service.ts with browse_repo_tree, read_source_file, and inspect_commit_diffs.',

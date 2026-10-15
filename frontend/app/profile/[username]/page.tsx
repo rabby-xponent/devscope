@@ -110,7 +110,7 @@ export default function ProfilePage() {
             className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.3em] text-muted transition-colors hover:text-signal"
           >
             <span className="h-2 w-2 rounded-full bg-signal" />
-            devscope
+            gitgrill
           </Link>
           <div className="flex items-center gap-4">
             {status === 'complete' && (

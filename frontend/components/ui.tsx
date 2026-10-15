@@ -13,7 +13,7 @@ import { createPortal } from 'react-dom';
 import { Icon } from '@/components/icons';
 
 /**
- * DevScope UI primitives.
+ * GitGrill UI primitives.
  *
  * A small, dependency-free component kit that replaces native controls
  * (`<select>`, `<input type="checkbox">`) with consistent, accessible,

@@ -23,7 +23,8 @@ export interface RecruiterAccount {
   lastActiveAt: string;
 }
 
-const RECRUITER_ACCOUNT_KEY = 'devscope_recruiter_account_v1';
+const RECRUITER_ACCOUNT_KEY = 'gitgrill_recruiter_account_v1';
+const LEGACY_RECRUITER_ACCOUNT_KEY = 'devscope_recruiter_account_v1';
 
 export const DEFAULT_RECRUITER_ACCOUNT: RecruiterAccount = {
   id: 'rec_user_sarah_01',
@@ -47,7 +48,7 @@ export const DEFAULT_RECRUITER_ACCOUNT: RecruiterAccount = {
 export function getRecruiterAccount(): RecruiterAccount {
   if (typeof window === 'undefined') return DEFAULT_RECRUITER_ACCOUNT;
   try {
-    const raw = localStorage.getItem(RECRUITER_ACCOUNT_KEY);
+    const raw = localStorage.getItem(RECRUITER_ACCOUNT_KEY) || localStorage.getItem(LEGACY_RECRUITER_ACCOUNT_KEY);
     if (!raw) {
       localStorage.setItem(RECRUITER_ACCOUNT_KEY, JSON.stringify(DEFAULT_RECRUITER_ACCOUNT));
       return DEFAULT_RECRUITER_ACCOUNT;

@@ -31,7 +31,7 @@ declare module 'express-serve-static-core' {
   }
 }
 
-const DEV_SECRET = 'devscope-dev-auth-secret-do-not-use-in-prod';
+const DEV_SECRET = process.env.DEV_AUTH_SECRET || 'gitgrill-dev-auth-secret-do-not-use-in-prod';
 
 function getSessionSecret(): string {
   return process.env.SUPABASE_JWT_SECRET || DEV_SECRET;
@@ -70,7 +70,7 @@ function verifySessionToken(token: string): AuthContext | null {
 function readToken(req: Request): string | null {
   const header = req.headers.authorization;
   if (header?.startsWith('Bearer ')) return header.slice(7).trim();
-  const alt = req.headers['x-devscope-session'];
+  const alt = req.headers['x-gitgrill-session'] || req.headers['x-devscope-session'];
   if (typeof alt === 'string' && alt.trim()) return alt.trim();
   // EventSource cannot set headers, so the SSE stream also accepts the token
   // as a query parameter (documented tradeoff for M24B; short-lived tokens).

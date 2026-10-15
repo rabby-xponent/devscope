@@ -32,7 +32,7 @@ export interface ProofSnapshot {
   note?: string;
   /**
    * Free-tier attribution (§11 decision 12): the public page renders its
-   * "Built with DevScope" footer line while this is true. Stamped at publish
+   * "Built with GitGrill" footer line while this is true. Stamped at publish
    * time from the tier registry, so a Pro publish is unbranded forever even if
    * the plan changes later. Absent (pre-registry snapshots) means branded —
    * those pages were published before paid plans existed.

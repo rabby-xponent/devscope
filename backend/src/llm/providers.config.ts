@@ -13,7 +13,7 @@ export interface ActiveProvider extends ProviderConfig {
 
 function openRouterHeaders(): Record<string, string> {
   const referer = process.env.OPENROUTER_HTTP_REFERER || process.env.FRONTEND_URL || 'http://localhost:3000';
-  const title = process.env.OPENROUTER_APP_TITLE || 'DevScope';
+  const title = process.env.OPENROUTER_APP_TITLE || 'GitGrill';
 
   return {
     'HTTP-Referer': referer,

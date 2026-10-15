@@ -1,6 +1,6 @@
-# DevScope Strategic Roadmap & Engineering Plan (2026+)
+# GitGrill Strategic Roadmap & Engineering Plan (2026+)
 
-> **From "GitHub Vanity Inspector" to "Full-Spectrum Technical Talent Intelligence"**  
+> **From "GitHub Vanity Inspector" to "Full-Spectrum Technical Talent Intelligence & Code Defense"**  
 > *Targeting the reality of modern tech hiring: evaluating working developers, freshers, and recruiters' real screening challenges.*
 
 ---
@@ -22,7 +22,7 @@
                        ▼
 ┌──────────────────────────────────────────────┐
 │  Phase 2: Multi-Signal Repositioning         │
-│  (Live app inspection, Claim vs. Evidence,   │  ◄── Transforms DevScope into an
+│  (Live app inspection, Claim vs. Evidence,   │  ◄── Transforms GitGrill into an
 │   15-min Recruiter Phone Screen Dossier)     │      indispensable hiring tool.
 └──────────────────────────────────────────────┘
 ```
@@ -55,7 +55,7 @@ These are the immediate flaws in the current codebase that must be fixed so the 
 ## 3. Product Repositioning: The Next-Gen Vision (Horizon 2)
 
 ### Target Positioning:
-> **"DevScope: The Technical Ground-Truth Agent for Tech Hiring."**  
+> **"GitGrill: The Technical Ground-Truth Agent for Tech Hiring & Code Defense."**  
 > *Separating genuine engineering competence from AI-inflated resumes across all candidate levels—from freshers to mid-level working professionals.*
 
 ```
@@ -67,7 +67,7 @@ These are the immediate flaws in the current codebase that must be fixed so the 
                                              │
                                              ▼
                  ┌────────────────────────────────────────────────────────┐
-                 │                   DevScope Agent                       │
+                 │                   GitGrill Agent                       │
                  │   1. Public & Ecosystem Footprint                      │
                  │   2. Live Production Quality & Tech Stack Audit        │
                  │   3. Claim vs. Evidence Delta Analysis                 │
@@ -107,7 +107,7 @@ These are the immediate flaws in the current codebase that must be fixed so the 
 
 ```mermaid
 gantt
-    title DevScope Execution Roadmap
+    title GitGrill Execution Roadmap
     dateFormat  YYYY-MM-DD
     section Phase 1: Hardening
     Fix Private Developer Bias & Prompt Calibration :p1_1, 2026-09-29, 2d

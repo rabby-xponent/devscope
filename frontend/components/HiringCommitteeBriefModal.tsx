@@ -227,7 +227,7 @@ export default function HiringCommitteeBriefModal({
 
           {/* Live Links */}
           <div className="flex items-center justify-between font-mono text-xs text-muted print:text-neutral-600">
-            <span>Evaluated via DevScope RecruiterOS on {new Date(candidate.evaluatedAt).toLocaleDateString()}</span>
+            <span>Evaluated via GitGrill RecruiterOS on {new Date(candidate.evaluatedAt).toLocaleDateString()}</span>
             <Link
               href={`/profile/${candidate.username}?jobId=${project.id}`}
               target="_blank"

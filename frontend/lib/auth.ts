@@ -27,7 +27,8 @@ export type AuthBackend = 'supabase' | 'dev';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-const DEV_TOKEN_KEY = 'devscope_dev_session_token_v1';
+const DEV_TOKEN_KEY = 'gitgrill_dev_session_token_v1';
+const LEGACY_DEV_TOKEN_KEY = 'devscope_dev_session_token_v1';
 
 export function authBackend(): AuthBackend {
   return SUPABASE_URL && SUPABASE_ANON_KEY ? 'supabase' : 'dev';
@@ -63,7 +64,7 @@ export async function getAccessToken(): Promise<string | null> {
     if (data.session?.access_token) return data.session.access_token;
   }
   if (typeof window !== 'undefined') {
-    return localStorage.getItem(DEV_TOKEN_KEY);
+    return localStorage.getItem(DEV_TOKEN_KEY) || localStorage.getItem(LEGACY_DEV_TOKEN_KEY);
   }
   return null;
 }
@@ -145,7 +146,7 @@ export async function sendOtp(email: string): Promise<{ simulated: boolean; code
   } else {
     // Local / Dev fallback mode: simulate OTP generation
     const mockCode = '123456';
-    localStorage.setItem(`devscope_otp_${cleanEmail}`, mockCode);
+    localStorage.setItem(`gitgrill_otp_${cleanEmail}`, mockCode);
     return { simulated: true, code: mockCode };
   }
 }
@@ -191,7 +192,7 @@ export async function devSignIn(email: string, handle: string): Promise<AuthUser
   const cleanHandle = handle.trim().replace(/^@/, '');
   const localFallbackUser: AuthUser = {
     id: `dev-${cleanHandle || cleanEmail.split('@')[0] || 'user'}`,
-    email: cleanEmail || `${cleanHandle}@devscope.app`,
+    email: cleanEmail || `${cleanHandle}@gitgrill.app`,
     handle: cleanHandle || cleanEmail.split('@')[0],
     name: cleanHandle || cleanEmail.split('@')[0],
   };

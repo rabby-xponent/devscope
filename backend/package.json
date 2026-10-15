@@ -1,7 +1,7 @@
 {
-  "name": "devscope-backend",
+  "name": "gitgrill-backend",
   "version": "1.0.0",
-  "description": "DevScope agent backend — GitHub developer intelligence",
+  "description": "GitGrill agent backend — GitHub developer intelligence & code defense",
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",

@@ -219,7 +219,7 @@ export async function inspectLiveUrl(rawUrl: string): Promise<LiveAppAudit> {
       maxContentLength: 300 * 1024, // 300KB max HTML
       headers: {
         'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 (compatible; DevScope-Bot/1.0; +https://devscope.app)',
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 (compatible; GitGrill-Bot/1.0; +https://gitgrill.app)',
         Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
       },
       validateStatus: () => true, // capture 404, 500, etc. without throwing

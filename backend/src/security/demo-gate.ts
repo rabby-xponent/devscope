@@ -14,7 +14,8 @@
  * - Gate only applies to anonymous requests; authenticated users (M24B+) skip it.
  */
 
-const COOKIE_NAME = 'devscope_demo_runs_v1';
+const COOKIE_NAME = 'gitgrill_demo_runs_v1';
+const LEGACY_COOKIE_NAME = 'devscope_demo_runs_v1';
 const COOKIE_MAX_AGE_SECONDS = 180 * 24 * 60 * 60; // 180d
 const IP_WINDOW_MS = 60 * 60 * 1000;
 const IP_HOURLY_CAP = Number(process.env.DEMO_IP_HOURLY_CAP || 10);
@@ -29,7 +30,7 @@ export function parseDemoCookie(header: string | undefined): string[] {
   if (!header) return [];
   for (const part of header.split(';')) {
     const [name, ...rest] = part.trim().split('=');
-    if (name === COOKIE_NAME) {
+    if (name === COOKIE_NAME || name === LEGACY_COOKIE_NAME) {
       try {
         const parsed = JSON.parse(decodeURIComponent(rest.join('=')));
         return Array.isArray(parsed) ? parsed.filter((h) => typeof h === 'string') : [];

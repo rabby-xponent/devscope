@@ -13,7 +13,7 @@ import { SessionProvider } from '@/components/SessionProvider';
 const themeInitScript = `
 (function () {
   try {
-    var t = localStorage.getItem('devscope_theme_v2');
+    var t = localStorage.getItem('gitgrill_theme_v2') || localStorage.getItem('devscope_theme_v2');
     var root = document.documentElement;
     if (t === 'dark') {
       root.classList.add('dark');
@@ -27,12 +27,12 @@ const themeInitScript = `
 `;
 
 export const metadata: Metadata = {
-  title: 'DevScope — GitHub developer intelligence',
+  title: 'GitGrill — GitHub developer intelligence & code defense',
   description:
-    'Point it at a GitHub username. Get a developer intelligence report in under a minute.',
+    'Point it at a GitHub username. Get a developer intelligence report and deep code grill in under a minute.',
   openGraph: {
-    title: 'DevScope — GitHub developer intelligence',
-    description: 'An AI agent that investigates any GitHub developer and writes their profile.',
+    title: 'GitGrill — GitHub developer intelligence & code defense',
+    description: 'An AI agent that investigates and grills any GitHub developer codebase.',
     type: 'website',
   },
 };

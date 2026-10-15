@@ -3,7 +3,7 @@
 import React from 'react';
 
 /**
- * DevScope icon set.
+ * GitGrill icon set.
  *
  * Professional, single-color, stroke-based line icons (Lucide-style):
  * - One consistent 24x24 grid, 1.5px stroke, round caps/joins

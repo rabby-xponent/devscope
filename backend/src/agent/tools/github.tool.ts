@@ -10,7 +10,7 @@ const githubAxios = axios.create({
   headers: {
     ...(GITHUB_TOKEN ? { Authorization: `token ${GITHUB_TOKEN}` } : {}),
     Accept: 'application/vnd.github+json',
-    'User-Agent': 'DevScope/1.0',
+    'User-Agent': 'GitGrill/1.0',
   },
 });
 

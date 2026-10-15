@@ -566,7 +566,7 @@ export default function JobCandidatePipelineModal({
                               href={`/profile/${cand.username}?jobId=${project.id}`}
                               target="_blank"
                               className="flex h-[26px] w-[26px] items-center justify-center rounded border border-edge bg-card text-muted transition-colors hover:border-signal/50 hover:text-signal"
-                              title="Open full interactive DevScope audit dossier"
+                              title="Open full interactive GitGrill audit dossier"
                             >
                               <Icon.ArrowUpRight className="h-3 w-3" />
                             </Link>

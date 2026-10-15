@@ -58,8 +58,10 @@ export interface TargetRole {
   auditHistory: TargetRoleAuditEntry[];
 }
 
-const STORAGE_KEY = 'devscope_target_roles_v1';
-const ACTIVE_ROLE_KEY = 'devscope_active_target_role_v1';
+const STORAGE_KEY = 'gitgrill_target_roles_v1';
+const LEGACY_STORAGE_KEY = 'devscope_target_roles_v1';
+const ACTIVE_ROLE_KEY = 'gitgrill_active_target_role_v1';
+const LEGACY_ACTIVE_ROLE_KEY = 'devscope_active_target_role_v1';
 
 export const APPLICATION_STATUS_META: Record<
   ApplicationStatus,
@@ -76,7 +78,7 @@ export const APPLICATION_STATUS_META: Record<
 export function getTargetRoles(): TargetRole[] {
   if (typeof window === 'undefined') return [];
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed : [];
@@ -312,7 +314,8 @@ export interface DefenseCard {
   reviews: number;
 }
 
-const DEFENSE_KEY = 'devscope_defense_cards_v1';
+const DEFENSE_KEY = 'gitgrill_defense_cards_v1';
+const LEGACY_DEFENSE_KEY = 'devscope_defense_cards_v1';
 
 /** Interval ladder (days) per confidence tier. */
 const REVIEW_INTERVALS: Record<DefenseCard['confidence'], number> = {
@@ -324,7 +327,7 @@ const REVIEW_INTERVALS: Record<DefenseCard['confidence'], number> = {
 export function getDefenseCards(): DefenseCard[] {
   if (typeof window === 'undefined') return [];
   try {
-    const raw = localStorage.getItem(DEFENSE_KEY);
+    const raw = localStorage.getItem(DEFENSE_KEY) || localStorage.getItem(LEGACY_DEFENSE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed : [];

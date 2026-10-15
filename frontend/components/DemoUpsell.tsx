@@ -47,7 +47,10 @@ export function DemoSignupBanner({ username }: { username: string }) {
   useEffect(() => {
     setMounted(true);
     try {
-      setDismissed(sessionStorage.getItem('devscope_demo_banner_dismissed_v1') === '1');
+      setDismissed(
+        sessionStorage.getItem('gitgrill_demo_banner_dismissed_v1') === '1' ||
+        sessionStorage.getItem('devscope_demo_banner_dismissed_v1') === '1'
+      );
     } catch {
       /* ignore */
     }
@@ -76,7 +79,7 @@ export function DemoSignupBanner({ username }: { username: string }) {
           type="button"
           onClick={() => {
             try {
-              sessionStorage.setItem('devscope_demo_banner_dismissed_v1', '1');
+              sessionStorage.setItem('gitgrill_demo_banner_dismissed_v1', '1');
             } catch {
               /* ignore */
             }
