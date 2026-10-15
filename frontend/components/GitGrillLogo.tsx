@@ -147,14 +147,19 @@ export function GitGrillLogoMark({ size = 'md', className = '' }: { size?: 'sm' 
 }
 
 export function GitGrillLogo({ size = 'md', showText = true, className = '' }: GitGrillLogoProps) {
-  const textSize = size === 'sm' ? 'text-[16px]' : size === 'md' ? 'text-[19px]' : 'text-[24px]';
+  const textSize = size === 'sm' ? 'text-[15px]' : size === 'md' ? 'text-[18px]' : 'text-[22px]';
 
   return (
-    <div className={`inline-flex items-center gap-2.5 ${className}`}>
+    <div className={`inline-flex items-center gap-3 ${className}`}>
       <GitGrillLogoMark size={size} />
       {showText && (
-        <span className={`font-sans font-extrabold tracking-tight ${textSize} text-content leading-none select-none`}>
-          Git<span className="text-[#ea580c] dark:text-[#f0a04b]">Grill</span>
+        <span className={`inline-flex items-center font-sans ${textSize} leading-none select-none`}>
+          <span className="font-bold tracking-[0.04em] text-content">
+            Git
+          </span>
+          <span className="font-bold tracking-[0.04em] text-[#ea580c] dark:text-[#f0a04b] ml-1">
+            Grill
+          </span>
         </span>
       )}
     </div>

@@ -11,7 +11,7 @@
       <stop offset="100%" stop-color="#f59e0b"/>
     </linearGradient>
     <style>
-      .logo-txt { fill: #0f172a; font-family: 'Sora', system-ui, -apple-system, sans-serif; font-size: 24px; font-weight: 800; letter-spacing: -0.03em; }
+      .logo-txt { fill: #0f172a; font-family: 'Sora', system-ui, -apple-system, sans-serif; font-size: 21px; font-weight: 700; letter-spacing: 0.04em; }
       .reticle-axis { stroke: #94a3b8; }
       @media (prefers-color-scheme: dark) {
         .logo-txt { fill: #ece9f0; }
@@ -47,7 +47,7 @@
   </g>
 
   <!-- Typography "GitGrill" -->
-  <text x="44" y="31" class="logo-txt">
-    Git<tspan fill="#ea580c">Grill</tspan>
+  <text x="46" y="30" class="logo-txt">
+    Git<tspan dx="4" fill="#ea580c">Grill</tspan>
   </text>
 </svg>
