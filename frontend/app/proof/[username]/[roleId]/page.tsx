@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { getPublicProof, ProofSnapshotClient } from '@/lib/proof-pages';
+import { GitGrillLogo } from '@/components/GitGrillLogo';
 import { Icon } from '@/components/icons';
 
 /**
@@ -132,12 +133,8 @@ export default function ProofPage() {
       {/* Minimal nav — the page is the artifact; everything else defers to it */}
       <nav className="sticky top-0 z-10 border-b border-edge bg-card/90 backdrop-blur print:hidden">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-          <Link
-            href="/"
-            className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.3em] text-muted transition-colors hover:text-signal"
-          >
-            <span className="h-2 w-2 rounded-full bg-signal" />
-            gitgrill
+          <Link href="/" className="flex items-center">
+            <GitGrillLogo size="sm" />
           </Link>
           <div className="flex items-center gap-4">
             <button

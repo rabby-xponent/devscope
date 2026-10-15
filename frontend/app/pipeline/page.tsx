@@ -13,6 +13,7 @@ import {
 import JobCandidatePipelineModal from '@/components/JobCandidatePipelineModal';
 import JobGuardrailsModal from '@/components/JobGuardrailsModal';
 import NewJobModal from '@/components/NewJobModal';
+import { GitGrillLogo } from '@/components/GitGrillLogo';
 import { Icon } from '@/components/icons';
 
 function PipelineContent() {
@@ -82,11 +83,8 @@ function PipelineContent() {
       <nav className="border-b border-edge bg-card/90 backdrop-blur-md px-6 py-4">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/" className="flex items-center gap-2.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-signal shadow-[0_0_10px_rgb(var(--signal-rgb)/0.5)]" />
-              <span className="font-mono text-sm font-bold tracking-[0.25em] text-content">
-                GITGRILL
-              </span>
+            <Link href="/" className="flex items-center">
+              <GitGrillLogo size="sm" />
             </Link>
             <span className="text-edge">/</span>
             <span className="font-mono text-xs font-semibold text-signal uppercase tracking-wider">

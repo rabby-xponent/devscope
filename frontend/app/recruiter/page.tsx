@@ -28,6 +28,7 @@ import { Select, Checkbox, StarRating, SearchInput, SegmentedTabs } from '@/comp
 import type { SelectOption } from '@/components/ui';
 import JobGuardrailsModal from '@/components/JobGuardrailsModal';
 import NewJobModal from '@/components/NewJobModal';
+import { GitGrillLogo } from '@/components/GitGrillLogo';
 import RecruiterAccountModal from '@/components/RecruiterAccountModal';
 import CandidateCompareModal from '@/components/CandidateCompareModal';
 import HiringCommitteeBriefModal from '@/components/HiringCommitteeBriefModal';
@@ -222,11 +223,8 @@ function RecruiterPortalContent() {
       <nav className="sticky top-0 z-30 border-b border-edge bg-card/90 backdrop-blur-md px-6 py-3.5 transition-colors">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/" className="flex items-center gap-2.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-signal shadow-[0_0_10px_rgb(var(--signal-rgb)/0.5)]" />
-              <span className="font-mono text-sm font-bold tracking-[0.25em] text-content">
-                GITGRILL
-              </span>
+            <Link href="/" className="flex items-center">
+              <GitGrillLogo size="sm" />
             </Link>
             <span className="text-edge">/</span>
             <div className="flex items-center gap-2">

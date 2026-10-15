@@ -14,6 +14,7 @@ import { getJobProjectById, addCandidateToProject } from '@/lib/job-projects';
 import { getTargetRoleById, recordAuditForRole } from '@/lib/target-roles';
 import { PublishProofBar } from '@/components/PublishProofBar';
 import { DemoWall, DemoSignupBanner } from '@/components/DemoUpsell';
+import { GitGrillLogo } from '@/components/GitGrillLogo';
 
 export default function ProfilePage() {
   const params = useParams();
@@ -105,12 +106,8 @@ export default function ProfilePage() {
     <main className="page-texture min-h-screen bg-canvas text-content">
       <nav className="sticky top-0 z-30 border-b border-edge bg-canvas shadow-xs print:hidden">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-          <Link
-            href="/"
-            className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.3em] text-muted transition-colors hover:text-signal"
-          >
-            <span className="h-2 w-2 rounded-full bg-signal" />
-            gitgrill
+          <Link href="/" className="flex items-center">
+            <GitGrillLogo size="sm" />
           </Link>
           <div className="flex items-center gap-4">
             {status === 'complete' && (

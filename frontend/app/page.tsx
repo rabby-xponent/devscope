@@ -13,6 +13,7 @@ import { ThemeToggle } from '@/lib/theme';
 import { EngineeringDossier, EngineeringDossierDrawer } from '@/components/EngineeringDossier';
 import { PricingSection } from '@/components/PricingSection';
 import { AccountMenu } from '@/components/AccountMenu';
+import { GitGrillLogo } from '@/components/GitGrillLogo';
 
 const CANDIDATE_ARCHETYPES = [
   {
@@ -81,11 +82,8 @@ export default function Home() {
       {/* Top Navigation */}
       <nav className="sticky top-0 z-30 border-b border-slate-200/80 dark:border-edge/80 bg-[#faf9f5]/90 dark:bg-[#0c0b0e]/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3.5">
-          <Link href="/" className="flex items-center gap-2.5 shrink-0">
-            <span className="h-2.5 w-2.5 rounded-full bg-[#ea580c] dark:bg-signal shadow-[0_0_10px_rgba(234,88,12,0.4)] dark:shadow-[0_0_10px_#f0a04b]" />
-            <span className="font-mono text-sm font-bold tracking-[0.25em] text-slate-900 dark:text-[#ece9f0]">
-              GITGRILL
-            </span>
+          <Link href="/" className="shrink-0">
+            <GitGrillLogo size="sm" />
           </Link>
 
           <div className="hidden items-center gap-6 xl:gap-8 font-mono text-xs uppercase tracking-wider text-slate-600 dark:text-muted lg:flex shrink-0">

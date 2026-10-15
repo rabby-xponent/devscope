@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" fill="none">
+  <defs>
+    <linearGradient id="logoFlame" x1="10" y1="50" x2="50" y2="10" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#c2410c"/>
+      <stop offset="50%" stop-color="#ea580c"/>
+      <stop offset="100%" stop-color="#f97316"/>
+    </linearGradient>
+    <filter id="logoGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2.5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <style>
+      .logo-text { fill: #0f172a; font-family: 'JetBrains Mono', system-ui, -apple-system, sans-serif; font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
+      .logo-accent { fill: #ea580c; }
+      .logo-mark-bg { fill: #0c0b0e; }
+      .logo-mark-border { stroke: #26242c; }
+      @media (prefers-color-scheme: dark) {
+        .logo-text { fill: #ece9f0; }
+        .logo-accent { fill: #f0a04b; }
+        .logo-mark-border { stroke: #3a3545; }
+      }
+    </style>
+  </defs>
+
+  <!-- Logo Mark Container -->
+  <g transform="translate(4, 4)">
+    <rect width="52" height="52" rx="14" class="logo-mark-bg" />
+    <rect width="50" height="50" x="1" y="1" rx="13" class="logo-mark-border" stroke-width="1.2" />
+
+    <!-- Flame Outline -->
+    <path
+      d="M26 9C26 9 29.5 15.5 27 20C31 17 34.5 19 36 23C38 27.5 36.5 32.5 33 36C29.5 39.5 22.5 39.5 19 36C15.5 32.5 14 27.5 16 23C17.5 19 21 17 25 20C22.5 15.5 26 9 26 9Z"
+      stroke="url(#logoFlame)"
+      stroke-width="2"
+      stroke-linejoin="round"
+    />
+
+    <!-- Git Branch Node Core -->
+    <line x1="26" y1="18" x2="26" y2="35" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" />
+    <path d="M26 30L31.5 24.5" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" />
+
+    <circle cx="31.5" cy="24.5" r="2.8" fill="#f97316" stroke="#ffffff" stroke-width="1.6" />
+    <circle cx="26" cy="18" r="2.8" fill="#ea580c" stroke="#ffffff" stroke-width="1.6" />
+    <circle cx="26" cy="35" r="3.4" fill="#c2410c" stroke="#ffffff" stroke-width="2" />
+  </g>
+
+  <!-- Typography "GitGrill" -->
+  <text x="68" y="38" class="logo-text">
+    Git<tspan class="logo-accent">Grill</tspan>
+  </text>
+  <circle cx="218" cy="22" r="3" class="logo-accent" />
+</svg>

@@ -12,6 +12,7 @@ import { CheckoutNotice } from '@/components/CheckoutNotice';
 import { useCapabilityLock } from '@/components/FeatureLock';
 import { useEntitlements } from '@/hooks/useEntitlements';
 import { Icon } from '@/components/icons';
+import { GitGrillLogo } from '@/components/GitGrillLogo';
 import { Select, SearchInput } from '@/components/ui';
 import type { SelectOption } from '@/components/ui';
 import NewTargetRoleModal from '@/components/NewTargetRoleModal';
@@ -159,9 +160,8 @@ function DeveloperCareerContent() {
       <nav className="sticky top-0 z-30 border-b border-edge bg-card/90 backdrop-blur-md px-6 py-3.5 transition-colors">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/" className="flex items-center gap-2.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-signal shadow-[0_0_10px_rgb(var(--signal-rgb)/0.5)]" />
-              <span className="font-mono text-sm font-bold tracking-[0.25em] text-content">GITGRILL</span>
+            <Link href="/" className="shrink-0">
+              <GitGrillLogo size="sm" />
             </Link>
             <span className="text-edge">/</span>
             <div className="flex items-center gap-2">

@@ -15,7 +15,8 @@ const themeInitScript = `
   try {
     var t = localStorage.getItem('gitgrill_theme_v2') || localStorage.getItem('devscope_theme_v2');
     var root = document.documentElement;
-    if (t === 'dark') {
+    var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (t === 'dark' || (!t && prefersDark)) {
       root.classList.add('dark');
       root.classList.remove('light');
     } else {
@@ -30,10 +31,26 @@ export const metadata: Metadata = {
   title: 'GitGrill — GitHub developer intelligence & code defense',
   description:
     'Point it at a GitHub username. Get a developer intelligence report and deep code grill in under a minute.',
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+    ],
+    shortcut: '/favicon.svg',
+    apple: '/brand/app-icon.jpg',
+  },
   openGraph: {
     title: 'GitGrill — GitHub developer intelligence & code defense',
     description: 'An AI agent that investigates and grills any GitHub developer codebase.',
     type: 'website',
+    images: [
+      {
+        url: '/brand/brand-hero.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'GitGrill — Autonomous GitHub Technical Auditor',
+      },
+    ],
   },
 };
 
