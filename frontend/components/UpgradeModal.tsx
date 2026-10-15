@@ -233,7 +233,7 @@ export function UpgradeModal({
                 onClick={() => setShowBkashModal(true)}
                 className="w-full rounded-lg bg-signal/20 border border-signal/40 py-2 font-mono text-xs font-bold text-signal hover:bg-signal/30 transition-all"
               >
-                বিকাশ / নগদ দিয়ে আনলক করুন (৳৩৯৯/মাস) ⚡
+                বিকাশ / নগদ দিয়ে আনলক করুন (৳৩৯৯/মাস)
               </button>
             </div>
           )}

@@ -266,7 +266,7 @@ export function PricingSection() {
                   onClick={() => setShowBkashModal(true)}
                   className="w-full text-center font-mono text-[11px] text-[#ea580c] dark:text-signal hover:underline py-1"
                 >
-                  🇧🇩 বিকাশ / নগদ দিয়ে ৳৩৯৯/মাস পেমেন্ট করুন
+                  বিকাশ বা নগদ দিয়ে ৳৩৯৯/মাস পেমেন্ট করুন
                 </button>
               )}
             </div>

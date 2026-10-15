@@ -134,15 +134,15 @@ export function BkashNagadModal({
           /* Payment Form */
           <div>
             <div className="flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#ea580c]/20 text-[#ea580c] font-bold text-xs border border-[#ea580c]/30">
+              <span className="flex h-6 w-6 items-center justify-center rounded border border-[#ea580c]/40 bg-[#ea580c]/10 text-[#ea580c] font-mono font-bold text-xs">
                 ৳
               </span>
-              <h2 className="text-lg font-bold font-sans tracking-tight">
-                বিকাশ ও নগদ পেমেন্ট (বাংলাদেশী ডেভেলপার)
+              <h2 className="text-base font-bold font-sans tracking-tight text-zinc-100">
+                বিকাশ ও নগদ পেমেন্ট
               </h2>
             </div>
-            <p className="mt-1 text-xs text-muted">
-              ক্রেডিট কার্ড ছাড়াই সহজে বিকাশ বা নগদে পেমেন্ট করে তাৎক্ষণিক প্রো ফিচার আনলক করুন।
+            <p className="mt-1 text-xs text-zinc-400">
+              ক্রেডিট কার্ড ছাড়াই সরাসরি বিকাশ, নগদ বা রকেটে পেমেন্ট করে প্রো অ্যাকাউন্ট অ্যাক্টিভ করুন।
             </p>
 
             {/* Plan selector */}
@@ -152,13 +152,13 @@ export function BkashNagadModal({
                 onClick={() => setSelectedPlan('pro_monthly')}
                 className={`rounded-xl border p-3 text-left transition-all ${
                   selectedPlan === 'pro_monthly'
-                    ? 'border-signal bg-signal/10 shadow-xs'
-                    : 'border-edge bg-surface/50 hover:border-edge/80'
+                    ? 'border-[#ea580c] bg-[#ea580c]/10'
+                    : 'border-zinc-800 bg-zinc-900/40 hover:border-zinc-700'
                 }`}
               >
-                <div className="font-mono text-xs font-semibold text-muted">মাসিক প্রো</div>
-                <div className="mt-1 font-sans text-lg font-extrabold text-signal">৳৩৯৯ <span className="text-xs font-normal text-muted">/মাস</span></div>
-                <div className="text-[10px] text-muted font-mono mt-0.5">সব ডিপ কোড অডিট ও ইন্টারভিউ ড্রিল</div>
+                <div className="font-mono text-xs font-semibold text-zinc-400">মাসিক প্রো</div>
+                <div className="mt-1 font-sans text-lg font-extrabold text-[#ea580c]">৳৩৯৯ <span className="text-xs font-normal text-zinc-400">/মাস</span></div>
+                <div className="text-[10px] text-zinc-400 font-mono mt-0.5">ডিপ কোড অডিট ও ইন্টারভিউ ড্রিল</div>
               </button>
 
               <button
@@ -166,32 +166,32 @@ export function BkashNagadModal({
                 onClick={() => setSelectedPlan('pro_annual')}
                 className={`rounded-xl border p-3 text-left transition-all relative ${
                   selectedPlan === 'pro_annual'
-                    ? 'border-signal bg-signal/10 shadow-xs'
-                    : 'border-edge bg-surface/50 hover:border-edge/80'
+                    ? 'border-[#ea580c] bg-[#ea580c]/10'
+                    : 'border-zinc-800 bg-zinc-900/40 hover:border-zinc-700'
                 }`}
               >
-                <span className="absolute -top-2 right-2 rounded-full bg-emerald-500/20 border border-emerald-500/40 px-2 py-0.5 text-[9px] font-mono font-bold text-emerald-300">
+                <span className="absolute -top-2 right-2 rounded bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.5 text-[9px] font-mono font-bold text-emerald-400">
                   ২৭% সাশ্রয়ী
                 </span>
-                <div className="font-mono text-xs font-semibold text-muted">বাৎসরিক প্রো</div>
-                <div className="mt-1 font-sans text-lg font-extrabold text-[#ece9f0]">৳৩,৪৯০ <span className="text-xs font-normal text-muted">/বছর</span></div>
-                <div className="text-[10px] text-muted font-mono mt-0.5">১ বছরের আনলিমিটেড অ্যাক্সেস</div>
+                <div className="font-mono text-xs font-semibold text-zinc-400">বাৎসরিক প্রো</div>
+                <div className="mt-1 font-sans text-lg font-extrabold text-zinc-100">৳৩,৪৯০ <span className="text-xs font-normal text-zinc-400">/বছর</span></div>
+                <div className="text-[10px] text-zinc-400 font-mono mt-0.5">১ বছরের আনলিমিটেড অ্যাক্সেস</div>
               </button>
             </div>
 
             {/* Step 1: Send Money Box */}
-            <div className="mt-5 rounded-xl border border-edge/80 bg-surface/80 p-4">
-              <div className="font-mono text-xs font-bold uppercase tracking-wider text-muted flex items-center justify-between">
+            <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
+              <div className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center justify-between">
                 <span>১. টাকা পাঠান ({planInfo.displayBdt})</span>
                 {/* Method selector pills */}
                 <div className="flex gap-1.5">
                   <button
                     type="button"
                     onClick={() => setProvider('bkash')}
-                    className={`px-2 py-0.5 rounded text-[11px] font-bold font-mono transition-all ${
+                    className={`px-2.5 py-1 rounded text-xs font-bold font-mono transition-all ${
                       provider === 'bkash'
                         ? 'bg-[#e2136e] text-white shadow-xs'
-                        : 'bg-edge/40 text-muted hover:text-white'
+                        : 'bg-zinc-800 text-zinc-400 hover:text-white'
                     }`}
                   >
                     বিকাশ
@@ -199,10 +199,10 @@ export function BkashNagadModal({
                   <button
                     type="button"
                     onClick={() => setProvider('nagad')}
-                    className={`px-2 py-0.5 rounded text-[11px] font-bold font-mono transition-all ${
+                    className={`px-2.5 py-1 rounded text-xs font-bold font-mono transition-all ${
                       provider === 'nagad'
                         ? 'bg-[#f7941d] text-white shadow-xs'
-                        : 'bg-edge/40 text-muted hover:text-white'
+                        : 'bg-zinc-800 text-zinc-400 hover:text-white'
                     }`}
                   >
                     নগদ
@@ -210,10 +210,10 @@ export function BkashNagadModal({
                   <button
                     type="button"
                     onClick={() => setProvider('rocket')}
-                    className={`px-2 py-0.5 rounded text-[11px] font-bold font-mono transition-all ${
+                    className={`px-2.5 py-1 rounded text-xs font-bold font-mono transition-all ${
                       provider === 'rocket'
                         ? 'bg-[#8c3494] text-white shadow-xs'
-                        : 'bg-edge/40 text-muted hover:text-white'
+                        : 'bg-zinc-800 text-zinc-400 hover:text-white'
                     }`}
                   >
                     রকেট
@@ -221,48 +221,50 @@ export function BkashNagadModal({
                 </div>
               </div>
 
-              {/* Number and copy button */}
-              <div className="mt-3 flex items-center justify-between rounded-lg border border-edge bg-ink/70 px-3.5 py-2.5">
+              {/* Number and copy button — High Contrast Dark Well */}
+              <div className="mt-3 flex items-center justify-between rounded-lg border border-zinc-700/80 bg-zinc-950 px-4 py-3 shadow-inner">
                 <div>
-                  <div className="text-xs text-muted font-mono">{provider.toUpperCase()} {activeAccount.type} নম্বর:</div>
-                  <div className="text-base font-bold font-mono text-[#ece9f0] tracking-wider mt-0.5">
+                  <div className="text-[11px] text-zinc-400 font-mono uppercase tracking-wider">
+                    {provider.toUpperCase()} ({activeAccount.type}) নম্বর
+                  </div>
+                  <div className="text-lg font-bold font-mono text-white tracking-wider mt-0.5 select-all">
                     {activeAccount.number}
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={handleCopyNumber}
-                  className="rounded-lg border border-edge/80 bg-surface/80 px-3 py-1.5 font-mono text-xs font-semibold hover:border-signal/60 transition-all flex items-center gap-1.5"
+                  className="rounded-lg border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 font-mono text-xs font-medium text-zinc-200 transition-colors flex items-center gap-1.5"
                 >
                   {copied ? (
                     <>
                       <Icon.Check className="h-3.5 w-3.5 text-emerald-400" />
-                      <span className="text-emerald-400">কপি হয়েছে</span>
+                      <span className="text-emerald-400 font-semibold">কপি হয়েছে</span>
                     </>
                   ) : (
                     <>
-                      <Icon.Copy className="h-3.5 w-3.5 text-muted" />
+                      <Icon.Copy className="h-3.5 w-3.5 text-zinc-400" />
                       <span>কপি নম্বর</span>
                     </>
                   )}
                 </button>
               </div>
 
-              <div className="mt-2 text-[11px] text-muted leading-tight">
-                💡 বিকাশ/নগদ অ্যাপে গিয়ে <strong>Send Money</strong> করুন। রেফারেন্সে আপনার নাম বা গিটহাব হ্যান্ডেল দিন।
+              <div className="mt-2 text-[11px] text-zinc-400 leading-normal">
+                বিকাশ বা নগদ অ্যাপ থেকে <strong>Send Money</strong> করুন। রেফারেন্সে আপনার গিটহাব ইউজারনেম দিন।
               </div>
             </div>
 
             {/* Step 2: Form submission */}
             <form onSubmit={handleSubmit} className="mt-4 space-y-3">
-              <div className="font-mono text-xs font-bold uppercase tracking-wider text-muted">
+              <div className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-300">
                 ২. ট্রানজেকশন তথ্য দিন
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-[11px] font-mono text-muted mb-1">
-                    যে নম্বর থেকে পাঠিয়েছেন:
+                  <label className="block text-[11px] font-mono text-zinc-400 mb-1">
+                    প্রেরক মোবাইল নম্বর
                   </label>
                   <input
                     type="text"
@@ -270,26 +272,26 @@ export function BkashNagadModal({
                     placeholder="017XXXXXXXX"
                     value={senderNumber}
                     onChange={(e) => setSenderNumber(e.target.value)}
-                    className="w-full rounded-lg border border-edge bg-surface/90 px-3 py-2 font-mono text-xs text-[#ece9f0] placeholder:text-muted/60 focus:border-signal focus:outline-hidden"
+                    className="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 font-mono text-xs text-zinc-100 placeholder:text-zinc-600 focus:border-[#ea580c] focus:outline-hidden"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-mono text-muted mb-1">
-                    Transaction ID (TrxID):
+                  <label className="block text-[11px] font-mono text-zinc-400 mb-1">
+                    Transaction ID (TrxID)
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. BJC7A98DF2"
+                    placeholder="BJC7A98DF2"
                     value={trxId}
                     onChange={(e) => setTrxId(e.target.value)}
-                    className="w-full rounded-lg border border-edge bg-surface/90 px-3 py-2 font-mono text-xs text-[#ece9f0] uppercase placeholder:text-muted/60 focus:border-signal focus:outline-hidden"
+                    className="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 font-mono text-xs text-zinc-100 uppercase placeholder:text-zinc-600 focus:border-[#ea580c] focus:outline-hidden"
                   />
                 </div>
               </div>
 
               {error && (
-                <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 p-2.5 text-xs text-rose-300">
+                <div className="rounded-lg border border-rose-500/40 bg-rose-500/10 p-2.5 text-xs text-rose-300 font-mono">
                   {error}
                 </div>
               )}
@@ -297,20 +299,20 @@ export function BkashNagadModal({
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-xl bg-signal py-3 font-mono text-xs font-bold uppercase tracking-wider text-ink hover:bg-signal/90 transition-all shadow-md disabled:opacity-50 mt-2 flex items-center justify-center gap-2"
+                className="w-full rounded-xl bg-[#ea580c] hover:bg-[#c2410c] py-3 font-mono text-xs font-bold uppercase tracking-wider text-white transition-all shadow-md disabled:opacity-50 mt-2 flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>
                     <Icon.Spinner className="h-4 w-4 animate-spin" />
-                    <span>সাবমিট হচ্ছে...</span>
+                    <span>যাচাই হচ্ছে...</span>
                   </>
                 ) : (
-                  <span>সাবমিট ও তাৎক্ষণিক প্রো আনলক করুন ⚡</span>
+                  <span>সাবমিট ও পেমেন্ট নিশ্চিত করুন</span>
                 )}
               </button>
 
-              <div className="text-[11px] text-center text-muted font-mono">
-                ✨ ট্রানজেকশন সাবমিট করলেই <strong>২৪ ঘণ্টার তাৎক্ষণিক প্রো ট্রায়াল</strong> চালু হবে।
+              <div className="text-[11px] text-center text-zinc-400 font-mono">
+                ট্রানজেকশন সাবমিট করার পর ম্যানুয়াল ভেরিফিকেশন চলাকালীন ২৪ ঘণ্টার প্রভিশনাল অ্যাক্সেস পাবেন।
               </div>
             </form>
           </div>
