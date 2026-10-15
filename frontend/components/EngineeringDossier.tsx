@@ -62,69 +62,74 @@ function DossierDrawer({ onClose }: { onClose: () => void }) {
         onClick={(e) => e.stopPropagation()}
         className="fade-up h-full w-full max-w-3xl overflow-y-auto border-l border-edge bg-card text-content shadow-pop"
       >
-        {/* Sticky Header */}
-        <div className="sticky top-0 z-20 flex items-start justify-between gap-4 border-b border-edge bg-card/95 px-6 py-5 backdrop-blur-md sm:px-8">
-          <div>
-            <div className="flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-widest text-[#ea580c] dark:text-signal">
-              <span className="h-2 w-2 rounded-full bg-[#ea580c] dark:bg-signal animate-pulse" />
-              <span>Engineering Dossier</span>
+        {/* Unified Sticky Header & Navigation */}
+        <div className="sticky top-0 z-20 border-b border-edge bg-card/95 backdrop-blur-md">
+          {/* Header Title Row */}
+          <div className="flex items-start justify-between gap-4 px-6 pt-5 pb-3 sm:px-8">
+            <div>
+              <div className="flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-widest text-[#ea580c] dark:text-signal">
+                <span className="h-2 w-2 rounded-full bg-[#ea580c] dark:bg-signal animate-pulse" />
+                <span>Engineering Dossier</span>
+              </div>
+              <h3 className="mt-1 font-sans text-xl font-extrabold tracking-tight text-content">
+                Architecture & System Blueprint
+              </h3>
+              <p className="mt-0.5 font-mono text-[11px] text-muted">
+                Full-Stack Architecture · Autonomous ReAct Agent · Zero-Gimmick Design
+              </p>
             </div>
-            <h3 className="mt-1 font-sans text-xl font-extrabold tracking-tight text-content">
-              Architecture & System Blueprint
-            </h3>
-            <p className="mt-0.5 font-mono text-[11px] text-muted">
-              Full-Stack Architecture · Autonomous ReAct Agent · Zero-Gimmick Design
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close dossier"
-            className="flex h-8 w-8 flex-none items-center justify-center rounded-lg border border-edge bg-well/50 text-muted transition-colors hover:border-signal/50 hover:bg-well hover:text-signal"
-          >
-            <Icon.X className="h-4 w-4" />
-          </button>
-        </div>
-
-        {/* Recruiter Context Banner */}
-        <div className="border-b border-edge bg-well/70 px-6 py-3.5 sm:px-8">
-          <div className="flex items-start gap-2.5">
-            <span className="flex h-5 w-5 flex-none items-center justify-center rounded bg-[#ea580c]/15 text-[#ea580c] dark:text-signal font-mono text-xs font-bold mt-0.5">
-              i
-            </span>
-            <p className="font-sans text-xs leading-relaxed text-muted">
-              <strong className="text-content font-semibold">For Technical Interviewers & Recruiters:</strong> This dossier provides an instant, comprehensive view of DevScope's core systems engineering, multi-turn ReAct agent loop, circuit-breaker LLM gateway, and dual-currency monetization architecture.
-            </p>
-          </div>
-        </div>
-
-        {/* Tab Navigation */}
-        <div className="sticky top-[89px] z-10 flex border-b border-edge bg-card px-6 sm:px-8">
-          {(
-            [
-              { id: 'blueprint', label: 'System Blueprint' },
-              { id: 'decisions', label: 'Engineering Decisions' },
-              { id: 'verification', label: 'Verification Tests' },
-              { id: 'stack', label: 'Tech Stack' },
-            ] as const
-          ).map((tab) => (
             <button
-              key={tab.id}
               type="button"
-              onClick={() => setActiveTab(tab.id)}
-              className={`py-3 px-3 font-mono text-xs font-bold uppercase tracking-wider border-b-2 transition-all ${
-                activeTab === tab.id
-                  ? 'border-signal text-signal'
-                  : 'border-transparent text-muted hover:text-content'
-              }`}
+              onClick={onClose}
+              aria-label="Close dossier"
+              className="flex h-8 w-8 flex-none items-center justify-center rounded-lg border border-edge bg-well/50 text-muted transition-colors hover:border-signal/50 hover:bg-well hover:text-signal"
             >
-              {tab.label}
+              <Icon.X className="h-4 w-4" />
             </button>
-          ))}
+          </div>
+
+          {/* Tab Navigation: Properly spaced, responsive wrapping & scrolling */}
+          <div className="px-6 pb-3 sm:px-8">
+            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 overflow-x-auto thin-scroll pt-1 pb-0.5">
+              {(
+                [
+                  { id: 'blueprint', label: 'System Blueprint' },
+                  { id: 'decisions', label: 'Engineering Decisions' },
+                  { id: 'verification', label: 'Verification Tests' },
+                  { id: 'stack', label: 'Tech Stack' },
+                ] as const
+              ).map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`whitespace-nowrap px-3.5 py-1.5 rounded-lg font-mono text-xs font-semibold transition-all shrink-0 ${
+                    activeTab === tab.id
+                      ? 'bg-signal text-white shadow-xs'
+                      : 'border border-edge bg-well text-muted hover:text-content hover:bg-card'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Drawer Body Content */}
-        <div className="p-6 sm:p-8 space-y-8">
+        <div className="p-6 sm:p-8 space-y-6">
+          {/* Recruiter Context Banner */}
+          <div className="rounded-xl border border-edge bg-well/70 p-4">
+            <div className="flex items-start gap-2.5">
+              <span className="flex h-5 w-5 flex-none items-center justify-center rounded bg-[#ea580c]/15 text-[#ea580c] dark:text-signal font-mono text-xs font-bold mt-0.5">
+                i
+              </span>
+              <p className="font-sans text-xs leading-relaxed text-muted">
+                <strong className="text-content font-semibold">For Technical Interviewers & Recruiters:</strong> This dossier provides an instant, comprehensive view of DevScope's core systems engineering, multi-turn ReAct agent loop, circuit-breaker LLM gateway, and dual-currency monetization architecture.
+              </p>
+            </div>
+          </div>
+
           {/* Key Stats Bar */}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
             {DOSSIER_STATS.map((stat) => (
