@@ -156,3 +156,66 @@ export async function fetchMfsStatus(userId?: string): Promise<MfsStatusResponse
     return null;
   }
 }
+
+export interface AdminMfsRecord {
+  id: string;
+  userId: string;
+  userHandle?: string;
+  userEmail?: string;
+  provider: MfsProvider;
+  senderNumber: string;
+  trxId: string;
+  planId: PlanId;
+  amountBdt: number;
+  status: 'pending_verification' | 'verified' | 'rejected';
+  instantAccessGranted: boolean;
+  provisionalAccessUntil: string;
+  verifiedAt?: string;
+  verifiedBy?: string;
+  adminNotes?: string;
+  createdAt: string;
+}
+
+/** Admin: Fetch list of all submitted MFS payments with optional status filter */
+export async function fetchAdminMfsPayments(
+  statusFilter?: string,
+  adminKey?: string
+): Promise<{ count: number; items: AdminMfsRecord[] }> {
+  const query = statusFilter ? `?status=${encodeURIComponent(statusFilter)}` : '';
+  const headers = await authHeaders();
+  if (adminKey) {
+    (headers as any)['x-admin-key'] = adminKey;
+  }
+  const res = await fetch(`${API_URL}/api/billing/mfs/admin/list${query}`, {
+    headers,
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.message || `Failed to fetch payments (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Admin: Approve or reject an MFS transaction */
+export async function verifyAdminMfsPayment(
+  paymentId: string,
+  action: 'approve' | 'reject',
+  notes?: string,
+  adminKey?: string
+): Promise<{ success: boolean; record: AdminMfsRecord }> {
+  const headers = await authHeaders();
+  if (adminKey) {
+    (headers as any)['x-admin-key'] = adminKey;
+  }
+  const res = await fetch(`${API_URL}/api/billing/mfs/admin/verify`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ paymentId, action, notes, adminKey }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.message || `Verification action failed (${res.status})`);
+  }
+  return res.json();
+}

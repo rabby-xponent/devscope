@@ -547,11 +547,14 @@ pie title Roadmap Milestone Status
   - **24-Hour Instant Provisional Access:** On submitting a valid phone number and TrxID, users receive immediate provisional Pro access without waiting hours for manual review.
   - Persistent JSON ledger (`cache/mfs-payments.json`) with admin approval endpoints (`POST /api/billing/mfs/submit`, `GET /api/billing/mfs/status`, `GET /api/billing/mfs/admin/list`, `POST /api/billing/mfs/admin/verify`).
   - Catalog pricing in BDT (`৳৩৯৯/মাস`, `৳৩,৪৯০/বছর`, `৳১,৯৯৯/মাস`).
-* **Frontend UI Hardening & Zero-Gimmick Design:**
-  - Created `frontend/components/BkashNagadModal.tsx`: High-contrast dark well design (`bg-zinc-950`), one-click copyable account numbers, and zero AI-gimmick emojis.
-  - Updated `frontend/components/PricingSection.tsx` with a clean `[ ৳ BDT (বিকাশ / নগদ) ]` vs `[ $ USD (Card) ]` currency toggle.
-  - Added `frontend/components/DeepCodeAuditModal.tsx` and `frontend/hooks/useDeepAuditStream.ts`: Real-time agent trace streaming, architecture ledger, and interactive **Practice Defense Mode** with instant feedback.
-  - Integrated `Tier 2 Code Audit` button directly into the profile evaluation navigation.
+* **Admin MFS Verification Dashboard (`frontend/app/admin/billing/page.tsx`):**
+  - Built dedicated `/admin/billing` operations console for manual bKash/Nagad/Rocket transaction review.
+  - Live metric counters: Total Submissions, Pending Verification, Verified Pro, Rejected, and Verified BDT Revenue (৳).
+  - Search & filter capabilities: Realtime search by TrxID, Phone number, or GitHub handle; status tabs (`All`, `Pending`, `Verified`, `Rejected`).
+  - One-click **Approve** (activates full Pro subscription) and **Reject** with audit reason logging.
+  - Optional `ADMIN_SECRET_KEY` gate with localStorage persistence.
+  - Added direct link in [`AccountMenu.tsx`](file:///e:/rabby-xponent/Projects/devscope/frontend/components/AccountMenu.tsx) dropdown.
   - Verification: `npx tsc --noEmit` compiles cleanly with 0 errors across both `backend` and `frontend`.
+
 
 

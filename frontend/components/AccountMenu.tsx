@@ -148,6 +148,15 @@ export function AccountMenu({ workspace }: { workspace: 'developer' | 'recruiter
                 {ctx.current && <Icon.Check className="h-3 w-3" />}
               </Link>
             ))}
+            <Link
+              href="/admin/billing"
+              role="menuitem"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2 rounded-lg px-2 py-1.5 font-mono text-xs text-content hover:bg-well hover:text-signal transition-colors"
+            >
+              <span className="flex h-3.5 w-3.5 items-center justify-center rounded bg-[#ea580c]/20 text-[#ea580c] font-bold text-[9px]">৳</span>
+              <span className="flex-1">MFS Payments Admin</span>
+            </Link>
           </div>
           <div className="border-t border-edge p-1.5">
             <div className="flex items-center justify-between px-2 pb-1 pt-1 font-mono text-[10px] uppercase tracking-wider text-muted">

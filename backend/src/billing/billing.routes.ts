@@ -239,6 +239,12 @@ router.get('/mfs/status', async (req: Request, res: Response) => {
 /** GET /api/billing/mfs/admin/list — Admin view of all submitted transactions */
 router.get('/mfs/admin/list', async (req: Request, res: Response) => {
   try {
+    const expectedKey = process.env.ADMIN_SECRET_KEY;
+    const providedKey = req.headers['x-admin-key'] || req.query.adminKey;
+    if (expectedKey && providedKey !== expectedKey) {
+      res.status(403).json({ error: 'unauthorized', message: 'Invalid admin credentials.' });
+      return;
+    }
     const status = typeof req.query.status === 'string' ? (req.query.status as any) : undefined;
     const items = await mfsPaymentService.listPayments({ status });
     res.json({ count: items.length, items });
@@ -250,10 +256,11 @@ router.get('/mfs/admin/list', async (req: Request, res: Response) => {
 /** POST /api/billing/mfs/admin/verify — Admin approve or reject transaction */
 router.post('/mfs/admin/verify', async (req: Request, res: Response) => {
   const { paymentId, action, notes, adminKey } = req.body || {};
+  const providedKey = adminKey || req.headers['x-admin-key'];
 
   // Simple admin protection if set in env
   const expectedKey = process.env.ADMIN_SECRET_KEY;
-  if (expectedKey && adminKey !== expectedKey) {
+  if (expectedKey && providedKey !== expectedKey) {
     res.status(403).json({ error: 'unauthorized', message: 'Invalid admin credentials.' });
     return;
   }
