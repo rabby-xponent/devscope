@@ -18,54 +18,130 @@ export function GitGrillLogoMark({ size = 'md', className = '' }: { size?: 'sm' 
       viewBox="0 0 32 32"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={`shrink-0 transition-transform duration-200 hover:scale-110 ${className}`}
+      className={`shrink-0 transition-transform duration-200 hover:scale-105 ${className}`}
     >
       <defs>
-        {/* Outer Radiant Flame Gradient */}
-        <linearGradient id="ggFlameGrad" x1="6" y1="29" x2="26" y2="2" gradientUnits="userSpaceOnUse">
+        {/* Radar Sweep Wedge Gradient */}
+        <radialGradient
+          id="radarSweepGrad"
+          cx="16"
+          cy="16"
+          r="14"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop offset="0%" stopColor="#ea580c" stopOpacity="0.45" />
+          <stop offset="70%" stopColor="#f97316" stopOpacity="0.25" />
+          <stop offset="100%" stopColor="#ea580c" stopOpacity="0.05" />
+        </radialGradient>
+
+        {/* Audit Signal Accent Gradient */}
+        <linearGradient id="gitOrangeGrad" x1="16" y1="24" x2="23" y2="10" gradientUnits="userSpaceOnUse">
           <stop offset="0%" stopColor="#c2410c" />
-          <stop offset="40%" stopColor="#ea580c" />
-          <stop offset="80%" stopColor="#f97316" />
-          <stop offset="100%" stopColor="#fbbf24" />
+          <stop offset="60%" stopColor="#ea580c" />
+          <stop offset="100%" stopColor="#f59e0b" />
         </linearGradient>
-
-        {/* Deep Ember Core */}
-        <linearGradient id="ggCoreGrad" x1="10" y1="27" x2="22" y2="11" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#991b1b" />
-          <stop offset="70%" stopColor="#c2410c" />
-          <stop offset="100%" stopColor="#ea580c" />
-        </linearGradient>
-
-        {/* Ember Ambient Glow */}
-        <filter id="ggFlameGlow" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="1.5" stdDeviation="2" floodColor="#ea580c" floodOpacity="0.4" />
-        </filter>
       </defs>
 
-      {/* Main Free-standing Flame Silhouette with Glow */}
-      <path
-        d="M16 2.5C16 2.5 20.8 7.8 19.8 12.2C22.2 10.6 24.8 12.6 25.8 16C27.2 21 23.6 27.8 16 28.5C8.4 27.8 4.8 21 6.2 16C7.2 12.6 9.8 10.6 12.2 12.2C11.2 7.8 16 2.5 16 2.5Z"
-        fill="url(#ggFlameGrad)"
-        filter="url(#ggFlameGlow)"
+      {/* Outer Radar Reticle Ring */}
+      <circle
+        cx="16"
+        cy="16"
+        r="13.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        className="text-slate-400/50 dark:text-slate-600/60"
       />
 
-      {/* Inner Deeper Ember Core for Dimensional Heat */}
-      <path
-        d="M16 11.5C16 11.5 18.6 14.8 18.2 17.2C19.6 16.2 21.2 17.4 21.8 19.4C22.6 22.8 20.2 26.6 16 27C11.8 26.6 9.4 22.8 10.2 19.4C10.8 17.4 12.4 16.2 13.8 17.2C13.4 14.8 16 11.5 16 11.5Z"
-        fill="url(#ggCoreGrad)"
-        opacity="0.9"
+      {/* Middle Concentric Radar Ring */}
+      <circle
+        cx="16"
+        cy="16"
+        r="8.5"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeDasharray="2 2"
+        className="text-slate-400/40 dark:text-slate-600/50"
       />
 
-      {/* Git Commit Tree Core (Crisp White Nodes & Branches) */}
-      <line x1="13.5" y1="14.5" x2="13.5" y2="24" stroke="#ffffff" strokeWidth="2.2" strokeLinecap="round" />
-      <path d="M13.5 19.8L18.5 15.5" stroke="#ffffff" strokeWidth="2.2" strokeLinecap="round" />
+      {/* Inner Core Radar Ring */}
+      <circle
+        cx="16"
+        cy="16"
+        r="3.5"
+        stroke="currentColor"
+        strokeWidth="1"
+        className="text-slate-400/30 dark:text-slate-700/60"
+      />
 
-      {/* Branch Node */}
-      <circle cx="18.5" cy="15.5" r="2.2" fill="#ffffff" />
+      {/* Reticle Axis Lines */}
+      <line
+        x1="16"
+        y1="2.5"
+        x2="16"
+        y2="29.5"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        className="text-slate-400/40 dark:text-slate-600/50"
+      />
+      <line
+        x1="2.5"
+        y1="16"
+        x2="29.5"
+        y2="16"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        className="text-slate-400/40 dark:text-slate-600/50"
+      />
+
+      {/* Active Radar Scanner Sweep (Quadrant) */}
+      <path
+        d="M16 16 L16 2.5 A13.5 13.5 0 0 1 29.5 16 Z"
+        fill="url(#radarSweepGrad)"
+      />
+      {/* Leading Radar Scan Edge */}
+      <line
+        x1="16"
+        y1="16"
+        x2="25.5"
+        y2="6.5"
+        stroke="#ea580c"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        className="opacity-90"
+      />
+
+      {/* Intersecting Git Commit Branch Architecture */}
+      {/* Git Trunk Line */}
+      <line
+        x1="16"
+        y1="9.5"
+        x2="16"
+        y2="23.5"
+        stroke="url(#gitOrangeGrad)"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+      />
+
+      {/* Git Branch Curve */}
+      <path
+        d="M16 17.5 C16 15 19 13.5 22.5 11"
+        stroke="url(#gitOrangeGrad)"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+      />
+
+      {/* Git Commit Nodes with Crisp Contrast Rings */}
+      {/* Bottom Trunk Node */}
+      <circle cx="16" cy="23.5" r="2.2" fill="#c2410c" stroke="#ffffff" strokeWidth="1.2" />
+
+      {/* Center Reticle Anchor Node */}
+      <circle cx="16" cy="16" r="1.8" fill="#ea580c" />
+
       {/* Top Trunk Node */}
-      <circle cx="13.5" cy="14.5" r="2.2" fill="#ffffff" />
-      {/* Bottom Trunk Base Node */}
-      <circle cx="13.5" cy="24" r="2.6" fill="#ffffff" />
+      <circle cx="16" cy="9.5" r="2.2" fill="#ea580c" stroke="#ffffff" strokeWidth="1.2" />
+
+      {/* Branched Scanned Target Node (Active Audit Detection) */}
+      <circle cx="22.5" cy="11" r="2.6" fill="#f59e0b" stroke="#ea580c" strokeWidth="1.5" />
     </svg>
   );
 }
@@ -78,7 +154,7 @@ export function GitGrillLogo({ size = 'md', showText = true, className = '' }: G
       <GitGrillLogoMark size={size} />
       {showText && (
         <span className={`font-sans font-extrabold tracking-tight ${textSize} text-content leading-none select-none`}>
-          Git<span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#f59e0b] dark:from-[#f0a04b] dark:to-[#fbbf24]">Grill</span>
+          Git<span className="text-[#ea580c] dark:text-[#f0a04b]">Grill</span>
         </span>
       )}
     </div>
