@@ -95,7 +95,7 @@ function PipelineContent() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowNewJobModal(true)}
-              className="flex items-center gap-1.5 rounded-lg bg-signal px-3 py-1.5 font-mono text-xs font-semibold text-[#0c0b0e] transition-colors hover:bg-signal/90 outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
+              className="flex items-center gap-1.5 rounded-lg bg-signal px-3.5 py-1.5 font-mono text-xs font-bold text-white transition-colors hover:bg-signal/90 outline-none focus-visible:ring-2 focus-visible:ring-signal/40 shadow-xs"
             >
               <Icon.Plus className="h-3.5 w-3.5" />
               <span>New Job Project</span>

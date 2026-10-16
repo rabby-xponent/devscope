@@ -332,7 +332,7 @@ export default function JobCandidatePipelineModal({
                 </div>
                 <button
                   type="submit"
-                  className="rounded-xl bg-signal px-4 py-2 font-mono text-xs font-bold text-[#0c0b0e] hover:bg-signal/90 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
+                  className="rounded-xl bg-signal px-4 py-2 font-mono text-xs font-bold text-white hover:bg-signal/90 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-signal/40 shadow-xs"
                 >
                   Screen
                 </button>
@@ -528,7 +528,7 @@ export default function JobCandidatePipelineModal({
                               />
                               <button
                                 onClick={() => handleSaveNote(cand.id)}
-                                className="rounded bg-signal px-2 py-1 text-[10px] font-bold text-[#0c0b0e]"
+                                className="rounded bg-signal px-2 py-1 text-[10px] font-bold text-white shadow-xs"
                               >
                                 Save
                               </button>
@@ -606,7 +606,7 @@ export default function JobCandidatePipelineModal({
               onClick={() => setCompareModalOpen(true)}
               className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-mono text-xs font-bold transition-all ${
                 selectedIds.length >= 2 && selectedIds.length <= 3
-                  ? 'bg-signal text-[#0c0b0e] hover:bg-signal/90 shadow-xs'
+                  ? 'bg-signal text-white hover:bg-signal/90 shadow-xs'
                   : 'cursor-not-allowed border border-edge bg-well text-muted/60'
               }`}
               title={

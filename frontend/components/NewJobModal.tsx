@@ -226,7 +226,7 @@ export default function NewJobModal({ isOpen, onClose, onCreate }: NewJobModalPr
             </button>
             <button
               type="submit"
-              className="rounded-xl bg-signal px-6 py-2.5 font-mono text-xs font-semibold uppercase tracking-wider text-[#0c0b0e] shadow-xs transition-colors hover:bg-signal/90 outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
+              className="rounded-xl bg-signal px-6 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-xs transition-colors hover:bg-signal/90 outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
             >
               Create Job Project
             </button>

@@ -161,9 +161,9 @@ export default function ProfilePage() {
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <button
                 onClick={() => generate(username, true, liveUrl, activeJd, activeTitle)}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-signal px-5 py-2.5 font-mono text-xs font-semibold uppercase tracking-wider text-[#0c0b0e] shadow-xs transition-all hover:bg-signal/90 active:scale-95 outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-signal px-5 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-xs transition-all hover:bg-signal/90 active:scale-95 outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
               >
-                <Icon.Refresh className="h-3 w-3" />
+                <Icon.Refresh className="h-3.5 w-3.5" />
                 Retry Analysis
               </button>
               <Link

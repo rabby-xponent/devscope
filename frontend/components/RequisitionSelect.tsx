@@ -90,7 +90,7 @@ export default function RequisitionSelect({
         <button
           type="button"
           onClick={onOpenCreateModal}
-          className="flex flex-none items-center gap-1.5 rounded-xl border border-signal/40 bg-signal/10 px-3 py-2.5 font-mono text-xs text-signal transition-all hover:bg-signal hover:text-[#0c0b0e] shadow-xs outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
+          className="flex flex-none items-center gap-1.5 rounded-xl border border-signal/40 bg-signal/10 px-3 py-2.5 font-mono text-xs text-signal transition-all hover:bg-signal hover:text-white shadow-xs outline-none focus-visible:ring-2 focus-visible:ring-signal/40 font-bold"
           title="Save a new Job Description"
         >
           <Icon.Plus className="h-3.5 w-3.5" />
@@ -204,7 +204,7 @@ export default function RequisitionSelect({
               setIsOpen(false);
               onOpenCreateModal();
             }}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-signal/10 py-2 font-mono text-xs font-semibold text-signal transition-colors hover:bg-signal hover:text-[#0c0b0e]"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-signal/10 py-2 font-mono text-xs font-semibold text-signal transition-colors hover:bg-signal hover:text-white"
           >
             <Icon.Plus className="h-3.5 w-3.5" />
             <span>Create & Save New Job Description</span>

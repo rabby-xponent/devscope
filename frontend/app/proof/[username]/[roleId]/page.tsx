@@ -425,7 +425,7 @@ export default function ProofPage() {
           </p>
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-signal px-4 py-2 font-mono text-[11px] font-semibold uppercase tracking-wider text-[#0c0b0e] shadow-xs transition-all hover:bg-signal/90 active:scale-95"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-signal px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-xs transition-all hover:bg-signal/90 active:scale-95"
           >
             <Icon.Search className="h-3 w-3" />
             audit a candidate

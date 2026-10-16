@@ -20,22 +20,17 @@ import { authBackend } from '@/lib/auth';
  * already generated stays viewable, and cached re-opens are always free.
  */
 
-function SignupCta({ label = 'Create your free workspace' }: { label?: string }) {
+function SignupCta({ label = 'Create free workspace' }: { label?: string }) {
   const { openSignIn } = useSession();
   return (
-    <div className="flex flex-col items-start gap-1.5">
-      <button
-        type="button"
-        onClick={openSignIn}
-        className="inline-flex items-center gap-1.5 rounded-lg bg-signal px-5 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-xs transition-all hover:brightness-105 active:scale-95 outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
-      >
-        <Icon.Sparkle className="h-3.5 w-3.5" />
-        {label}
-      </button>
-      <p className="max-w-sm text-[11px] leading-relaxed text-muted">
-        3 free audits per rolling 30 days, saved target roles, and proof pages — no credit card required.
-      </p>
-    </div>
+    <button
+      type="button"
+      onClick={openSignIn}
+      className="inline-flex items-center gap-2 rounded-xl bg-signal px-5 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-xs transition-all hover:bg-signal/90 active:scale-95 outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
+    >
+      <Icon.Sparkle className="h-3.5 w-3.5" />
+      <span>{label}</span>
+    </button>
   );
 }
 
@@ -59,38 +54,44 @@ export function DemoSignupBanner({ username }: { username: string }) {
   if (!mounted || dismissed) return null;
 
   return (
-    <div className="fade-up mb-8 flex flex-wrap items-center justify-between gap-4 rounded-lg border border-signal/30 bg-signal/[0.06] px-4 py-3.5 print:hidden">
-      <div className="min-w-0">
+    <div className="fade-up relative mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-2xl border border-signal/30 bg-card bg-gradient-to-r from-signal/[0.08] to-signal/[0.02] p-5 pr-14 shadow-card print:hidden">
+      {/* Absolute top-right close button */}
+      <button
+        type="button"
+        onClick={() => {
+          try {
+            sessionStorage.setItem('gitgrill_demo_banner_dismissed_v1', '1');
+          } catch {
+            /* ignore */
+          }
+          setDismissed(true);
+        }}
+        className="absolute top-3.5 right-3.5 flex h-7 w-7 items-center justify-center rounded-lg border border-edge bg-card text-muted transition-colors hover:border-signal/50 hover:text-signal cursor-pointer"
+        title="Dismiss"
+        aria-label="Dismiss banner"
+      >
+        <Icon.X className="h-3.5 w-3.5" />
+      </button>
+
+      <div className="min-w-0 max-w-2xl">
         <p className="font-mono text-[11px] uppercase tracking-wider text-signal font-semibold">
-          <span className="inline-flex items-center gap-1">
-            <Icon.Zap className="h-3 w-3" />
-            free demo used — @{username}
+          <span className="inline-flex items-center gap-1.5">
+            <Icon.Zap className="h-3.5 w-3.5" />
+            Free demo used · @{username}
           </span>
         </p>
-        <p className="mt-1 text-[13px] leading-relaxed text-muted">
+        <p className="mt-1 text-xs sm:text-[13px] leading-relaxed text-muted">
           That was your free demo audit for this profile. A free workspace gives you{' '}
-          <span className="text-content font-medium">3 analyses a month</span>, saved target roles, and
+          <strong className="text-content font-semibold">3 analyses a month</strong>, saved target roles, and
           proof pages — no credit card. Re-opening this profile stays free either way.
         </p>
+        <p className="mt-1.5 text-[11px] font-mono text-muted/80">
+          3 free audits per rolling 30 days · saved target roles & proof pages · free forever
+        </p>
       </div>
-      <div className="flex flex-none items-start gap-3">
+
+      <div className="flex flex-none items-center">
         <SignupCta label="Create free workspace" />
-        <button
-          type="button"
-          onClick={() => {
-            try {
-              sessionStorage.setItem('gitgrill_demo_banner_dismissed_v1', '1');
-            } catch {
-              /* ignore */
-            }
-            setDismissed(true);
-          }}
-          className="flex h-8 w-8 items-center justify-center rounded-md border border-edge bg-card text-muted transition-colors hover:border-signal/50 hover:text-signal"
-          title="Dismiss"
-          aria-label="Dismiss"
-        >
-          <Icon.X className="h-3.5 w-3.5" />
-        </button>
       </div>
     </div>
   );

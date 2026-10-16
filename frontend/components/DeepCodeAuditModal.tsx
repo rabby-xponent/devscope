@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Icon } from '@/components/icons';
+import { Select, SelectOption } from '@/components/ui';
 import { useDeepAuditStream } from '@/hooks/useDeepAuditStream';
 
 interface DeepCodeAuditModalProps {
@@ -26,6 +27,19 @@ export function DeepCodeAuditModal({
   const [userDefenseText, setUserDefenseText] = useState('');
   const [defenseFeedback, setDefenseFeedback] = useState<string | null>(null);
   const [evaluating, setEvaluating] = useState(false);
+
+  const repoOptions: SelectOption[] = useMemo(() => {
+    return repos.map((r) => ({
+      value: r.name,
+      label: `${owner}/${r.name}`,
+      description: [
+        r.language,
+        typeof r.stars === 'number' && r.stars > 0 ? `★ ${r.stars}` : null,
+      ]
+        .filter(Boolean)
+        .join(' · '),
+    }));
+  }, [repos, owner]);
 
   const { status, trace, report, error, startAudit, reset } = useDeepAuditStream();
 
@@ -112,34 +126,29 @@ export function DeepCodeAuditModal({
         <div className="flex-1 overflow-y-auto thin-scroll p-6 space-y-6">
           {/* Target Repo Selection Bar */}
           <div className="rounded-xl border border-edge bg-well/60 p-4 flex flex-wrap items-center justify-between gap-4">
-            <div className="flex-1 min-w-[240px]">
-              <label className="block text-xs font-mono text-muted mb-1.5 uppercase tracking-wider">
+            <div className="flex-1 min-w-[280px]">
+              <label className="block text-xs font-mono text-muted mb-1.5 uppercase tracking-wider font-semibold">
                 Target Repository for Code Audit
               </label>
-              <div className="flex gap-2">
-                {repos.length > 0 ? (
-                  <select
-                    value={selectedRepo}
-                    onChange={(e) => setSelectedRepo(e.target.value)}
-                    disabled={status === 'auditing'}
-                    className="flex-1 rounded-lg border border-edge bg-card px-3 py-2 font-mono text-xs text-content focus:border-[#ea580c] focus:outline-hidden"
-                  >
-                    {repos.map((r) => (
-                      <option key={r.name} value={r.name}>
-                        {owner}/{r.name} {r.language ? `(${r.language})` : ''} {r.stars ? `★${r.stars}` : ''}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <input
-                    type="text"
-                    value={selectedRepo}
-                    onChange={(e) => setSelectedRepo(e.target.value)}
-                    placeholder="Repository name"
-                    className="flex-1 rounded-lg border border-edge bg-card px-3 py-2 font-mono text-xs text-content placeholder:text-muted/60"
-                  />
-                )}
-              </div>
+              {repos.length > 0 ? (
+                <Select
+                  value={selectedRepo}
+                  onChange={setSelectedRepo}
+                  options={repoOptions}
+                  disabled={status === 'auditing'}
+                  placeholder="Select a repository…"
+                  buttonClassName="py-2.5 px-3 text-xs bg-card"
+                  ariaLabel="Target Repository for Code Audit"
+                />
+              ) : (
+                <input
+                  type="text"
+                  value={selectedRepo}
+                  onChange={(e) => setSelectedRepo(e.target.value)}
+                  placeholder="Repository name (e.g. devscope)"
+                  className="w-full rounded-xl border border-edge bg-card px-3 py-2.5 font-mono text-xs text-content placeholder:text-muted/60 focus:border-signal focus:outline-hidden"
+                />
+              )}
             </div>
 
             <div className="flex items-end">

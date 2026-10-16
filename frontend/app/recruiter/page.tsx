@@ -314,7 +314,7 @@ function RecruiterPortalContent() {
           <div className="flex flex-wrap items-center gap-2.5">
             <button
               onClick={() => setShowNewJobModal(true)}
-              className="flex items-center gap-1.5 rounded-xl bg-signal px-4 py-2 font-mono text-xs font-bold text-[#0c0b0e] transition-colors hover:bg-signal/90 shadow-xs outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
+              className="flex items-center gap-1.5 rounded-xl bg-signal px-4 py-2 font-mono text-xs font-bold text-white transition-colors hover:bg-signal/90 shadow-xs outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
             >
               <Icon.Plus className="h-3.5 w-3.5" />
               <span>Create New Job Project</span>
@@ -346,7 +346,7 @@ function RecruiterPortalContent() {
                   onClick={() => handleSelectJobProject(proj.id)}
                   className={`group relative rounded-xl p-4 border transition-all cursor-pointer outline-none ${
                     isSelected
-                      ? 'border-signal ring-2 ring-signal/25 bg-signal/[0.06] shadow-card'
+                      ? 'border-signal ring-2 ring-signal/25 bg-card bg-gradient-to-br from-signal/[0.08] to-signal/[0.02] shadow-card'
                       : 'border-edge bg-card hover:border-signal/50 shadow-card'
                   }`}
                 >
@@ -424,7 +424,7 @@ function RecruiterPortalContent() {
 
               <button
                 type="submit"
-                className="rounded-xl bg-signal px-7 py-3 font-mono text-xs font-bold uppercase tracking-wider text-[#0c0b0e] transition-all shadow-xs flex-none hover:bg-signal/90 outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
+                className="rounded-xl bg-signal px-7 py-3 font-mono text-xs font-bold uppercase tracking-wider text-white transition-all shadow-xs flex-none hover:bg-signal/90 outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
               >
                 Screen Candidate
               </button>
@@ -837,7 +837,7 @@ function RecruiterPortalContent() {
             }
             className={`inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 rounded-lg px-3.5 py-1.5 font-mono text-xs font-bold transition-all ${
               selectedIds.length >= 2 && selectedIds.length <= 3
-                ? 'bg-signal text-[#0c0b0e] hover:bg-signal/90 shadow-xs'
+                ? 'bg-signal text-white hover:bg-signal/90 shadow-xs'
                 : 'cursor-not-allowed border border-edge bg-well text-muted/60'
             }`}
           >

@@ -318,7 +318,7 @@ export function Checkbox({ checked, onChange, disabled = false, className = '', 
         disabled:cursor-not-allowed disabled:opacity-40
         ${
           checked
-            ? 'border-signal bg-signal text-[#0c0b0e]'
+            ? 'border-signal bg-signal text-white'
             : 'border-edge bg-card hover:border-signal/60'
         } ${className}`}
     >
@@ -494,7 +494,7 @@ export function SegmentedTabs({
             aria-pressed={isActive}
             className={`rounded-lg px-2.5 py-1 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-signal/40 ${
               isActive
-                ? 'bg-signal font-bold text-[#0c0b0e] shadow-xs'
+                ? 'bg-signal font-bold text-white shadow-xs'
                 : 'bg-well text-muted hover:text-content'
             }`}
           >

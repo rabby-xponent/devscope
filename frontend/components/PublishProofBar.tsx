@@ -102,24 +102,20 @@ export function PublishProofBar({
   };
 
   return (
-    <div className="fade-up mb-8 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-signal/30 bg-signal/[0.06] px-4 py-3 print:hidden">
-      <p className="font-mono text-[11px] leading-relaxed text-muted">
-        <span className="inline-flex items-center gap-1 text-signal">
-          <Icon.Link className="h-3 w-3" />
-          {published ? `proof page live · v${published.version}` : 'audit complete —'}{' '}
+    <div className="fade-up mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 rounded-2xl border border-signal/30 bg-card bg-gradient-to-r from-signal/[0.08] to-signal/[0.02] p-4 sm:px-5 shadow-card print:hidden">
+      <div className="flex flex-wrap items-center gap-2 font-mono text-xs leading-relaxed text-muted">
+        <span className="inline-flex items-center gap-1.5 font-bold text-signal">
+          <Icon.Link className="h-3.5 w-3.5" />
+          <span>{published ? `Proof page live · v${published.version}` : 'Audit complete'}</span>
         </span>
-        {published ? (
-          <span>
-            share a recruiter-legible evidence page with your application. Re-publish after
-            shipping new evidence to bump the version.
-          </span>
-        ) : (
-          <span>
-            publish a public, recruiter-legible evidence page from this audit. Nothing is shared
-            until you do.
-          </span>
-        )}
-      </p>
+        <span className="text-edge font-normal">|</span>
+        <span className="text-content/85 font-sans text-xs">
+          {published
+            ? 'Share a recruiter-legible evidence page with your application. Re-publish after shipping new evidence to bump the version.'
+            : 'Publish a public, recruiter-legible evidence page from this audit. Nothing is shared until you do.'}
+        </span>
+      </div>
+
       <div className="flex flex-none items-center gap-2">
         {error && <span className="font-mono text-[11px] text-red-500">{error}</span>}
         {published && (
@@ -128,17 +124,17 @@ export function PublishProofBar({
               href={`/proof/${username}/${targetRoleId}`}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-md border border-edge bg-card px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-muted transition-colors hover:border-signal/50 hover:text-signal"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-edge bg-card px-3 py-2 font-mono text-xs uppercase tracking-wider text-muted transition-colors hover:border-signal/50 hover:text-signal shadow-xs"
             >
               <Icon.ArrowUpRight className="h-3 w-3" />
-              view
+              <span>view</span>
             </a>
             <button
               onClick={copyLink}
-              className="inline-flex items-center gap-1.5 rounded-md border border-edge bg-card px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-muted transition-colors hover:border-signal/50 hover:text-signal"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-edge bg-card px-3 py-2 font-mono text-xs uppercase tracking-wider text-muted transition-colors hover:border-signal/50 hover:text-signal shadow-xs"
             >
-              {copied ? <Icon.Check className="h-3 w-3" /> : <Icon.Link className="h-3 w-3" />}
-              {copied ? 'copied' : 'copy link'}
+              {copied ? <Icon.Check className="h-3 w-3 text-emerald-500" /> : <Icon.Link className="h-3 w-3" />}
+              <span>{copied ? 'copied' : 'copy link'}</span>
             </button>
           </>
         )}
@@ -146,10 +142,10 @@ export function PublishProofBar({
           onClick={() => (publishLocked ? proofLock.onRequest() : void publish())}
           disabled={publishing}
           title={publishLocked ? proofLock.verdict.reason || undefined : undefined}
-          className="inline-flex items-center gap-1.5 rounded-md bg-signal px-3.5 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-wider text-[#0c0b0e] shadow-xs transition-all hover:bg-signal/90 active:scale-95 disabled:opacity-60 outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-signal px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-xs transition-all hover:bg-signal/90 active:scale-95 disabled:opacity-60 outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
         >
-          {publishLocked ? <Icon.Lock className="h-3 w-3" /> : <Icon.ArrowUpRight className="h-3 w-3" />}
-          {publishing ? 'publishing…' : published ? 're-publish' : 'publish proof page'}
+          {publishLocked ? <Icon.Lock className="h-3.5 w-3.5" /> : <Icon.ArrowUpRight className="h-3.5 w-3.5" />}
+          <span>{publishing ? 'Publishing…' : published ? 'Re-publish' : 'Publish Proof Page'}</span>
         </button>
         {publishLocked && proofLock.lock}
       </div>

@@ -52,12 +52,12 @@ export function QuotaMeter() {
 
   return (
     <div
-      className={`hidden flex-col justify-center rounded-xl border px-3 py-1 transition-colors lg:flex ${
+      className={`hidden flex-col justify-center rounded-xl border px-3 py-1 transition-colors lg:flex bg-card ${
         exhausted
-          ? 'border-signal/50 bg-signal/10'
+          ? 'border-signal/50 bg-gradient-to-r from-signal/15 to-signal/5'
           : low
-            ? 'border-signal/40 bg-signal/[0.07]'
-            : 'border-edge bg-card'
+            ? 'border-signal/40 bg-gradient-to-r from-signal/10 to-signal/5'
+            : 'border-edge'
       }`}
       title={exhausted ? audit.reason || undefined : `${audit.label} · Free plan`}
     >

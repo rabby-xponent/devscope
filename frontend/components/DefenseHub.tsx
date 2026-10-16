@@ -99,7 +99,7 @@ export default function DefenseHub({ cards }: { cards: DefenseCard[] }) {
           <button
             type="button"
             onClick={() => setRevealed(true)}
-            className="mt-5 w-full rounded-xl bg-signal px-6 py-3 font-mono text-xs font-bold uppercase tracking-wider text-[#0c0b0e] shadow-xs transition-colors hover:bg-signal/90 outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
+            className="mt-5 w-full rounded-xl bg-signal px-6 py-3 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-xs transition-colors hover:bg-signal/90 outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
           >
             Answer out loud, then reveal the grading rubric
           </button>
@@ -146,7 +146,7 @@ export default function DefenseHub({ cards }: { cards: DefenseCard[] }) {
                 <button
                   type="button"
                   onClick={() => handleGrade('solid')}
-                  className="rounded-xl border border-signal/40 bg-signal px-3 py-2.5 font-mono text-xs font-bold text-[#0c0b0e] transition-colors hover:bg-signal/90"
+                  className="rounded-xl border border-signal/40 bg-signal px-3 py-2.5 font-mono text-xs font-bold text-white transition-colors hover:bg-signal/90"
                 >
                   Solid
                 </button>
@@ -195,7 +195,7 @@ export default function DefenseHub({ cards }: { cards: DefenseCard[] }) {
             }}
             className={`flex items-center gap-1.5 rounded-xl px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider transition-colors outline-none focus-visible:ring-2 focus-visible:ring-signal/40 ${
               due.length > 0 && !practiceLocked
-                ? 'bg-signal text-[#0c0b0e] shadow-xs hover:bg-signal/90'
+                ? 'bg-signal text-white shadow-xs hover:bg-signal/90'
                 : 'cursor-not-allowed border border-edge bg-well text-muted/60'
             }`}
           >

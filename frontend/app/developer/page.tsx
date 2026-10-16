@@ -232,7 +232,7 @@ function DeveloperCareerContent() {
             <button
               onClick={handleAddRole}
               title={atRoleLimit ? roleLock.verdict.reason || undefined : undefined}
-              className="flex items-center gap-1.5 rounded-xl bg-signal px-4 py-2 font-mono text-xs font-bold text-[#0c0b0e] shadow-xs transition-colors hover:bg-signal/90 outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
+              className="flex items-center gap-1.5 rounded-xl bg-signal px-4 py-2 font-mono text-xs font-bold text-white shadow-xs transition-colors hover:bg-signal/90 outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
             >
               <Icon.Plus className="h-3.5 w-3.5" />
               <span>Add Target Role</span>
@@ -319,7 +319,7 @@ function DeveloperCareerContent() {
           </div>
 
           {filteredRoles.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-edge bg-card/60 p-10 text-center">
+            <div className="rounded-2xl border border-dashed border-edge bg-card p-10 text-center shadow-card">
               <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-edge bg-well text-muted">
                 <Icon.Target className="h-5 w-5" />
               </span>
@@ -334,7 +334,7 @@ function DeveloperCareerContent() {
               {roles.length === 0 && (
                 <button
                   onClick={() => setShowNewRoleModal(true)}
-                  className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-signal px-4 py-2 font-mono text-xs font-bold text-[#0c0b0e] transition-colors hover:bg-signal/90"
+                  className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-signal px-4 py-2 font-mono text-xs font-bold text-white transition-colors hover:bg-signal/90"
                 >
                   <Icon.Plus className="h-3.5 w-3.5" />
                   Add your first target role
@@ -353,7 +353,7 @@ function DeveloperCareerContent() {
                     onClick={() => handleSelectRole(role.id)}
                     className={`group relative cursor-pointer rounded-xl border p-4 transition-all ${
                       isActive
-                        ? 'border-signal bg-signal/[0.06] shadow-card ring-2 ring-signal/25'
+                        ? 'border-signal bg-card bg-gradient-to-br from-signal/[0.08] to-signal/[0.02] shadow-card ring-2 ring-signal/25'
                         : 'border-edge bg-card shadow-card hover:border-signal/50'
                     }`}
                   >
