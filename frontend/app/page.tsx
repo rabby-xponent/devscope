@@ -78,7 +78,7 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-[#faf9f5] dark:bg-[#0c0b0e] text-slate-900 dark:text-[#ece9f0] selection:bg-orange-500 selection:text-white dark:selection:bg-signal dark:selection:text-ink transition-colors duration-200">
+    <main className="min-h-screen bg-[#faf9f5] dark:bg-[#0c0b0e] text-slate-900 dark:text-[#ece9f0] selection:bg-orange-500 selection:text-white dark:selection:bg-signal dark:selection:text-ink transition-colors duration-200 flex flex-col">
       {/* Top Navigation */}
       <nav className="sticky top-0 z-30 border-b border-slate-200/80 dark:border-edge/80 bg-[#faf9f5]/90 dark:bg-[#0c0b0e]/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3.5">
@@ -726,7 +726,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-slate-200 dark:border-edge/60 py-8 text-center font-mono text-xs text-slate-500 dark:text-muted/60 bg-[#faf9f5] dark:bg-[#0c0b0e]">
+      <footer className="border-t border-slate-200 dark:border-edge/60 py-8 text-center font-mono text-xs text-slate-500 dark:text-muted/60 bg-[#faf9f5] dark:bg-[#0c0b0e] mt-auto flex-none">
         <div className="mx-auto max-w-6xl px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <span>GitGrill · Technical Ground-Truth Intelligence & Code Defense</span>
           <span>

@@ -216,7 +216,7 @@ export default function NewJobModal({ isOpen, onClose, onCreate }: NewJobModalPr
           </div>
 
           {/* Pinned Footer */}
-          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-edge bg-well">
+          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-edge bg-well flex-none">
             <button
               type="button"
               onClick={onClose}

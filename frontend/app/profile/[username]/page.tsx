@@ -103,8 +103,8 @@ export default function ProfilePage() {
   const isWorking = status === 'connecting' || status === 'streaming';
 
   return (
-    <main className="page-texture min-h-screen bg-canvas text-content">
-      <nav className="sticky top-0 z-30 border-b border-edge bg-canvas shadow-xs print:hidden">
+    <main className="page-texture min-h-screen bg-canvas text-content flex flex-col">
+      <nav className="sticky top-0 z-30 border-b border-edge bg-canvas shadow-xs print:hidden flex-none">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
           <Link href="/" className="flex items-center">
             <GitGrillLogo size="sm" />
@@ -138,17 +138,20 @@ export default function ProfilePage() {
         </div>
       </nav>
 
-      <div className="mx-auto max-w-5xl px-6 py-10 print:max-w-none print:p-0">        {error &&
+      <div className="mx-auto max-w-5xl px-6 py-10 print:max-w-none print:p-0 flex-1 w-full flex flex-col">
+        {error &&
           (error.code === 'demo_exhausted' ||
             error.code === 'rate_limited' ||
             error.code === 'quota_exhausted') && (
-          <DemoWall code={error.code} username={username} message={error.message} />
+          <div className="my-auto">
+            <DemoWall code={error.code} username={username} message={error.message} />
+          </div>
         )}
         {error &&
           error.code !== 'demo_exhausted' &&
           error.code !== 'rate_limited' &&
           error.code !== 'quota_exhausted' && (
-          <div className="fade-up mx-auto max-w-xl rounded-xl border border-edge/80 bg-surface/90 p-8 text-center shadow-2xl print:hidden">
+          <div className="fade-up mx-auto my-auto max-w-xl rounded-xl border border-edge/80 bg-surface/90 p-8 text-center shadow-2xl print:hidden">
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-edge bg-well text-muted">
             <Icon.Alert className="h-5 w-5" />
           </div>
@@ -194,7 +197,11 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {!error && isWorking && <AgentProgress username={username} trace={trace} />}
+        {!error && isWorking && (
+          <div className="my-auto">
+            <AgentProgress username={username} trace={trace} />
+          </div>
+        )}
 
         {!error && status === 'complete' && profile && (
           <>
@@ -231,7 +238,7 @@ export default function ProfilePage() {
         )}
       </div>
 
-      <footer className="border-t border-edge/80 py-6 text-center print:hidden">
+      <footer className="border-t border-edge/80 py-6 text-center print:hidden mt-auto flex-none">
         <p className="font-mono text-xs text-slate-500 dark:text-muted">
           developed by{' '}
           <a
