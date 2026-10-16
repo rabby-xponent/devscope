@@ -18,11 +18,14 @@ import { isAdmin } from '@/lib/admin';
 import { updatePassword, signInWithPassword, resetPassword } from '@/lib/auth';
 import { BkashNagadModal } from '@/components/BkashNagadModal';
 
-export function AccountMenu({ workspace }: { workspace: 'developer' | 'recruiter' }) {
+export function AccountMenu({ workspace }: { workspace?: 'developer' | 'recruiter' } = {}) {
   const { user, loading, openSignIn, signOut } = useSession();
   const { entitlements } = useEntitlements();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+
+  const effectiveWorkspace = workspace || (user?.role === 'recruiter' ? 'recruiter' : 'developer');
+  const workspaceRoute = effectiveWorkspace === 'recruiter' ? '/recruiter' : '/developer';
 
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -219,8 +222,13 @@ export function AccountMenu({ workspace }: { workspace: 'developer' | 'recruiter
               <div className="px-2 pb-1 pt-1 font-mono text-[10px] uppercase tracking-wider text-muted">
                 Active Space
               </div>
-              <div className="flex items-center gap-2 rounded-lg bg-signal/10 px-2.5 py-1.5 font-mono text-xs text-signal font-semibold">
-                {workspace === 'recruiter' ? (
+              <Link
+                href={workspaceRoute}
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2 rounded-lg bg-signal/10 hover:bg-signal/20 px-2.5 py-1.5 font-mono text-xs text-signal font-semibold transition-all group"
+                title="Go to active workspace"
+              >
+                {effectiveWorkspace === 'recruiter' ? (
                   <>
                     <Icon.Briefcase className="h-3.5 w-3.5 text-[#ea580c]" />
                     <span className="flex-1 text-[#ea580c]">RecruiterOS</span>
@@ -233,7 +241,8 @@ export function AccountMenu({ workspace }: { workspace: 'developer' | 'recruiter
                     <span className="rounded bg-signal/20 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider">Developer</span>
                   </>
                 )}
-              </div>
+                <Icon.ArrowRight className="h-3 w-3 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+              </Link>
 
               {/* MFS Payments Admin: Strictly Gated to Super-Admins */}
               {isSuperAdmin && (

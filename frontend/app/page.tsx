@@ -14,6 +14,7 @@ import { EngineeringDossier, EngineeringDossierDrawer } from '@/components/Engin
 import { PricingSection } from '@/components/PricingSection';
 import { AccountMenu } from '@/components/AccountMenu';
 import { GitGrillLogo } from '@/components/GitGrillLogo';
+import { useSession } from '@/components/SessionProvider';
 
 const CANDIDATE_ARCHETYPES = [
   {
@@ -37,6 +38,8 @@ const CANDIDATE_ARCHETYPES = [
 ];
 
 export default function Home() {
+  const { user, loading: sessionLoading } = useSession();
+
   // Simple Quick Audit Search State
   const [auditUsername, setAuditUsername] = useState('');
   const [auditLiveUrl, setAuditLiveUrl] = useState('');
@@ -86,7 +89,7 @@ export default function Home() {
             <GitGrillLogo size="sm" />
           </Link>
 
-          <div className="hidden items-center gap-6 xl:gap-8 font-mono text-xs uppercase tracking-wider text-slate-600 dark:text-muted lg:flex shrink-0">
+          <div className="hidden items-center gap-7 font-mono text-xs text-slate-600 dark:text-muted md:flex shrink-0">
             <a href="#how-it-works" className="whitespace-nowrap transition-colors hover:text-[#ea580c] dark:hover:text-signal">
               How It Works
             </a>
@@ -103,33 +106,20 @@ export default function Home() {
               <span>For Recruiters</span>
               <Icon.ArrowUpRight className="h-3 w-3 opacity-70" />
             </Link>
-            <button
-              type="button"
-              onClick={() => setDossierOpen(true)}
-              className="inline-flex items-center gap-1 whitespace-nowrap font-mono text-xs uppercase tracking-wider text-slate-600 dark:text-muted transition-colors hover:text-[#ea580c] dark:hover:text-signal"
-            >
-              Build Dossier
-              <Icon.ArrowUpRight className="h-3 w-3" />
-            </button>
           </div>
 
           <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
             <ThemeToggle />
-            <button
-              onClick={() => handleAnalyze('gaearon', 'https://overreacted.io')}
-              className="hidden xl:inline-flex items-center whitespace-nowrap shrink-0 rounded-lg border border-slate-200 dark:border-edge bg-white dark:bg-surface/80 px-3 py-1.5 font-mono text-xs uppercase tracking-wider text-slate-700 dark:text-muted transition-colors hover:border-[#ea580c] hover:text-[#ea580c] dark:hover:border-signal/50 dark:hover:text-signal shadow-xs"
-            >
-              Live Demo
-            </button>
-            <AccountMenu workspace="developer" />
-            <Link
-              href="/developer"
-              className="inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 rounded-lg bg-[#ea580c] dark:bg-signal px-3.5 py-1.5 font-mono text-xs font-bold text-white dark:text-ink hover:bg-[#ea580c]/90 dark:hover:bg-signal/90 transition-all shadow-xs"
-            >
-              <Icon.Briefcase className="h-3.5 w-3.5 shrink-0" />
-              <span>CareerOS</span>
-              <Icon.ArrowRight className="h-3 w-3 shrink-0" />
-            </Link>
+            <AccountMenu />
+            {!sessionLoading && !user && (
+              <Link
+                href="/developer"
+                className="inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 rounded-lg bg-[#ea580c] dark:bg-signal px-3.5 py-1.5 font-mono text-xs font-bold text-white dark:text-ink hover:opacity-90 transition-all shadow-xs"
+              >
+                <span>Get Started</span>
+                <Icon.ArrowRight className="h-3 w-3 shrink-0" />
+              </Link>
+            )}
           </div>
         </div>
       </nav>
