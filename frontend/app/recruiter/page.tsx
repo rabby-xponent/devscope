@@ -931,67 +931,69 @@ Live Evidence Dossier: ${window.location.origin}/profile/${cand.username}?jobId=
 
       {/* Floating Multi-Select Action Bar */}
       {selectedIds.length > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2.5 sm:gap-3 rounded-2xl border border-signal/40 bg-card/95 px-4 sm:px-5 py-2.5 sm:py-3 shadow-pop backdrop-blur-md max-w-[95vw] overflow-visible animate-in">
-          <span className="font-mono text-xs font-bold text-signal whitespace-nowrap shrink-0">
-            {selectedIds.length} candidate{selectedIds.length > 1 ? 's' : ''} selected
-          </span>
+        <div className="fixed bottom-6 inset-x-0 z-40 flex justify-center pointer-events-none px-4">
+          <div className="pointer-events-auto flex items-center gap-2.5 sm:gap-3 rounded-2xl border border-signal/40 bg-card/95 px-4 sm:px-5 py-2.5 sm:py-3 shadow-pop backdrop-blur-md max-w-full overflow-x-auto thin-scroll animate-in">
+            <span className="font-mono text-xs font-bold text-signal whitespace-nowrap shrink-0">
+              {selectedIds.length} candidate{selectedIds.length > 1 ? 's' : ''} selected
+            </span>
 
-          <span className="h-4 w-[1px] bg-edge shrink-0" />
+            <span className="h-4 w-[1px] bg-edge shrink-0" />
 
-          <button
-            type="button"
-            disabled={selectedIds.length < 2 || selectedIds.length > 3}
-            onClick={() => setCompareModalOpen(true)}
-            title={
-              selectedIds.length < 2
-                ? 'Select 2 or 3 candidates to compare side-by-side'
-                : selectedIds.length > 3
-                  ? 'Maximum 3 candidates can be compared simultaneously'
-                  : 'Compare selected candidates side-by-side'
-            }
-            className={`inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 rounded-lg px-3.5 py-1.5 font-mono text-xs font-bold transition-all ${
-              selectedIds.length >= 2 && selectedIds.length <= 3
-                ? 'bg-signal text-white hover:bg-signal/90 shadow-xs'
-                : 'cursor-not-allowed border border-edge bg-well text-muted/60'
-            }`}
-          >
-            <Icon.Scale className="h-3.5 w-3.5 shrink-0" />
-            <span>Compare Side-by-Side</span>
-            {selectedIds.length >= 2 && selectedIds.length <= 3 && (
-              <span className="ml-1 rounded-full bg-[#0c0b0e]/20 px-1.5 py-0.5 text-[10px]">
-                {selectedIds.length}
-              </span>
-            )}
-          </button>
+            <button
+              type="button"
+              disabled={selectedIds.length < 2 || selectedIds.length > 3}
+              onClick={() => setCompareModalOpen(true)}
+              title={
+                selectedIds.length < 2
+                  ? 'Select 2 or 3 candidates to compare side-by-side'
+                  : selectedIds.length > 3
+                    ? 'Maximum 3 candidates can be compared simultaneously'
+                    : 'Compare selected candidates side-by-side'
+              }
+              className={`inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 rounded-lg px-3.5 py-1.5 font-mono text-xs font-bold transition-all ${
+                selectedIds.length >= 2 && selectedIds.length <= 3
+                  ? 'bg-signal text-white hover:bg-signal/90 shadow-xs'
+                  : 'cursor-not-allowed border border-edge bg-well text-muted/60'
+              }`}
+            >
+              <Icon.Scale className="h-3.5 w-3.5 shrink-0" />
+              <span>Compare Side-by-Side</span>
+              {selectedIds.length >= 2 && selectedIds.length <= 3 && (
+                <span className="ml-1 rounded-full bg-[#0c0b0e]/20 px-1.5 py-0.5 text-[10px]">
+                  {selectedIds.length}
+                </span>
+              )}
+            </button>
 
-          <button
-            type="button"
-            onClick={() => handleExportCSV(true)}
-            className="inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 rounded-lg border border-edge bg-card px-3 py-1.5 font-mono text-xs font-semibold text-content shadow-xs transition-colors hover:border-signal/50 hover:text-signal"
-            title="Download selected candidates as CSV"
-          >
-            <Icon.Download className="h-3.5 w-3.5 text-muted" />
-            <span>Export CSV</span>
-          </button>
+            <button
+              type="button"
+              onClick={() => handleExportCSV(true)}
+              className="inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 rounded-lg border border-edge bg-card px-3 py-1.5 font-mono text-xs font-semibold text-content shadow-xs transition-colors hover:border-signal/50 hover:text-signal"
+              title="Download selected candidates as CSV"
+            >
+              <Icon.Download className="h-3.5 w-3.5 text-muted" />
+              <span>Export CSV</span>
+            </button>
 
-          <Select
-            value=""
-            onChange={(v) => {
-              if (v) handleBatchStageChange(v as PipelineStage);
-            }}
-            options={[{ value: '', label: 'Move To Stage…' }, ...stageSelectOptions]}
-            placeholder="Move To Stage…"
-            ariaLabel="Batch move selected candidates to stage"
-            className="w-44 shrink-0"
-          />
+            <Select
+              value=""
+              onChange={(v) => {
+                if (v) handleBatchStageChange(v as PipelineStage);
+              }}
+              options={[{ value: '', label: 'Move To Stage…' }, ...stageSelectOptions]}
+              placeholder="Move To Stage…"
+              ariaLabel="Batch move selected candidates to stage"
+              className="w-44 shrink-0"
+            />
 
-          <button
-            type="button"
-            onClick={() => setSelectedIds([])}
-            className="font-mono text-xs text-muted hover:text-content px-1.5 py-1 shrink-0 whitespace-nowrap"
-          >
-            Clear
-          </button>
+            <button
+              type="button"
+              onClick={() => setSelectedIds([])}
+              className="font-mono text-xs text-muted hover:text-content px-1.5 py-1 shrink-0 whitespace-nowrap"
+            >
+              Clear
+            </button>
+          </div>
         </div>
       )}
 

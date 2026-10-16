@@ -592,55 +592,57 @@ export default function JobCandidatePipelineModal({
 
         {/* Floating Multi-Select Action Bar */}
         {selectedIds.length > 0 && (
-          <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 rounded-xl border border-signal/40 bg-card/95 px-4 py-2.5 shadow-pop backdrop-blur-md animate-in">
-            <span className="font-mono text-xs font-bold text-signal">
-              {selectedIds.length} candidate{selectedIds.length > 1 ? 's' : ''} selected
-            </span>
+          <div className="absolute bottom-5 inset-x-0 z-40 flex justify-center pointer-events-none px-4">
+            <div className="pointer-events-auto flex items-center gap-3 rounded-xl border border-signal/40 bg-card/95 px-4 py-2.5 shadow-pop backdrop-blur-md max-w-full overflow-x-auto thin-scroll animate-in">
+              <span className="font-mono text-xs font-bold text-signal whitespace-nowrap shrink-0">
+                {selectedIds.length} candidate{selectedIds.length > 1 ? 's' : ''} selected
+              </span>
 
-            <span className="h-4 w-[1px] bg-edge" />
+              <span className="h-4 w-[1px] bg-edge shrink-0" />
 
-            {/* Compare Side-by-Side (enabled when 2 or 3 selected) */}
-            <button
-              type="button"
-              disabled={selectedIds.length < 2 || selectedIds.length > 3}
-              onClick={() => setCompareModalOpen(true)}
-              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-mono text-xs font-bold transition-all ${
-                selectedIds.length >= 2 && selectedIds.length <= 3
-                  ? 'bg-signal text-white hover:bg-signal/90 shadow-xs'
-                  : 'cursor-not-allowed border border-edge bg-well text-muted/60'
-              }`}
-              title={
-                selectedIds.length < 2
-                  ? 'Select 2 or 3 candidates to compare side-by-side'
-                  : selectedIds.length > 3
-                  ? 'Select at most 3 candidates to compare'
-                  : 'Compare selected candidates side-by-side'
-              }
-            >
-              <Icon.Scale className="h-3.5 w-3.5" />
-              <span>Compare Side-by-Side</span>
-            </button>
+              {/* Compare Side-by-Side (enabled when 2 or 3 selected) */}
+              <button
+                type="button"
+                disabled={selectedIds.length < 2 || selectedIds.length > 3}
+                onClick={() => setCompareModalOpen(true)}
+                className={`flex items-center gap-1.5 whitespace-nowrap shrink-0 rounded-lg px-3 py-1.5 font-mono text-xs font-bold transition-all ${
+                  selectedIds.length >= 2 && selectedIds.length <= 3
+                    ? 'bg-signal text-white hover:bg-signal/90 shadow-xs'
+                    : 'cursor-not-allowed border border-edge bg-well text-muted/60'
+                }`}
+                title={
+                  selectedIds.length < 2
+                    ? 'Select 2 or 3 candidates to compare side-by-side'
+                    : selectedIds.length > 3
+                    ? 'Select at most 3 candidates to compare'
+                    : 'Compare selected candidates side-by-side'
+                }
+              >
+                <Icon.Scale className="h-3.5 w-3.5 shrink-0" />
+                <span>Compare Side-by-Side</span>
+              </button>
 
-            {/* Batch Change Stage */}
-            <Select
-              value=""
-              onChange={(v) => {
-                if (v) handleBatchStageChange(v as PipelineStage);
-              }}
-              options={[{ value: '', label: 'Move To Stage…' }, ...stageSelectOptions]}
-              placeholder="Move To Stage…"
-              ariaLabel="Batch move selected candidates to stage"
-              className="w-44"
-            />
+              {/* Batch Change Stage */}
+              <Select
+                value=""
+                onChange={(v) => {
+                  if (v) handleBatchStageChange(v as PipelineStage);
+                }}
+                options={[{ value: '', label: 'Move To Stage…' }, ...stageSelectOptions]}
+                placeholder="Move To Stage…"
+                ariaLabel="Batch move selected candidates to stage"
+                className="w-44 shrink-0"
+              />
 
-            {/* Clear Selection */}
-            <button
-              type="button"
-              onClick={() => setSelectedIds([])}
-              className="font-mono text-xs text-muted hover:text-content pl-1"
-            >
-              Clear
-            </button>
+              {/* Clear Selection */}
+              <button
+                type="button"
+                onClick={() => setSelectedIds([])}
+                className="font-mono text-xs text-muted hover:text-content px-1.5 py-1 shrink-0 whitespace-nowrap"
+              >
+                Clear
+              </button>
+            </div>
           </div>
         )}
 
