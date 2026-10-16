@@ -13,10 +13,12 @@ import { useCapabilityLock } from '@/components/FeatureLock';
 import { useEntitlements } from '@/hooks/useEntitlements';
 import { Icon } from '@/components/icons';
 import { GitGrillLogo } from '@/components/GitGrillLogo';
-import { Select, SearchInput } from '@/components/ui';
+import { Select, SearchInput, ConfirmModal, AlertModal } from '@/components/ui';
 import type { SelectOption } from '@/components/ui';
 import NewTargetRoleModal from '@/components/NewTargetRoleModal';
 import DefenseHub from '@/components/DefenseHub';
+import { ResumeVault } from '@/components/ResumeVault';
+import { ResumeTailorModal } from '@/components/ResumeTailorModal';
 import {
   TargetRole,
   ApplicationStatus,
@@ -51,6 +53,14 @@ function DeveloperCareerContent() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [defenseCards, setDefenseCards] = useState<DefenseCard[]>([]);
+  const [activeTab, setActiveTab] = useState<'roles' | 'resumes'>('roles');
+  const [selectedTailorRole, setSelectedTailorRole] = useState<TargetRole | null>(null);
+  const [roleToRemove, setRoleToRemove] = useState<{ id: string; title: string } | null>(null);
+  const [alertModal, setAlertModal] = useState<{ isOpen: boolean; title: string; description: string; variant?: 'error' | 'info' | 'warning' }>({
+    isOpen: false,
+    title: '',
+    description: '',
+  });
 
   // Entitlements (M25A): the meter and every lock chip below read verdicts from
   // the backend tier registry — the browser never decides a limit itself.
@@ -113,16 +123,18 @@ function DeveloperCareerContent() {
   };
 
   const handleRemoveRole = (id: string, title: string) => {
-    if (confirm(`Remove "${title}" from your target list? Audit history will be lost.`)) {
-      deleteTargetRole(id);
-      refreshRoles();
-    }
+    setRoleToRemove({ id, title });
   };
 
   const handlePreFlight = (role?: TargetRole) => {
     const handle = devProfile?.githubUsername?.trim().replace(/^@/, '');
     if (!handle) {
-      alert('Set your GitHub username in this panel first — audits run against your own profile.');
+      setAlertModal({
+        isOpen: true,
+        title: 'GitHub Handle Required',
+        description: 'Set your GitHub username in this command center first — pre-flight audits evaluate your proof against your active repository profile.',
+        variant: 'warning',
+      });
       return;
     }
     const params = new URLSearchParams({ mode: 'developer' });
@@ -241,8 +253,52 @@ function DeveloperCareerContent() {
           </div>
         </div>
 
-        {/* Proof Strength + Quick Stats */}
-        <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-4">
+        {/* Workspace Mode Switcher Tabs */}
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-edge pb-3">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setActiveTab('roles')}
+              className={`flex items-center gap-2 rounded-xl px-4 py-2 font-mono text-xs font-bold transition-all ${
+                activeTab === 'roles'
+                  ? 'border border-signal/40 bg-signal/10 text-signal shadow-xs'
+                  : 'border border-transparent text-muted hover:border-edge hover:bg-card hover:text-content'
+              }`}
+            >
+              <Icon.Target className="h-4 w-4" />
+              <span>Target Roles & Campaigns</span>
+              <span className="ml-1 rounded-full bg-signal/20 px-2 py-0.5 font-mono text-[10px]">
+                {roles.length}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('resumes')}
+              className={`flex items-center gap-2 rounded-xl px-4 py-2 font-mono text-xs font-bold transition-all ${
+                activeTab === 'resumes'
+                  ? 'border border-signal/40 bg-signal/10 text-signal shadow-xs'
+                  : 'border border-transparent text-muted hover:border-edge hover:bg-card hover:text-content'
+              }`}
+            >
+              <Icon.FileText className="h-4 w-4" />
+              <span>Resume Vault & Diagnostics</span>
+              <span className="ml-1 rounded-full bg-signal/20 px-2 py-0.5 font-mono text-[10px] text-signal uppercase tracking-wider">
+                AI Audit
+              </span>
+            </button>
+          </div>
+
+          <div className="hidden sm:flex items-center gap-2 font-mono text-[11px] text-muted">
+            <Icon.Sparkle className="h-3.5 w-3.5 text-signal" />
+            <span>Positioning & Evidence for Private & NDA Developers</span>
+          </div>
+        </div>
+
+        {activeTab === 'resumes' ? (
+          <ResumeVault />
+        ) : (
+          <>
+            {/* Proof Strength + Quick Stats */}
+            <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-4">
           <div className="rounded-2xl border border-edge bg-card p-5 shadow-card lg:col-span-2">
             <div className="flex items-center justify-between">
               <span className="font-mono text-[10px] uppercase tracking-wider text-signal font-bold">
@@ -419,6 +475,18 @@ function DeveloperCareerContent() {
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
+                            setSelectedTailorRole(role);
+                          }}
+                          className="flex items-center gap-1 rounded-lg border border-signal/35 bg-signal/10 px-2.5 py-1 font-mono text-[11px] font-semibold text-signal transition-colors hover:bg-signal/20"
+                          title="Tailor your saved resumes against this job description"
+                        >
+                          <Icon.FileText className="h-3 w-3" />
+                          Tailor
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
                             handlePreFlight(role);
                           }}
                           className="flex items-center gap-1 rounded-lg border border-edge bg-well px-2.5 py-1 font-mono text-[11px] font-semibold text-content transition-colors hover:border-signal/60 hover:text-signal"
@@ -527,6 +595,8 @@ function DeveloperCareerContent() {
             </ol>
           </div>
         )}
+          </>
+        )}
       </div>
 
       {/* New Target Role Modal */}
@@ -535,6 +605,56 @@ function DeveloperCareerContent() {
           isOpen={showNewRoleModal}
           onClose={() => setShowNewRoleModal(false)}
           onCreate={() => refreshRoles()}
+        />
+      )}
+
+      {/* Resume Tailoring Studio Modal */}
+      {selectedTailorRole && (
+        <ResumeTailorModal
+          role={selectedTailorRole}
+          onClose={() => setSelectedTailorRole(null)}
+        />
+      )}
+
+      {/* Role Deletion Confirm Modal */}
+      {roleToRemove && (
+        <ConfirmModal
+          isOpen={!!roleToRemove}
+          onClose={() => setRoleToRemove(null)}
+          onConfirm={() => {
+            if (roleToRemove) {
+              deleteTargetRole(roleToRemove.id);
+              refreshRoles();
+              setRoleToRemove(null);
+            }
+          }}
+          title="Remove Target Role?"
+          description={
+            <div className="space-y-2 font-sans text-xs">
+              <p>
+                Remove <strong className="text-content">{roleToRemove.title}</strong> from your campaign pipeline?
+              </p>
+              <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-rose-500">
+                <p className="font-semibold">Audit History Lost</p>
+                <p className="mt-0.5 text-[11px] leading-relaxed">
+                  All pre-flight gap evaluations and requirement fit checkpoints for this role will be deleted.
+                </p>
+              </div>
+            </div>
+          }
+          confirmLabel="Remove Role"
+          variant="danger"
+        />
+      )}
+
+      {/* In-App Alert Modal */}
+      {alertModal.isOpen && (
+        <AlertModal
+          isOpen={alertModal.isOpen}
+          onClose={() => setAlertModal((prev) => ({ ...prev, isOpen: false }))}
+          title={alertModal.title}
+          description={alertModal.description}
+          variant={alertModal.variant}
         />
       )}
     </main>

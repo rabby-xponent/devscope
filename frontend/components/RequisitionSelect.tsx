@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { SavedRequisition } from '@/lib/requisitions';
 import { Icon } from '@/components/icons';
+import { ConfirmModal } from '@/components/ui';
 
 interface RequisitionSelectProps {
   requisitions: SavedRequisition[];
@@ -22,6 +23,7 @@ export default function RequisitionSelect({
   label = 'Target Requisition:',
 }: RequisitionSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [roleToDelete, setRoleToDelete] = useState<{ id: string; title: string } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Close on outside click
@@ -179,9 +181,7 @@ export default function RequisitionSelect({
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (confirm(`Delete saved role "${req.title}"?`)) {
-                            onDeleteRole(req.id);
-                          }
+                          setRoleToDelete({ id: req.id, title: req.title });
                         }}
                         className="opacity-0 group-hover:opacity-100 p-1 text-muted transition-opacity hover:text-rose-500"
                         title="Delete this role"
@@ -210,6 +210,36 @@ export default function RequisitionSelect({
             <span>Create & Save New Job Description</span>
           </button>
         </div>
+      )}
+
+      {/* Delete Saved Role Confirm Modal */}
+      {roleToDelete && (
+        <ConfirmModal
+          isOpen={!!roleToDelete}
+          onClose={() => setRoleToDelete(null)}
+          onConfirm={() => {
+            if (roleToDelete && onDeleteRole) {
+              onDeleteRole(roleToDelete.id);
+              setRoleToDelete(null);
+            }
+          }}
+          title="Delete Saved Requisition?"
+          description={
+            <div className="space-y-2 font-sans text-xs">
+              <p>
+                Delete <strong className="text-content">{roleToDelete.title}</strong>?
+              </p>
+              <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-rose-500">
+                <p className="font-semibold">Requisition Removed</p>
+                <p className="mt-0.5 text-[11px] leading-relaxed">
+                  Saved criteria and weights for this target role will be removed from your selector.
+                </p>
+              </div>
+            </div>
+          }
+          confirmLabel="Delete Requisition"
+          variant="danger"
+        />
       )}
     </div>
   );

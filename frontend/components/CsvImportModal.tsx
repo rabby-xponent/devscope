@@ -3,6 +3,7 @@
 import React, { useState, useRef } from 'react';
 import { Icon } from '@/components/icons';
 import { generateSampleCandidatesCSV, importCandidatesFromCSV, JobCandidateRecord } from '@/lib/job-projects';
+import { TextArea } from '@/components/ui';
 
 interface CsvImportModalProps {
   isOpen: boolean;
@@ -274,7 +275,7 @@ export default function CsvImportModal({
                 </button>
               )}
             </div>
-            <textarea
+            <TextArea
               rows={4}
               value={csvText}
               onChange={(e) => {
@@ -282,7 +283,7 @@ export default function CsvImportModal({
                 setFileName('');
               }}
               placeholder={`Username,Full Name,Live App URL,Recruiter Notes\ngaearon,Dan Abramov,https://overreacted.io,React core architect\ntj,TJ Holowaychuk,,Prolific Go developer\nshadcn,shadcn,https://ui.shadcn.com,UI systems spike`}
-              className="w-full rounded-xl border border-edge bg-well p-3 font-mono text-xs text-content outline-none transition-colors focus:border-signal/70"
+              mono
             />
           </div>
 

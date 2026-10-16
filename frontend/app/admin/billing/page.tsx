@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { Icon } from '@/components/icons';
+import { ConfirmModal, AlertModal, TextArea } from '@/components/ui';
 import {
   AdminMfsRecord,
   fetchAdminMfsPayments,
@@ -22,6 +23,8 @@ export default function AdminBillingPage() {
   const [actionInProgress, setActionInProgress] = useState<string | null>(null);
   const [rejectModalRecord, setRejectModalRecord] = useState<AdminMfsRecord | null>(null);
   const [rejectReason, setRejectReason] = useState('');
+  const [paymentToApprove, setPaymentToApprove] = useState<AdminMfsRecord | null>(null);
+  const [alertInfo, setAlertInfo] = useState<{ title: string; description: string; variant?: 'error' | 'info' | 'warning' } | null>(null);
 
   // Load saved admin key from localStorage
   useEffect(() => {
@@ -61,17 +64,20 @@ export default function AdminBillingPage() {
     setTimeout(() => setCopiedTrxId(null), 2000);
   };
 
-  const handleApprove = async (record: AdminMfsRecord) => {
-    if (!window.confirm(`Approve payment ${record.trxId} from ${record.senderNumber} (${record.amountBdt} BDT)? This will grant full Pro subscription.`)) {
-      return;
-    }
+  const handleApprove = (record: AdminMfsRecord) => {
+    setPaymentToApprove(record);
+  };
 
+  const handleExecuteApprove = async () => {
+    if (!paymentToApprove) return;
+    const record = paymentToApprove;
     setActionInProgress(record.id);
     try {
       await verifyAdminMfsPayment(record.id, 'approve', undefined, adminKey || undefined);
       await loadPayments();
+      setPaymentToApprove(null);
     } catch (err: any) {
-      alert(`Approval failed: ${err?.message}`);
+      setAlertInfo({ title: 'Approval Failed', description: err?.message || 'Server error', variant: 'error' });
     } finally {
       setActionInProgress(null);
     }
@@ -91,7 +97,7 @@ export default function AdminBillingPage() {
       setRejectReason('');
       await loadPayments();
     } catch (err: any) {
-      alert(`Rejection failed: ${err?.message}`);
+      setAlertInfo({ title: 'Rejection Failed', description: err?.message || 'Server error', variant: 'error' });
     } finally {
       setActionInProgress(null);
     }
@@ -526,15 +532,15 @@ export default function AdminBillingPage() {
               </div>
 
               <div>
-                <label className="block text-[11px] text-muted mb-1">
+                <label className="block text-[11px] text-muted mb-1 font-mono uppercase tracking-wider">
                   Reason for rejection (saved to record):
                 </label>
-                <textarea
+                <TextArea
                   rows={3}
                   value={rejectReason}
                   onChange={(e) => setRejectReason(e.target.value)}
                   placeholder="e.g. Transaction ID not found in MFS statement, or incorrect amount."
-                  className="w-full rounded-lg border border-edge bg-well p-2 text-content placeholder:text-muted/60 focus:border-rose-500 focus:outline-hidden"
+                  mono
                 />
               </div>
 
@@ -558,6 +564,42 @@ export default function AdminBillingPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Approve Payment Confirm Modal */}
+      {paymentToApprove && (
+        <ConfirmModal
+          isOpen={!!paymentToApprove}
+          onClose={() => setPaymentToApprove(null)}
+          onConfirm={handleExecuteApprove}
+          title="Approve MFS Payment?"
+          description={
+            <div className="space-y-2 font-sans text-xs">
+              <p>
+                Verify transaction <strong className="font-mono text-content">{paymentToApprove.trxId}</strong> from <strong>{paymentToApprove.senderNumber}</strong> ({paymentToApprove.amountBdt} BDT)?
+              </p>
+              <div className="rounded-xl border border-signal/20 bg-signal/10 p-3 text-signal">
+                <p className="font-semibold">Grant Full Pro Subscription</p>
+                <p className="mt-0.5 text-[11px] leading-relaxed">
+                  This will upgrade user <span className="font-mono">{paymentToApprove.userEmail}</span> to the Pro tier immediately.
+                </p>
+              </div>
+            </div>
+          }
+          confirmLabel="Approve Payment"
+          variant="info"
+        />
+      )}
+
+      {/* Alert Modal */}
+      {alertInfo && (
+        <AlertModal
+          isOpen={!!alertInfo}
+          onClose={() => setAlertInfo(null)}
+          title={alertInfo.title}
+          description={alertInfo.description}
+          variant={alertInfo.variant}
+        />
       )}
     </div>
   );

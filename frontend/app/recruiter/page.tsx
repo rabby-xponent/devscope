@@ -25,7 +25,7 @@ import { ThemeToggle } from '@/lib/theme';
 import { AccountMenu } from '@/components/AccountMenu';
 import { useSession } from '@/components/SessionProvider';
 import { Icon } from '@/components/icons';
-import { Select, Checkbox, StarRating, SearchInput, SegmentedTabs } from '@/components/ui';
+import { Select, Checkbox, StarRating, SearchInput, SegmentedTabs, ConfirmModal } from '@/components/ui';
 import type { SelectOption } from '@/components/ui';
 import JobGuardrailsModal from '@/components/JobGuardrailsModal';
 import NewJobModal from '@/components/NewJobModal';
@@ -54,6 +54,7 @@ function RecruiterPortalContent() {
   const [showCsvImportModal, setShowCsvImportModal] = useState(false);
   const [compareModalOpen, setCompareModalOpen] = useState(false);
   const [briefCandidate, setBriefCandidate] = useState<JobCandidateRecord | null>(null);
+  const [candidateToRemove, setCandidateToRemove] = useState<{ candId: string; username: string } | null>(null);
 
   // Candidate Screen Form
   const [candidateHandle, setCandidateHandle] = useState('');
@@ -148,11 +149,7 @@ function RecruiterPortalContent() {
 
   const handleRemoveCandidate = (candId: string, username: string) => {
     if (!activeProject) return;
-    if (confirm(`Remove @${username} from ${activeProject.title}?`)) {
-      removeCandidateFromProject(activeProject.id, candId);
-      setSelectedIds((prev) => prev.filter((i) => i !== candId));
-      refreshProjects();
-    }
+    setCandidateToRemove({ candId, username });
   };
 
   const handleBatchStageChange = (stage: PipelineStage) => {
@@ -1069,6 +1066,38 @@ Live Evidence Dossier: ${window.location.origin}/profile/${cand.username}?jobId=
           jobId={activeProject.id}
           jobTitle={activeProject.title}
           onImportSuccess={() => refreshProjects()}
+        />
+      )}
+
+      {/* Candidate Deletion Confirm Modal */}
+      {candidateToRemove && activeProject && (
+        <ConfirmModal
+          isOpen={!!candidateToRemove}
+          onClose={() => setCandidateToRemove(null)}
+          onConfirm={() => {
+            if (candidateToRemove && activeProject) {
+              removeCandidateFromProject(activeProject.id, candidateToRemove.candId);
+              setSelectedIds((prev) => prev.filter((i) => i !== candidateToRemove.candId));
+              refreshProjects();
+              setCandidateToRemove(null);
+            }
+          }}
+          title="Remove Candidate from Pipeline?"
+          description={
+            <div className="space-y-2 font-sans text-xs">
+              <p>
+                Remove <strong className="text-content">@{candidateToRemove.username}</strong> from <strong>{activeProject.title}</strong>?
+              </p>
+              <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-rose-500">
+                <p className="font-semibold">Candidate Disassociated</p>
+                <p className="mt-0.5 text-[11px] leading-relaxed">
+                  Stage assignments and recruiter notes for this candidate will be cleared from this requisition.
+                </p>
+              </div>
+            </div>
+          }
+          confirmLabel="Remove Candidate"
+          variant="danger"
         />
       )}
     </main>

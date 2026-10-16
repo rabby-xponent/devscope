@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Icon } from '@/components/icons';
-import { Select, SelectOption } from '@/components/ui';
+import { Select, SelectOption, TextArea } from '@/components/ui';
 import { useDeepAuditStream } from '@/hooks/useDeepAuditStream';
 
 interface DeepCodeAuditModalProps {
@@ -363,12 +363,12 @@ export function DeepCodeAuditModal({
                       <label className="block text-xs font-mono text-content font-semibold uppercase tracking-wider">
                         Practice Defense Mode: How would you defend this decision?
                       </label>
-                      <textarea
+                      <TextArea
                         rows={3}
                         value={userDefenseText}
                         onChange={(e) => setUserDefenseText(e.target.value)}
                         placeholder="Type your architectural rationale, trade-offs considered, or error handling design..."
-                        className="w-full rounded-lg border border-edge bg-card px-3 py-2 text-xs font-mono text-content placeholder:text-muted/60 focus:border-signal focus:outline-hidden shadow-xs"
+                        mono
                       />
 
                       <div className="flex items-center justify-between">

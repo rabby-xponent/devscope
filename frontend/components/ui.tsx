@@ -506,3 +506,327 @@ export function SegmentedTabs({
     </div>
   );
 }
+
+/* ==========================================================================
+   ConfirmModal — sleek, accessible, theme-aware confirmation dialog
+   ========================================================================== */
+
+export interface ConfirmModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  title: string;
+  description: React.ReactNode;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  variant?: 'danger' | 'warning' | 'info';
+  confirmButtonClassName?: string;
+  isLoading?: boolean;
+}
+
+export function ConfirmModal({
+  isOpen,
+  onClose,
+  onConfirm,
+  title,
+  description,
+  confirmLabel = 'Confirm',
+  cancelLabel = 'Cancel',
+  variant = 'danger',
+  confirmButtonClassName = '',
+  isLoading = false,
+}: ConfirmModalProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
+  if (!mounted || !isOpen) return null;
+
+  const isDanger = variant === 'danger';
+  const isWarning = variant === 'warning';
+
+  return createPortal(
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="confirm-modal-title"
+      className="fixed inset-0 z-[150] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-in fade-in duration-200"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-md overflow-hidden rounded-2xl border border-edge bg-card p-6 shadow-2xl transition-all duration-200 animate-in zoom-in-95"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start gap-4">
+          <div
+            className={`flex h-11 w-11 flex-none items-center justify-center rounded-2xl border ${
+              isDanger
+                ? 'border-rose-500/30 bg-rose-500/10 text-rose-500'
+                : isWarning
+                ? 'border-amber-500/30 bg-amber-500/10 text-amber-500'
+                : 'border-signal/30 bg-signal/10 text-signal'
+            }`}
+          >
+            {isDanger || isWarning ? (
+              <Icon.Alert className="h-5 w-5" />
+            ) : (
+              <Icon.Info className="h-5 w-5" />
+            )}
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <h3
+              id="confirm-modal-title"
+              className="font-mono text-base font-bold text-content tracking-tight"
+            >
+              {title}
+            </h3>
+            <div className="mt-2 font-sans text-xs text-muted leading-relaxed">
+              {description}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 flex items-center justify-end gap-2.5 pt-4 border-t border-edge">
+          <button
+            type="button"
+            disabled={isLoading}
+            onClick={onClose}
+            className="rounded-xl border border-edge bg-well px-4 py-2 font-mono text-xs font-semibold text-content hover:border-signal/40 transition-colors disabled:opacity-50"
+          >
+            {cancelLabel}
+          </button>
+          <button
+            type="button"
+            disabled={isLoading}
+            onClick={() => {
+              onConfirm();
+              onClose();
+            }}
+            className={`rounded-xl px-4 py-2 font-mono text-xs font-bold shadow-xs transition-all disabled:opacity-50 flex items-center gap-1.5 ${
+              isDanger
+                ? 'bg-rose-600 hover:bg-rose-500 text-white'
+                : isWarning
+                ? 'bg-amber-600 hover:bg-amber-500 text-white'
+                : 'bg-signal hover:bg-signal/90 text-white'
+            } ${confirmButtonClassName}`}
+          >
+            {confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
+/* ==========================================================================
+   AlertModal — sleek informational alert modal replacing window.alert
+   ========================================================================== */
+
+export interface AlertModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  description: React.ReactNode;
+  actionLabel?: string;
+  variant?: 'info' | 'warning' | 'error' | 'success';
+}
+
+export function AlertModal({
+  isOpen,
+  onClose,
+  title,
+  description,
+  actionLabel = 'Got it',
+  variant = 'info',
+}: AlertModalProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
+  if (!mounted || !isOpen) return null;
+
+  return createPortal(
+    <div
+      role="alertdialog"
+      aria-modal="true"
+      className="fixed inset-0 z-[150] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-in fade-in duration-200"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-md overflow-hidden rounded-2xl border border-edge bg-card p-6 shadow-2xl animate-in zoom-in-95"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start gap-3.5">
+          <div
+            className={`flex h-10 w-10 flex-none items-center justify-center rounded-2xl border ${
+              variant === 'error'
+                ? 'border-rose-500/30 bg-rose-500/10 text-rose-500'
+                : variant === 'warning'
+                ? 'border-amber-500/30 bg-amber-500/10 text-amber-500'
+                : variant === 'success'
+                ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-500'
+                : 'border-signal/30 bg-signal/10 text-signal'
+            }`}
+          >
+            {variant === 'error' || variant === 'warning' ? (
+              <Icon.Alert className="h-5 w-5" />
+            ) : variant === 'success' ? (
+              <Icon.CheckCircle className="h-5 w-5" />
+            ) : (
+              <Icon.Info className="h-5 w-5" />
+            )}
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <h3 className="font-mono text-base font-bold text-content tracking-tight">
+              {title}
+            </h3>
+            <div className="mt-2 font-sans text-xs text-muted leading-relaxed">
+              {description}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 flex justify-end pt-3 border-t border-edge">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-xl bg-signal px-4 py-2 font-mono text-xs font-bold text-white shadow-xs hover:bg-signal/90 transition-all"
+          >
+            {actionLabel}
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
+/* ==========================================================================
+   FormField, TextInput, TextArea — premium input components
+   ========================================================================== */
+
+export function FormField({
+  label,
+  badge,
+  hint,
+  error,
+  children,
+  className = '',
+}: {
+  label: string;
+  badge?: React.ReactNode;
+  hint?: string;
+  error?: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={`space-y-1.5 ${className}`}>
+      <div className="flex items-center justify-between">
+        <label className="block font-mono text-[10px] font-bold uppercase tracking-wider text-muted">
+          {label}
+        </label>
+        {badge}
+      </div>
+      {children}
+      {hint && !error && (
+        <p className="font-sans text-[10px] text-muted leading-tight">{hint}</p>
+      )}
+      {error && (
+        <p className="font-mono text-[10px] font-bold text-rose-500 leading-tight flex items-center gap-1">
+          <Icon.Alert className="h-3 w-3" />
+          <span>{error}</span>
+        </p>
+      )}
+    </div>
+  );
+}
+
+export function TextInput({
+  value,
+  onChange,
+  placeholder,
+  type = 'text',
+  disabled = false,
+  required = false,
+  className = '',
+  mono = false,
+}: {
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  placeholder?: string;
+  type?: string;
+  disabled?: boolean;
+  required?: boolean;
+  className?: string;
+  mono?: boolean;
+}) {
+  return (
+    <input
+      type={type}
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      disabled={disabled}
+      required={required}
+      className={`w-full rounded-xl border border-edge bg-well px-3.5 py-2 text-xs text-content outline-none transition-all duration-150 focus:border-signal focus:ring-2 focus:ring-signal/15 disabled:cursor-not-allowed disabled:opacity-40 placeholder:text-muted/60 ${
+        mono ? 'font-mono' : 'font-sans'
+      } ${className}`}
+    />
+  );
+}
+
+export function TextArea({
+  value,
+  onChange,
+  placeholder,
+  rows = 4,
+  disabled = false,
+  required = false,
+  className = '',
+  mono = false,
+}: {
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  placeholder?: string;
+  rows?: number;
+  disabled?: boolean;
+  required?: boolean;
+  className?: string;
+  mono?: boolean;
+}) {
+  return (
+    <textarea
+      rows={rows}
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      disabled={disabled}
+      required={required}
+      className={`w-full rounded-xl border border-edge bg-well px-3.5 py-2 text-xs text-content outline-none transition-all duration-150 focus:border-signal focus:ring-2 focus:ring-signal/15 disabled:cursor-not-allowed disabled:opacity-40 placeholder:text-muted/60 resize-y ${
+        mono ? 'font-mono' : 'font-sans leading-relaxed'
+      } ${className}`}
+    />
+  );
+}

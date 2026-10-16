@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Icon } from '@/components/icons';
 import { TargetRole, saveTargetRole, setActiveTargetRoleId } from '@/lib/target-roles';
+import { FormField, TextInput, TextArea } from '@/components/ui';
 
 interface NewTargetRoleModalProps {
   isOpen: boolean;
@@ -46,10 +47,6 @@ export default function NewTargetRoleModal({ isOpen, onClose, onCreate }: NewTar
     onClose();
   };
 
-  const inputClass =
-    'mt-1 w-full rounded-xl border border-edge bg-well px-3 py-2 font-mono text-xs text-content outline-none transition-colors focus:border-signal focus:ring-2 focus:ring-signal/15 placeholder:text-muted/60';
-  const labelClass = 'block font-mono text-[11px] uppercase tracking-wider text-muted';
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-md animate-in">
       <div className="flex max-h-[90vh] w-full max-w-xl flex-col rounded-2xl border border-edge bg-card text-content p-6 shadow-pop">
@@ -78,51 +75,46 @@ export default function NewTargetRoleModal({ isOpen, onClose, onCreate }: NewTar
 
         <form onSubmit={handleSubmit} className="mt-4 flex-1 space-y-4 overflow-y-auto thin-scroll pr-1">
           <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <label className={labelClass}>Role Title *</label>
-              <input
-                type="text"
+            <FormField label="Role Title *" hint="Job designation">
+              <TextInput
                 required
                 placeholder="e.g. Senior Backend Engineer"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className={inputClass}
               />
-            </div>
-            <div>
-              <label className={labelClass}>Company</label>
-              <input
-                type="text"
+            </FormField>
+            <FormField label="Company" hint="Employer / organization">
+              <TextInput
                 placeholder="e.g. Stripe"
                 value={company}
                 onChange={(e) => setCompany(e.target.value)}
-                className={inputClass}
               />
-            </div>
+            </FormField>
           </div>
 
-          <div>
-            <label className={labelClass}>Job Posting URL (optional)</label>
-            <input
+          <FormField label="Job Posting URL" hint="Optional reference link">
+            <TextInput
               type="url"
               placeholder="https://jobs.example.com/role/123"
               value={sourceUrl}
               onChange={(e) => setSourceUrl(e.target.value)}
-              className={inputClass}
+              mono
             />
-          </div>
+          </FormField>
 
-          <div>
-            <label className={labelClass}>Job Description Text *</label>
-            <textarea
+          <FormField
+            label="Job Description Text *"
+            hint="Full role responsibilities, tech stack, and qualifications"
+          >
+            <TextArea
               required
               rows={7}
               placeholder="Paste the complete job description: responsibilities, requirements, stack…"
               value={rawJdText}
               onChange={(e) => setRawJdText(e.target.value)}
-              className={`${inputClass} resize-none`}
+              mono
             />
-          </div>
+          </FormField>
 
           <div className="flex items-center justify-end gap-3 pt-2 border-t border-edge">
             <button

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Icon } from '@/components/icons';
+import { ConfirmModal } from '@/components/ui';
 import { listPublishedProofs, unpublishProofPage, ProofMeta } from '@/lib/proof-pages';
 import type { TargetRole } from '@/lib/target-roles';
 
@@ -19,6 +20,7 @@ export function ProofPagesCard({ username, roles }: { username: string; roles: T
   const [copiedId, setCopiedId] = useState('');
   const [unpublishingId, setUnpublishingId] = useState('');
   const [error, setError] = useState('');
+  const [proofToUnpublish, setProofToUnpublish] = useState<{ roleId: string; title: string } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -43,13 +45,19 @@ export function ProofPagesCard({ username, roles }: { username: string; roles: T
     }
   };
 
-  const unpublish = async (roleId: string, title: string) => {
-    if (!confirm(`Unpublish the proof page for "${title}"? The public link will stop working immediately.`)) return;
+  const unpublish = (roleId: string, title: string) => {
+    setProofToUnpublish({ roleId, title });
+  };
+
+  const handleExecuteUnpublish = async () => {
+    if (!proofToUnpublish) return;
+    const { roleId } = proofToUnpublish;
     setUnpublishingId(roleId);
     setError('');
     try {
       await unpublishProofPage(username, roleId);
       await reload();
+      setProofToUnpublish(null);
     } catch (err: any) {
       setError(err?.message || 'Unpublish failed');
     } finally {
@@ -159,6 +167,31 @@ export function ProofPagesCard({ username, roles }: { username: string; roles: T
             );
           })}
         </ul>
+      )}
+
+      {/* Unpublish Confirmation Modal */}
+      {proofToUnpublish && (
+        <ConfirmModal
+          isOpen={!!proofToUnpublish}
+          onClose={() => setProofToUnpublish(null)}
+          onConfirm={handleExecuteUnpublish}
+          title="Unpublish Proof Page?"
+          description={
+            <div className="space-y-2 font-sans text-xs">
+              <p>
+                Unpublish the verified proof link for <strong className="text-content">{proofToUnpublish.title}</strong>?
+              </p>
+              <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 text-amber-600 dark:text-amber-400">
+                <p className="font-semibold">Link Access Suspended</p>
+                <p className="mt-0.5 text-[11px] leading-relaxed">
+                  Anyone accessing this public link will see a 404 or unpublished notice. You can republish at any time.
+                </p>
+              </div>
+            </div>
+          }
+          confirmLabel="Unpublish Page"
+          variant="warning"
+        />
       )}
     </div>
   );

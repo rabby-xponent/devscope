@@ -311,6 +311,18 @@ export const Icon = {
       <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
     </svg>
   ),
+  Code: (p: IconProps) => (
+    <svg {...base(p)}>
+      <polyline points="16 18 22 12 16 6" />
+      <polyline points="8 6 2 12 8 18" />
+    </svg>
+  ),
+  Terminal: (p: IconProps) => (
+    <svg {...base(p)}>
+      <polyline points="4 17 10 11 4 5" />
+      <line x1="12" x2="20" y1="19" y2="19" />
+    </svg>
+  ),
   Spinner: (p: IconProps) => (
     <svg {...base(p)}>
       <path d="M21 12a9 9 0 1 1-6.219-8.56" />

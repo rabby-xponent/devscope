@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { JobProject, SeniorityTarget } from '@/lib/job-projects';
 import { Icon } from '@/components/icons';
-import { Select } from '@/components/ui';
+import { Select, FormField, TextInput, TextArea } from '@/components/ui';
 
 interface NewJobModalProps {
   isOpen: boolean;
@@ -109,34 +109,28 @@ export default function NewJobModal({ isOpen, onClose, onCreate }: NewJobModalPr
         <form onSubmit={handleSubmit} className="flex flex-1 flex-col overflow-hidden">
           <div className="flex-1 space-y-4 overflow-y-auto p-6 thin-scroll">
           <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <label className={labelClass}>Job Title *</label>
-              <input
-                type="text"
+            <FormField label="Job Title *" hint="Required designation">
+              <TextInput
                 required
                 placeholder="e.g. Senior Backend Go Engineer"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className={inputClass}
               />
-            </div>
+            </FormField>
 
-            <div>
-              <label className={labelClass}>Department / Team</label>
-              <input
-                type="text"
+            <FormField label="Department / Team" hint="e.g. Payments & Ledger">
+              <TextInput
                 placeholder="e.g. Payments & Ledger"
                 value={department}
                 onChange={(e) => setDepartment(e.target.value)}
-                className={inputClass}
               />
-            </div>
+            </FormField>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
-              <label className={labelClass}>Seniority Target</label>
-              <div className="mt-1">
+              <label className="block font-mono text-[11px] uppercase tracking-wider text-muted mb-1.5">Seniority Target</label>
+              <div>
                 <Select
                   value={seniorityTarget}
                   onChange={(v) => setSeniorityTarget(v as SeniorityTarget)}
@@ -147,22 +141,19 @@ export default function NewJobModal({ isOpen, onClose, onCreate }: NewJobModalPr
               </div>
             </div>
 
-            <div>
-              <label className={labelClass}>Min. Years Experience</label>
-              <input
+            <FormField label="Min. Years Experience" hint="0 to 25">
+              <TextInput
                 type="number"
-                min={0}
-                max={25}
-                value={minYears}
-                onChange={(e) => setMinYears(Number(e.target.value))}
-                className={inputClass}
+                value={String(minYears)}
+                onChange={(e) => setMinYears(Math.max(0, Math.min(25, Number(e.target.value) || 0)))}
+                mono
               />
-            </div>
+            </FormField>
           </div>
 
           <div>
-            <label className={labelClass}>Must-Have Technical Skills (Dealbreakers)</label>
-            <div className="mt-1.5 flex flex-wrap gap-1.5 rounded-xl border border-edge bg-well p-2 transition-colors focus-within:border-signal/70">
+            <label className="block font-mono text-[11px] uppercase tracking-wider text-muted mb-1.5">Must-Have Technical Skills (Dealbreakers)</label>
+            <div className="mt-1 flex flex-wrap gap-1.5 rounded-xl border border-edge bg-well p-2 transition-colors focus-within:border-signal/70">
               {mustHaveSkills.map((skill) => (
                 <span
                   key={skill}
@@ -201,17 +192,19 @@ export default function NewJobModal({ isOpen, onClose, onCreate }: NewJobModalPr
             </div>
           </div>
 
-          <div>
-            <label className={labelClass}>Full Job Description / Requirements *</label>
-            <textarea
+          <FormField
+            label="Full Job Description / Requirements *"
+            hint="Responsibilities, tech stack, and qualifications"
+          >
+            <TextArea
               required
               rows={6}
               placeholder="Paste the complete job description text, requirements, and responsibilities…"
               value={rawJd}
               onChange={(e) => setRawJd(e.target.value)}
-              className={`${inputClass} resize-none`}
+              mono
             />
-          </div>
+          </FormField>
 
           </div>
 
