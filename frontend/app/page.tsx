@@ -51,6 +51,9 @@ export default function Home() {
   // Engineering dossier drawer (portfolio section)
   const [dossierOpen, setDossierOpen] = useState(false);
 
+  // Hero Right Card interactive preview mode (Developer CareerOS vs Recruiter Dossier)
+  const [heroPreviewMode, setHeroPreviewMode] = useState<'developer' | 'recruiter'>('developer');
+
   const router = useRouter();
 
   useEffect(() => {
@@ -60,6 +63,9 @@ export default function Home() {
     if (dProf.portfolioUrl) {
       setAuditLiveUrl(dProf.portfolioUrl);
       setShowLiveUrl(true);
+    }
+    if (typeof window !== 'undefined' && (window.location.hash === '#dossier' || window.location.search.includes('dossier=true'))) {
+      setDossierOpen(true);
     }
   }, []);
 
@@ -99,13 +105,16 @@ export default function Home() {
             <a href="#pricing" className="whitespace-nowrap transition-colors hover:text-[#ea580c] dark:hover:text-signal">
               Pricing
             </a>
-            <Link
-              href="/recruiter"
-              className="inline-flex items-center gap-1 whitespace-nowrap transition-colors hover:text-[#ea580c] dark:hover:text-signal"
+            <button
+              type="button"
+              onClick={() => setDossierOpen(true)}
+              className="inline-flex items-center gap-1.5 whitespace-nowrap font-mono text-xs font-semibold text-[#ea580c] dark:text-signal px-2.5 py-1 rounded-lg border border-orange-200 dark:border-signal/30 bg-orange-50/70 dark:bg-signal/10 hover:bg-orange-100 dark:hover:bg-signal/20 transition-all shadow-2xs"
+              title="Open Engineering Build Dossier"
             >
-              <span>For Recruiters</span>
+              <Icon.Terminal className="h-3 w-3" />
+              <span>Build Dossier</span>
               <Icon.ArrowUpRight className="h-3 w-3 opacity-70" />
-            </Link>
+            </button>
           </div>
 
           <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
@@ -145,16 +154,16 @@ export default function Home() {
             <div className="lg:col-span-7">
               <div className="inline-flex items-center gap-2 rounded-full border border-orange-200 dark:border-edge bg-orange-50/80 dark:bg-surface/70 px-3.5 py-1 font-mono text-[11px] uppercase tracking-widest text-[#ea580c] dark:text-signal font-semibold shadow-xs">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#ea580c] dark:bg-signal animate-pulse" />
-                AI-Native Technical Talent Intelligence & Pre-Flight
+                Technical Talent Intelligence & Developer CareerOS
               </div>
 
               <h1 className="mt-6 font-sans text-4xl font-extrabold leading-[1.12] tracking-tight text-slate-900 dark:text-[#ece9f0] sm:text-5xl lg:text-[56px]">
                 Verify engineering depth{' '}
-                <span className="text-[#ea580c] dark:text-signal">without the guesswork.</span>
+                <span className="text-[#ea580c] dark:text-signal">& pre-flight your applications.</span>
               </h1>
 
               <p className="mt-5 max-w-xl text-[16px] leading-relaxed text-slate-600 dark:text-muted">
-                Resume keywords and vanity commit streaks lie. GitGrill cross-examines real GitHub codebases, inspects live deployed applications, and builds calibrated dossiers with a 15-minute phone screen guide.
+                Resume keywords and vanity commit streaks lie. GitGrill cross-examines real GitHub codebases, inspects live deployed applications, and builds calibrated dossiers for hiring teams while giving developers an immutable resume vault and targeted job pre-flight.
               </p>
 
               {/* Assessment Console & Portals */}
@@ -285,7 +294,7 @@ export default function Home() {
                         Developer CareerOS
                       </h3>
                       <p className="mt-1 font-sans text-xs text-slate-500 dark:text-muted leading-relaxed">
-                        Run your job search as a campaign: track target roles, pre-flight every application, close skill gaps, and watch your fit scores climb.
+                        Immutable resume vault (2D PDF parser), target job pipeline, pre-flight audits against real JDs, and 1-click tailored variant generation.
                       </p>
                     </div>
                     <div className="mt-3 flex items-center gap-1 font-mono text-xs font-semibold text-slate-700 dark:text-[#ece9f0] group-hover:translate-x-1 transition-transform">
@@ -313,119 +322,249 @@ export default function Home() {
             {/* Hero Right: Live Dossier Preview Card */}
             <div className="lg:col-span-5">
               <div className="relative rounded-2xl border border-slate-200 dark:border-edge/80 bg-white dark:bg-[#141217] p-6 shadow-xl shadow-slate-200/50 dark:shadow-2xl">
-                {/* Dossier Header Badge */}
-                <div className="flex items-center justify-between border-b border-slate-100 dark:border-edge/80 pb-4">
-                  <div className="font-mono text-[10px] uppercase tracking-widest text-slate-500 dark:text-muted">
-                    Generated Dossier Preview
+                {/* Dossier Header Badge with Dual Mode Switcher */}
+                <div className="flex items-center justify-between border-b border-slate-100 dark:border-edge/80 pb-3.5">
+                  <div className="flex items-center gap-1 p-0.5 rounded-lg bg-slate-100 dark:bg-[#0c0b0e] border border-slate-200 dark:border-edge">
+                    <button
+                      type="button"
+                      onClick={() => setHeroPreviewMode('developer')}
+                      className={`px-2.5 py-1 rounded-md font-mono text-[10px] font-bold transition-all ${
+                        heroPreviewMode === 'developer'
+                          ? 'bg-white dark:bg-surface text-[#ea580c] dark:text-signal shadow-2xs'
+                          : 'text-slate-500 dark:text-muted hover:text-slate-900 dark:hover:text-[#ece9f0]'
+                      }`}
+                    >
+                      CareerOS Pre-Flight
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setHeroPreviewMode('recruiter')}
+                      className={`px-2.5 py-1 rounded-md font-mono text-[10px] font-bold transition-all ${
+                        heroPreviewMode === 'recruiter'
+                          ? 'bg-white dark:bg-surface text-[#ea580c] dark:text-signal shadow-2xs'
+                          : 'text-slate-500 dark:text-muted hover:text-slate-900 dark:hover:text-[#ece9f0]'
+                      }`}
+                    >
+                      Recruiter Brief
+                    </button>
                   </div>
+
                   <span className="rounded-full border border-emerald-300 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 font-mono text-[10px] font-semibold text-emerald-700 dark:text-emerald-400">
-                    94% Confidence
+                    {heroPreviewMode === 'developer' ? '92% Pre-Flight Fit' : '94% Confidence'}
                   </span>
                 </div>
 
-                {/* Candidate Overview */}
-                <div className="mt-4 flex items-start gap-3">
-                  <div className="h-12 w-12 flex-none rounded-xl border border-slate-200 dark:border-edge bg-slate-50 dark:bg-surface flex items-center justify-center font-mono text-base font-bold text-[#ea580c] dark:text-signal">
-                    GA
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-slate-900 dark:text-[#ece9f0]">Dan Abramov</span>
-                      <span className="font-mono text-xs text-[#ea580c] dark:text-signal">@gaearon</span>
+                {heroPreviewMode === 'developer' ? (
+                  <>
+                    {/* Developer Candidate Overview */}
+                    <div className="mt-4 flex items-start gap-3">
+                      <div className="h-12 w-12 flex-none rounded-xl border border-slate-200 dark:border-edge bg-orange-50 dark:bg-signal/10 flex items-center justify-center font-mono text-base font-bold text-[#ea580c] dark:text-signal">
+                        GR
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-semibold text-slate-900 dark:text-[#ece9f0]">Golam Rabby</span>
+                          <span className="font-mono text-xs text-[#ea580c] dark:text-signal">@Golam-Rabby821</span>
+                        </div>
+                        <div className="mt-1 flex flex-wrap gap-1.5">
+                          <span className="rounded-full border border-orange-200 dark:border-signal/40 bg-orange-50 dark:bg-signal/15 px-2 py-0.5 font-mono text-[10px] text-orange-700 dark:text-signal font-semibold">
+                            Target: Senior Full-Stack Engineer
+                          </span>
+                          <span className="rounded-full border border-slate-200 dark:border-edge bg-slate-50 dark:bg-surface px-2 py-0.5 font-mono text-[10px] text-slate-600 dark:text-muted">
+                            Vault v1.1 Variant
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="mt-1 flex flex-wrap gap-1.5">
-                      <span className="rounded-full border border-blue-200 dark:border-blue-500/40 bg-blue-50 dark:bg-blue-950/30 px-2 py-0.5 font-mono text-[10px] text-blue-700 dark:text-blue-300">
-                        Working Professional
-                      </span>
-                      <span className="rounded-full border border-purple-200 dark:border-purple-500/40 bg-purple-50 dark:bg-purple-950/30 px-2 py-0.5 font-mono text-[10px] text-purple-700 dark:text-purple-300">
-                        Senior Engineer
-                      </span>
+
+                    {/* Pre-Flight Live App Audit */}
+                    <div className="mt-4 rounded-xl border border-slate-200 dark:border-edge bg-slate-50/70 dark:bg-[#0c0b0e]/60 p-3 font-mono text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-500 dark:text-muted text-[10px] uppercase tracking-wider">
+                          Portfolio & Project Verification
+                        </span>
+                        <span className="inline-flex items-center gap-1.5 text-signal text-[11px] font-medium">
+                          <span className="h-1.5 w-1.5 rounded-full bg-signal animate-pulse" />
+                          Live Verified (118ms)
+                        </span>
+                      </div>
+                      <div className="mt-1.5 flex items-center gap-2 text-[11px]">
+                        <span className="text-slate-900 dark:text-[#ece9f0] font-medium">prottaho.com</span>
+                        <span className="rounded bg-white dark:bg-surface px-1.5 py-0.5 text-[9px] text-slate-500 dark:text-muted border border-slate-200 dark:border-edge">
+                          Production Next.js + Supabase
+                        </span>
+                      </div>
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        <span className="rounded bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 text-[10px] text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30">
+                          2D Coordinate PDF Parsed
+                        </span>
+                        <span className="rounded bg-white dark:bg-surface px-1.5 py-0.5 text-[10px] text-slate-700 dark:text-[#ece9f0] border border-slate-200 dark:border-edge">
+                          Mammoth DOCX AST
+                        </span>
+                        <span className="rounded bg-white dark:bg-surface px-1.5 py-0.5 text-[10px] text-slate-500 dark:text-muted border border-slate-200 dark:border-edge">
+                          Immutable Master
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                </div>
 
-                {/* Live Shipped Verification */}
-                <div className="mt-4 rounded-xl border border-slate-200 dark:border-edge bg-slate-50/70 dark:bg-[#0c0b0e]/60 p-3 font-mono text-xs">
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-500 dark:text-muted text-[10px] uppercase tracking-wider">
-                      Live App Audit
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 text-signal text-[11px] font-medium">
-                      <span className="h-1.5 w-1.5 rounded-full bg-signal animate-pulse" />
-                      Live (142ms · Fast)
-                    </span>
-                  </div>
-                  <div className="mt-1.5 flex items-center gap-2 text-[11px]">
-                    <span className="text-slate-900 dark:text-[#ece9f0] font-medium">overreacted.io</span>
-                    <span className="rounded bg-white dark:bg-surface px-1.5 py-0.5 text-[9px] text-slate-500 dark:text-muted border border-slate-200 dark:border-edge">
-                      Vercel
-                    </span>
-                  </div>
-                  <div className="mt-2 flex flex-wrap gap-1">
-                    <span className="rounded bg-orange-50 dark:bg-signal/10 px-1.5 py-0.5 text-[10px] text-orange-700 dark:text-signal border border-orange-200 dark:border-signal/20">
-                      Next.js (React)
-                    </span>
-                    <span className="rounded bg-white dark:bg-surface px-1.5 py-0.5 text-[10px] text-slate-700 dark:text-[#ece9f0] border border-slate-200 dark:border-edge">
-                      TypeScript
-                    </span>
-                    <span className="rounded bg-white dark:bg-surface px-1.5 py-0.5 text-[10px] text-slate-500 dark:text-muted border border-slate-200 dark:border-edge">
-                      Responsive Viewport
-                    </span>
-                  </div>
-                </div>
+                    {/* Pre-Flight Fit Matrix */}
+                    <div className="mt-3 rounded-xl border border-slate-200 dark:border-edge bg-slate-50/70 dark:bg-[#0c0b0e]/60 p-3 font-mono text-xs space-y-2">
+                      <div className="text-slate-500 dark:text-muted text-[10px] uppercase tracking-wider">
+                        JD Requirements vs. Code Evidence
+                      </div>
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-slate-900 dark:text-[#ece9f0] font-medium">Next.js 14 App Router / TS</span>
+                        <span className="inline-flex items-center gap-1 text-signal font-semibold">
+                          <Icon.Check className="h-3 w-3" /> Code Verified
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-slate-900 dark:text-[#ece9f0] font-medium">Postgres RLS / Stripe Auth</span>
+                        <span className="inline-flex items-center gap-1 text-slate-700 dark:text-[#ece9f0]/80 font-semibold">
+                          <Icon.Globe className="h-3 w-3" /> Live Shipped
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-slate-900 dark:text-[#ece9f0] font-medium">Distributed Kafka / Redis</span>
+                        <span className="inline-flex items-center gap-1 text-muted font-semibold">
+                          <Icon.Alert className="h-3 w-3" /> Gap Flagged (Probed)
+                        </span>
+                      </div>
+                    </div>
 
-                {/* Claim vs Evidence Snippet */}
-                <div className="mt-3 rounded-xl border border-slate-200 dark:border-edge bg-slate-50/70 dark:bg-[#0c0b0e]/60 p-3 font-mono text-xs space-y-2">
-                  <div className="text-slate-500 dark:text-muted text-[10px] uppercase tracking-wider">
-                    Claim vs. Evidence Matrix
-                  </div>
-                  <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-slate-900 dark:text-[#ece9f0] font-medium">React / State Architecture</span>
-                    <span className="inline-flex items-center gap-1 text-signal font-semibold">
-                      <Icon.Check className="h-3 w-3" /> Code Verified
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-slate-900 dark:text-[#ece9f0] font-medium">Production Next.js</span>
-                    <span className="inline-flex items-center gap-1 text-slate-700 dark:text-[#ece9f0]/80 font-semibold">
-                      <Icon.Globe className="h-3 w-3" /> Live Shipped
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-slate-900 dark:text-[#ece9f0] font-medium">Kubernetes / Distributed</span>
-                    <span className="inline-flex items-center gap-1 text-muted font-semibold">
-                      <Icon.Search className="h-3 w-3" /> Probe Required
-                    </span>
-                  </div>
-                </div>
+                    {/* Pre-Flight Tailoring Advice */}
+                    <div className="mt-3 rounded-xl border border-orange-200 dark:border-signal/30 bg-orange-50/70 dark:bg-signal/10 p-3 font-mono text-xs">
+                      <div className="flex items-center gap-1.5 font-mono text-[10px] font-semibold uppercase tracking-wider text-[#ea580c] dark:text-signal">
+                        <Icon.Zap className="h-3 w-3" /> Tailoring Recommendation
+                      </div>
+                      <p className="mt-1 text-[11px] text-slate-800 dark:text-[#ece9f0]/90 leading-snug">
+                        Emphasize bKash/Nagad concurrency resilience and multi-provider failover.
+                      </p>
+                    </div>
 
-                {/* 15-Minute Screen Guide Snippet */}
-                <div className="mt-3 rounded-xl border border-amber-200 dark:border-edge/70 bg-amber-50/80 dark:bg-amber-950/10 p-3">
-                  <div className="flex items-center gap-1.5 font-mono text-[10px] font-semibold uppercase tracking-wider text-signal">
-                    <Icon.Zap className="h-3 w-3" /> 15-Min Phone Screen Guide
-                  </div>
-                  <p className="mt-1 text-xs text-slate-800 dark:text-[#ece9f0]/90 leading-snug">
-                    &quot;Describe a production debugging incident where rendering regressions impacted client performance.&quot;
-                  </p>
-                  <div className="mt-2 flex items-center justify-between font-mono text-[10px]">
-                    <span className="inline-flex items-center gap-1 text-signal font-medium">
-                      <Icon.Check className="h-3 w-3" /> Profiler / Flamegraphs
-                    </span>
-                    <span className="inline-flex items-center gap-1 text-muted font-medium">
-                      <Icon.Alert className="h-3 w-3" /> Vague &quot;checked console&quot;
-                    </span>
-                  </div>
-                </div>
+                    <div className="mt-3 text-center font-mono text-[10px] text-slate-400 dark:text-muted/60">
+                      1-Click tailored variant ready with bullet point preservation.
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* Candidate Overview */}
+                    <div className="mt-4 flex items-start gap-3">
+                      <div className="h-12 w-12 flex-none rounded-xl border border-slate-200 dark:border-edge bg-slate-50 dark:bg-surface flex items-center justify-center font-mono text-base font-bold text-[#ea580c] dark:text-signal">
+                        GA
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-semibold text-slate-900 dark:text-[#ece9f0]">Dan Abramov</span>
+                          <span className="font-mono text-xs text-[#ea580c] dark:text-signal">@gaearon</span>
+                        </div>
+                        <div className="mt-1 flex flex-wrap gap-1.5">
+                          <span className="rounded-full border border-blue-200 dark:border-blue-500/40 bg-blue-50 dark:bg-blue-950/30 px-2 py-0.5 font-mono text-[10px] text-blue-700 dark:text-blue-300">
+                            Working Professional
+                          </span>
+                          <span className="rounded-full border border-purple-200 dark:border-purple-500/40 bg-purple-50 dark:bg-purple-950/30 px-2 py-0.5 font-mono text-[10px] text-purple-700 dark:text-purple-300">
+                            Senior Engineer
+                          </span>
+                        </div>
+                      </div>
+                    </div>
 
-                <div className="mt-3 text-center font-mono text-[10px] text-slate-400 dark:text-muted/60">
-                  Ready to share with hiring committees in PDF format.
-                </div>
+                    {/* Live Shipped Verification */}
+                    <div className="mt-4 rounded-xl border border-slate-200 dark:border-edge bg-slate-50/70 dark:bg-[#0c0b0e]/60 p-3 font-mono text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-500 dark:text-muted text-[10px] uppercase tracking-wider">
+                          Live App Audit
+                        </span>
+                        <span className="inline-flex items-center gap-1.5 text-signal text-[11px] font-medium">
+                          <span className="h-1.5 w-1.5 rounded-full bg-signal animate-pulse" />
+                          Live (142ms · Fast)
+                        </span>
+                      </div>
+                      <div className="mt-1.5 flex items-center gap-2 text-[11px]">
+                        <span className="text-slate-900 dark:text-[#ece9f0] font-medium">overreacted.io</span>
+                        <span className="rounded bg-white dark:bg-surface px-1.5 py-0.5 text-[9px] text-slate-500 dark:text-muted border border-slate-200 dark:border-edge">
+                          Vercel
+                        </span>
+                      </div>
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        <span className="rounded bg-orange-50 dark:bg-signal/10 px-1.5 py-0.5 text-[10px] text-orange-700 dark:text-signal border border-orange-200 dark:border-signal/20">
+                          Next.js (React)
+                        </span>
+                        <span className="rounded bg-white dark:bg-surface px-1.5 py-0.5 text-[10px] text-slate-700 dark:text-[#ece9f0] border border-slate-200 dark:border-edge">
+                          TypeScript
+                        </span>
+                        <span className="rounded bg-white dark:bg-surface px-1.5 py-0.5 text-[10px] text-slate-500 dark:text-muted border border-slate-200 dark:border-edge">
+                          Responsive Viewport
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Claim vs Evidence Snippet */}
+                    <div className="mt-3 rounded-xl border border-slate-200 dark:border-edge bg-slate-50/70 dark:bg-[#0c0b0e]/60 p-3 font-mono text-xs space-y-2">
+                      <div className="text-slate-500 dark:text-muted text-[10px] uppercase tracking-wider">
+                        Claim vs. Evidence Matrix
+                      </div>
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-slate-900 dark:text-[#ece9f0] font-medium">React / State Architecture</span>
+                        <span className="inline-flex items-center gap-1 text-signal font-semibold">
+                          <Icon.Check className="h-3 w-3" /> Code Verified
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-slate-900 dark:text-[#ece9f0] font-medium">Production Next.js</span>
+                        <span className="inline-flex items-center gap-1 text-slate-700 dark:text-[#ece9f0]/80 font-semibold">
+                          <Icon.Globe className="h-3 w-3" /> Live Shipped
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-slate-900 dark:text-[#ece9f0] font-medium">Kubernetes / Distributed</span>
+                        <span className="inline-flex items-center gap-1 text-muted font-semibold">
+                          <Icon.Search className="h-3 w-3" /> Probe Required
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* 15-Minute Screen Guide Snippet */}
+                    <div className="mt-3 rounded-xl border border-amber-200 dark:border-edge/70 bg-amber-50/80 dark:bg-amber-950/10 p-3">
+                      <div className="flex items-center gap-1.5 font-mono text-[10px] font-semibold uppercase tracking-wider text-signal">
+                        <Icon.Zap className="h-3 w-3" /> 15-Min Phone Screen Guide
+                      </div>
+                      <p className="mt-1 text-xs text-slate-800 dark:text-[#ece9f0]/90 leading-snug">
+                        &quot;Describe a production debugging incident where rendering regressions impacted client performance.&quot;
+                      </p>
+                      <div className="mt-2 flex items-center justify-between font-mono text-[10px]">
+                        <span className="inline-flex items-center gap-1 text-signal font-medium">
+                          <Icon.Check className="h-3 w-3" /> Profiler / Flamegraphs
+                        </span>
+                        <span className="inline-flex items-center gap-1 text-muted font-medium">
+                          <Icon.Alert className="h-3 w-3" /> Vague &quot;checked console&quot;
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 text-center font-mono text-[10px] text-slate-400 dark:text-muted/60">
+                      Ready to share with hiring committees in PDF format.
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
 
           {/* Social Proof Metric Bar */}
           <div className="mt-16 grid grid-cols-2 gap-6 border-t border-slate-200 dark:border-edge/60 pt-10 sm:grid-cols-4">
+            <div>
+              <div className="font-mono text-3xl font-extrabold text-slate-900 dark:text-[#ece9f0]">34+</div>
+              <div className="font-mono text-[11px] uppercase tracking-wider text-slate-500 dark:text-muted mt-1">
+                Engineered Milestones
+              </div>
+            </div>
+            <div>
+              <div className="font-mono text-3xl font-extrabold text-[#ea580c] dark:text-signal">2D-Grid</div>
+              <div className="font-mono text-[11px] uppercase tracking-wider text-slate-500 dark:text-muted mt-1">
+                Coordinate PDF & DOCX Parser
+              </div>
+            </div>
             <div>
               <div className="font-mono text-3xl font-extrabold text-slate-900 dark:text-[#ece9f0]">11+</div>
               <div className="font-mono text-[11px] uppercase tracking-wider text-slate-500 dark:text-muted mt-1">
@@ -436,18 +575,6 @@ export default function Home() {
               <div className="font-mono text-3xl font-extrabold text-[#ea580c] dark:text-signal">~14s</div>
               <div className="font-mono text-[11px] uppercase tracking-wider text-slate-500 dark:text-muted mt-1">
                 Average Dossier Latency
-              </div>
-            </div>
-            <div>
-              <div className="font-mono text-3xl font-extrabold text-slate-900 dark:text-[#ece9f0]">100%</div>
-              <div className="font-mono text-[11px] uppercase tracking-wider text-slate-500 dark:text-muted mt-1">
-                Zero Candidate Prep / Login
-              </div>
-            </div>
-            <div>
-              <div className="font-mono text-3xl font-extrabold text-[#ea580c] dark:text-signal">2–3pg</div>
-              <div className="font-mono text-[11px] uppercase tracking-wider text-slate-500 dark:text-muted mt-1">
-                Calibrated Executive PDF
               </div>
             </div>
           </div>
@@ -572,7 +699,7 @@ export default function Home() {
           </div>
 
           <h2 className="mt-4 font-sans text-3xl font-extrabold tracking-tight sm:text-4xl text-slate-900 dark:text-[#ece9f0]">
-            From candidate handle to hiring dossier{' '}
+            From raw signals to calibrated intelligence{' '}
             <span className="text-[#ea580c] dark:text-signal">in three steps.</span>
           </h2>
 
@@ -580,38 +707,38 @@ export default function Home() {
             {/* Step 1 */}
             <div className="rounded-2xl border border-slate-200 dark:border-edge bg-white dark:bg-surface/40 p-6 shadow-sm hover:shadow-md transition-shadow">
               <div className="font-mono text-4xl font-extrabold text-[#ea580c] dark:text-signal">01</div>
-              <h3 className="mt-4 text-lg font-bold text-slate-900 dark:text-[#ece9f0]">Input Candidate Signals</h3>
+              <h3 className="mt-4 text-lg font-bold text-slate-900 dark:text-[#ece9f0]">Ingest Signals or Master Resume</h3>
               <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-muted">
-                Enter their GitHub username plus an optional live application or portfolio URL (Vercel, Render, or custom domain). Zero candidate registration needed.
+                Audit any engineer via their GitHub handle and live deployed app URL, or upload your resume (PDF/DOCX) into the immutable CareerOS vault with 2D coordinate parsing.
               </p>
               <div className="mt-4 rounded-xl bg-slate-50 dark:bg-[#0c0b0e] p-2.5 font-mono text-[11px] text-slate-600 dark:text-muted border border-slate-200 dark:border-edge">
-                @username + https://my-saas.com
+                @username + live-url or Resume.pdf
               </div>
             </div>
 
             {/* Step 2 */}
             <div className="rounded-2xl border border-slate-200 dark:border-edge bg-white dark:bg-surface/40 p-6 shadow-sm hover:shadow-md transition-shadow">
               <div className="font-mono text-4xl font-extrabold text-[#ea580c] dark:text-signal">02</div>
-              <h3 className="mt-4 text-lg font-bold text-slate-900 dark:text-[#ece9f0]">Multi-Signal Deep Audit</h3>
+              <h3 className="mt-4 text-lg font-bold text-slate-900 dark:text-[#ece9f0]">Multi-Signal Ground-Truth Audit</h3>
               <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-muted">
-                Our agent executes 11 deterministic tools in parallel: language byte counts, commit message depth, PR reviews, ecosystem mentions, and live production DOM/stack audits.
+                11 deterministic tools execute in parallel: commit message forensics, language byte counts, PR reviews, headless live app DOM inspection, and ReAct code tree traversal with line-bounded buffers.
               </p>
               <div className="mt-4 rounded-xl bg-slate-50 dark:bg-[#0c0b0e] p-2.5 font-mono text-[11px] text-slate-600 dark:text-muted font-medium border border-slate-200 dark:border-edge inline-flex items-center gap-1.5">
                 <Icon.Check className="h-3 w-3 text-signal" />
-                11 Parallel Inspection Tools
+                11 Parallel Tools + Live Bundle Audit
               </div>
             </div>
 
             {/* Step 3 */}
             <div className="rounded-2xl border border-slate-200 dark:border-edge bg-white dark:bg-surface/40 p-6 shadow-sm hover:shadow-md transition-shadow">
               <div className="font-mono text-4xl font-extrabold text-[#ea580c] dark:text-signal">03</div>
-              <h3 className="mt-4 text-lg font-bold text-slate-900 dark:text-[#ece9f0]">Executive Recruiter Brief</h3>
+              <h3 className="mt-4 text-lg font-bold text-slate-900 dark:text-[#ece9f0]">Executive Brief or Tailored Variant</h3>
               <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-muted">
-                Receive calibrated seniority classifications, the Claim vs. Evidence Matrix, and 3 sharp phone screen questions with exact &quot;What to listen for&quot; signals.
+                Recruiters receive calibrated seniority, Claim vs Evidence matrices, and 15-min screen guides. Developers receive target-fit pre-flights and versioned tailored resume variants.
               </p>
               <div className="mt-4 rounded-xl bg-slate-50 dark:bg-[#0c0b0e] p-2.5 font-mono text-[11px] text-[#ea580c] dark:text-signal font-medium border border-slate-200 dark:border-edge inline-flex items-center gap-1.5">
                 <Icon.Clipboard className="h-3 w-3" />
-                1-Click Copy & PDF Export
+                Executive PDF & Tailored Variant Studio
               </div>
             </div>
           </div>
@@ -622,11 +749,11 @@ export default function Home() {
       <section id="features" className="py-20 sm:py-28 bg-[#f4f2ea] dark:bg-[#100e13] border-b border-slate-200 dark:border-edge/60">
         <div className="mx-auto max-w-6xl px-6">
           <div className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-[#ea580c] dark:text-signal font-semibold">
-            <span>●</span> Executive Intelligence Suite
+            <span>●</span> Unified Technical Intelligence & Career Suite
           </div>
 
           <h2 className="mt-4 font-sans text-3xl font-extrabold tracking-tight sm:text-4xl text-slate-900 dark:text-[#ece9f0]">
-            Engineered for hiring teams who value{' '}
+            Engineered for hiring teams & engineers who value{' '}
             <span className="text-[#ea580c] dark:text-signal">accuracy.</span>
           </h2>
 
@@ -635,9 +762,19 @@ export default function Home() {
               <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-signal/25 bg-signal/10 text-signal">
                 <Icon.Briefcase className="h-5 w-5" />
               </div>
-              <h4 className="mt-3 text-base font-bold text-slate-900 dark:text-[#ece9f0]">Working Professional Recognition</h4>
+              <h4 className="mt-3 text-base font-bold text-slate-900 dark:text-[#ece9f0]">Developer CareerOS & Resume Vault</h4>
               <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-muted">
-                Identifies enterprise engineers who write proprietary code. Replaces false &quot;junior/inactive&quot; ratings with verified tenure and private work context.
+                2D coordinate visual PDF extraction and Mammoth DOCX list preservation. Store immutable master resumes and branch versioned variants (v1.0, v1.1, v2.0) with rich Experience & Project section editors.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 dark:border-edge bg-white dark:bg-surface/60 p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-signal/25 bg-signal/10 text-signal">
+                <Icon.Target className="h-5 w-5" />
+              </div>
+              <h4 className="mt-3 text-base font-bold text-slate-900 dark:text-[#ece9f0]">Target Job Fit Pre-Flight</h4>
+              <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-muted">
+                Cross-references candidate code repositories and live applications against specific job descriptions before applying, pinpointing verified strengths and suspicious buzzword gaps.
               </p>
             </div>
 
@@ -653,6 +790,16 @@ export default function Home() {
 
             <div className="rounded-2xl border border-slate-200 dark:border-edge bg-white dark:bg-surface/60 p-6 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-signal/25 bg-signal/10 text-signal">
+                <Icon.Building className="h-5 w-5" />
+              </div>
+              <h4 className="mt-3 text-base font-bold text-slate-900 dark:text-[#ece9f0]">RecruiterOS Command Center</h4>
+              <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-muted">
+                Dedicated workspace for managing open job requisitions, setting seniority rubrics & hiring guardrails, tracking candidate leaderboards, and exporting 1-pager EM briefs.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 dark:border-edge bg-white dark:bg-surface/60 p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-signal/25 bg-signal/10 text-signal">
                 <Icon.Scale className="h-5 w-5" />
               </div>
               <h4 className="mt-3 text-base font-bold text-slate-900 dark:text-[#ece9f0]">Claim vs. Evidence Matrix</h4>
@@ -663,31 +810,11 @@ export default function Home() {
 
             <div className="rounded-2xl border border-slate-200 dark:border-edge bg-white dark:bg-surface/60 p-6 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-signal/25 bg-signal/10 text-signal">
-                <Icon.Target className="h-5 w-5" />
-              </div>
-              <h4 className="mt-3 text-base font-bold text-slate-900 dark:text-[#ece9f0]">15-Min Phone Screen Guide</h4>
-              <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-muted">
-                Calibrated questions designed for non-technical recruiters. Gives exact &quot;What to listen for&quot; and red flag buzzword signals for fast candidate qualification.
-              </p>
-            </div>
-
-            <div className="rounded-2xl border border-slate-200 dark:border-edge bg-white dark:bg-surface/60 p-6 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-signal/25 bg-signal/10 text-signal">
-                <Icon.Printer className="h-5 w-5" />
-              </div>
-              <h4 className="mt-3 text-base font-bold text-slate-900 dark:text-[#ece9f0]">Executive PDF Print Engine</h4>
-              <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-muted">
-                High-contrast multi-page export without broken cards or orphan headers. Ready to share directly in hiring committee meetings or attach to ATS records.
-              </p>
-            </div>
-
-            <div className="rounded-2xl border border-slate-200 dark:border-edge bg-white dark:bg-surface/60 p-6 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-signal/25 bg-signal/10 text-signal">
                 <Icon.Zap className="h-5 w-5" />
               </div>
               <h4 className="mt-3 text-base font-bold text-slate-900 dark:text-[#ece9f0]">Multi-Model Resilient Gateway</h4>
               <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-muted">
-                Autonomous synthesis backed by Gemini 3.8 Flash, Groq, and OpenRouter with automatic failover, guaranteeing 99.9% report delivery uptime.
+                Autonomous synthesis backed by Gemini 2.5 Flash, Groq, OpenRouter, DeepSeek, and OpenAI with automatic failover and deterministic fallback floor, guaranteeing 99.9% uptime.
               </p>
             </div>
           </div>

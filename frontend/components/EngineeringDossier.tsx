@@ -10,6 +10,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Icon } from '@/components/icons';
 import {
   DOSSIER_STATS,
@@ -78,14 +79,26 @@ function DossierDrawer({ onClose }: { onClose: () => void }) {
                 Full-Stack Architecture · Autonomous ReAct Agent · Zero-Gimmick Design
               </p>
             </div>
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Close dossier"
-              className="flex h-8 w-8 flex-none items-center justify-center rounded-lg border border-edge bg-well/50 text-muted transition-colors hover:border-signal/50 hover:bg-well hover:text-signal"
-            >
-              <Icon.X className="h-4 w-4" />
-            </button>
+            <div className="flex items-center gap-2">
+              <Link
+                href="/dossier"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hidden sm:inline-flex items-center gap-1 rounded-lg border border-edge bg-well/60 px-2.5 py-1.5 font-mono text-[11px] text-muted hover:border-signal/50 hover:text-signal transition-colors"
+                title="Open canonical full-page dossier in new tab"
+              >
+                <span>Full Page</span>
+                <Icon.ArrowUpRight className="h-3 w-3 opacity-70" />
+              </Link>
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Close dossier"
+                className="flex h-8 w-8 flex-none items-center justify-center rounded-lg border border-edge bg-well/50 text-muted transition-colors hover:border-signal/50 hover:bg-well hover:text-signal"
+              >
+                <Icon.X className="h-4 w-4" />
+              </button>
+            </div>
           </div>
 
           {/* Tab Navigation: Properly spaced, responsive wrapping & scrolling */}
@@ -359,7 +372,7 @@ function DossierDrawer({ onClose }: { onClose: () => void }) {
 
 export function EngineeringDossier({ onOpen }: { onOpen: () => void }) {
   return (
-    <section id="engineering" className="py-20 sm:py-28 border-b border-edge bg-canvas">
+    <section id="dossier" className="py-20 sm:py-28 border-b border-edge bg-canvas scroll-mt-16">
       <div className="mx-auto max-w-6xl px-6">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
           <div>
@@ -372,18 +385,28 @@ export function EngineeringDossier({ onOpen }: { onOpen: () => void }) {
               See exactly <span className="text-[#ea580c] dark:text-signal">how it was built.</span>
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">
-              For technical recruiters and hiring managers: explore the Two-Tier Agentic Engine, resilient 6-provider LLM gateway, atomic usage metering, and bootstrapped MFS monetization.
+              For technical recruiters, hiring managers, and interviewers: explore Developer CareerOS, the Two-Tier ReAct agentic loop, 2D coordinate PDF extraction, resilient 6-provider LLM gateway, and verified production benchmarks.
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={onOpen}
-            className="flex-none inline-flex items-center justify-center gap-2 rounded-xl bg-signal px-5 py-3 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-xs transition-all hover:brightness-105 active:scale-95"
-          >
-            <span>Open Build Dossier</span>
-            <Icon.ArrowUpRight className="h-3.5 w-3.5" />
-          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href="/dossier"
+              className="flex-none inline-flex items-center justify-center gap-1.5 rounded-xl border border-edge bg-card px-4 py-3 font-mono text-xs font-bold uppercase tracking-wider text-content shadow-xs transition-all hover:border-signal/50 hover:text-signal"
+            >
+              <span>Full Page Dossier</span>
+              <Icon.ArrowUpRight className="h-3.5 w-3.5" />
+            </Link>
+
+            <button
+              type="button"
+              onClick={onOpen}
+              className="flex-none inline-flex items-center justify-center gap-2 rounded-xl bg-signal px-5 py-3 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-xs transition-all hover:brightness-105 active:scale-95"
+            >
+              <span>Open Build Dossier</span>
+              <Icon.ArrowUpRight className="h-3.5 w-3.5" />
+            </button>
+          </div>
         </div>
 
         <button
