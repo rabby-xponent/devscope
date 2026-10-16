@@ -61,6 +61,9 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const signOut = useCallback(async () => {
     await signOutSession();
     setUser(null);
+    if (typeof window !== 'undefined') {
+      window.location.href = '/';
+    }
   }, []);
 
   useEffect(() => {

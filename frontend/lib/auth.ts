@@ -523,13 +523,16 @@ export async function devSignIn(email: string, handle: string): Promise<AuthUser
 export async function signOutSession(): Promise<void> {
   const sb = await supabase();
   if (sb) {
-    await sb.auth.signOut();
-  } else if (typeof window !== 'undefined') {
-    localStorage.removeItem(DEV_TOKEN_KEY);
+    try {
+      await sb.auth.signOut();
+    } catch {}
   }
   if (typeof window !== 'undefined') {
+    localStorage.removeItem(DEV_TOKEN_KEY);
+    localStorage.removeItem(LEGACY_DEV_TOKEN_KEY);
     localStorage.removeItem('gitgrill_current_user_id');
     localStorage.removeItem('gitgrill_user_role');
+    localStorage.removeItem('gitgrill_pending_recovery');
   }
   notifyListeners();
 }

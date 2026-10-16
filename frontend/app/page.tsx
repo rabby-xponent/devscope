@@ -38,7 +38,7 @@ const CANDIDATE_ARCHETYPES = [
 ];
 
 export default function Home() {
-  const { user, loading: sessionLoading, openSignUp } = useSession();
+  const { user, loading: sessionLoading, openSignIn } = useSession();
 
   // Simple Quick Audit Search State
   const [auditUsername, setAuditUsername] = useState('');
@@ -110,16 +110,26 @@ export default function Home() {
 
           <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
             <ThemeToggle />
-            <AccountMenu />
-            {!sessionLoading && !user && (
-              <button
-                type="button"
-                onClick={openSignUp}
-                className="inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 rounded-lg bg-[#ea580c] dark:bg-signal px-3.5 py-1.5 font-mono text-xs font-bold text-white dark:text-ink hover:opacity-90 transition-all shadow-xs"
-              >
-                <span>Get Started</span>
-                <Icon.ArrowRight className="h-3 w-3 shrink-0" />
-              </button>
+            {user ? (
+              <AccountMenu />
+            ) : !sessionLoading && (
+              <>
+                <button
+                  type="button"
+                  onClick={openSignIn}
+                  className="font-mono text-xs font-medium text-slate-600 dark:text-muted hover:text-[#ea580c] dark:hover:text-signal transition-colors px-2 py-1.5"
+                >
+                  Sign in
+                </button>
+                <Link
+                  href="/developer"
+                  className="inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 rounded-lg bg-[#ea580c] dark:bg-signal px-3.5 py-1.5 font-mono text-xs font-bold text-white dark:text-ink hover:bg-[#ea580c]/90 dark:hover:bg-signal/90 transition-all shadow-xs"
+                >
+                  <Icon.Briefcase className="h-3.5 w-3.5 shrink-0" />
+                  <span>CareerOS</span>
+                  <Icon.ArrowRight className="h-3 w-3 shrink-0" />
+                </Link>
+              </>
             )}
           </div>
         </div>
