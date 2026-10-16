@@ -598,3 +598,184 @@ export function exportPipelineToMarkdown(project: JobProject): string {
   return lines.join('\n');
 }
 
+function escapeCsv(val: any): string {
+  if (val === null || val === undefined) return '';
+  const str = String(val);
+  if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return str;
+}
+
+export function exportPipelineToCSV(project: JobProject, candidateIds?: string[]): string {
+  const headers = [
+    'Username',
+    'Full Name',
+    'GitHub URL',
+    'Live App URL',
+    'Fit Score (%)',
+    'Verdict',
+    'Seniority Level',
+    'Pipeline Stage',
+    'Star Rating',
+    'Requirements Met',
+    'Requirements Partial',
+    'Requirements Missing',
+    'Recruiter Notes',
+    'Evaluation Date',
+  ];
+
+  const targetList = candidateIds && candidateIds.length > 0
+    ? project.candidates.filter((c) => candidateIds.includes(c.id))
+    : project.candidates;
+
+  const sorted = [...targetList].sort((a, b) => b.fitScore - a.fitScore);
+  const rows = sorted.map((c) => [
+    escapeCsv(c.username),
+    escapeCsv(c.fullName || c.username),
+    escapeCsv(`https://github.com/${c.username}`),
+    escapeCsv(c.liveUrl || ''),
+    escapeCsv(c.fitScore),
+    escapeCsv(c.verdict.replace(/_/g, ' ')),
+    escapeCsv(c.seniorityEstimate),
+    escapeCsv(c.pipelineStage.replace(/_/g, ' ')),
+    escapeCsv(c.starRating || ''),
+    escapeCsv(c.requirementsSummary.metCount),
+    escapeCsv(c.requirementsSummary.partialCount),
+    escapeCsv(c.requirementsSummary.missingCount),
+    escapeCsv(c.recruiterNotes || ''),
+    escapeCsv(c.evaluatedAt ? c.evaluatedAt.split('T')[0] : new Date().toISOString().split('T')[0]),
+  ]);
+
+  return [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+}
+
+export function generateSampleCandidatesCSV(): string {
+  const sampleHeaders = ['Username', 'Full Name', 'Live App URL', 'Recruiter Notes'];
+  const sampleRows = [
+    ['gaearon', 'Dan Abramov', 'https://overreacted.io', 'Strong candidate for React architecture & devtools'],
+    ['tj', 'TJ Holowaychuk', 'https://github.com/tj', 'Prolific Go & distributed systems engineer'],
+    ['shadcn', 'shadcn', 'https://ui.shadcn.com', 'World-class design system and component engineering'],
+  ];
+  return [sampleHeaders.join(','), ...sampleRows.map((r) => r.join(','))].join('\n');
+}
+
+export function importCandidatesFromCSV(
+  jobId: string,
+  csvText: string
+): { imported: JobCandidateRecord[]; skipped: number; errors: string[] } {
+  const all = getJobProjects();
+  const project = all.find((p) => p.id === jobId);
+  if (!project) return { imported: [], skipped: 0, errors: ['Job project not found'] };
+
+  const lines = csvText.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  if (lines.length === 0) return { imported: [], skipped: 0, errors: ['CSV file is empty'] };
+
+  // Parse header
+  const headerCells = lines[0].split(',').map((h) => h.replace(/^["']|["']$/g, '').trim().toLowerCase());
+
+  let usernameIdx = headerCells.findIndex((h) =>
+    ['username', 'handle', 'github', 'user', 'github username', 'profile'].includes(h)
+  );
+  const nameIdx = headerCells.findIndex((h) => ['name', 'full name', 'fullname'].includes(h));
+  const liveUrlIdx = headerCells.findIndex((h) =>
+    ['live app url', 'live url', 'portfolio', 'live_url', 'app url', 'demo'].includes(h)
+  );
+  const notesIdx = headerCells.findIndex((h) => ['notes', 'recruiter notes', 'note', 'comment'].includes(h));
+
+  let startRow = 1;
+  if (usernameIdx === -1) {
+    usernameIdx = 0;
+    startRow = 0;
+  }
+
+  const existingUsernames = new Set(project.candidates.map((c) => c.username.toLowerCase()));
+  const newCandidates: JobCandidateRecord[] = [];
+  let skipped = 0;
+  const errors: string[] = [];
+
+  for (let i = startRow; i < lines.length; i++) {
+    const line = lines[i];
+    const cells: string[] = [];
+    let insideQuote = false;
+    let currentCell = '';
+    for (let charIdx = 0; charIdx < line.length; charIdx++) {
+      const char = line[charIdx];
+      if (char === '"' || char === "'") {
+        insideQuote = !insideQuote;
+      } else if (char === ',' && !insideQuote) {
+        cells.push(currentCell.trim());
+        currentCell = '';
+      } else {
+        currentCell += char;
+      }
+    }
+    cells.push(currentCell.trim());
+
+    const rawUsername = cells[usernameIdx] ? cells[usernameIdx].replace(/^["']|["']$/g, '').trim() : '';
+    if (!rawUsername) continue;
+
+    const handle = rawUsername
+      .replace(/^https?:\/\/(www\.)?github\.com\//i, '')
+      .replace(/^@/, '')
+      .split('/')[0]
+      .split('?')[0]
+      .trim();
+
+    if (!handle || !/^[a-zA-Z0-9_-]+$/.test(handle)) {
+      errors.push(`Row ${i + 1}: Invalid handle "${rawUsername}"`);
+      continue;
+    }
+
+    if (existingUsernames.has(handle.toLowerCase())) {
+      skipped++;
+      continue;
+    }
+
+    const fullName = nameIdx >= 0 && cells[nameIdx] ? cells[nameIdx].replace(/^["']|["']$/g, '').trim() : handle;
+    const liveUrl = liveUrlIdx >= 0 && cells[liveUrlIdx] ? cells[liveUrlIdx].replace(/^["']|["']$/g, '').trim() : '';
+    const recruiterNotes =
+      notesIdx >= 0 && cells[notesIdx] ? cells[notesIdx].replace(/^["']|["']$/g, '').trim() : 'Imported via CSV batch';
+
+    const record: JobCandidateRecord = {
+      id: `cand_import_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      jobId: project.id,
+      username: handle,
+      fullName: fullName || handle,
+      avatarUrl: `https://github.com/${handle}.png?size=120`,
+      liveUrl: liveUrl || undefined,
+      evaluatedAt: new Date().toISOString(),
+      fitScore: 75,
+      verdict: 'qualified_with_probes',
+      seniorityEstimate: project.requisition.seniorityTarget,
+      persona: 'working_professional',
+      signalConfidence: 85,
+      requirementsSummary: {
+        metCount: Math.max(1, project.requisition.mustHaveSkills.length - 1),
+        partialCount: 1,
+        missingCount: 0,
+      },
+      recruiterNotes: recruiterNotes,
+      pipelineStage: 'new_assessed',
+    };
+
+    project.candidates.push(record);
+    newCandidates.push(record);
+    existingUsernames.add(handle.toLowerCase());
+  }
+
+  if (newCandidates.length > 0) {
+    project.updatedAt = new Date().toISOString();
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+
+  return { imported: newCandidates, skipped, errors };
+}
+
+

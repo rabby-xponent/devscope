@@ -15,6 +15,7 @@ import {
   removeCandidateFromProject,
   batchUpdateCandidatesStage,
   exportPipelineToMarkdown,
+  exportPipelineToCSV,
 } from '@/lib/job-projects';
 import {
   getRecruiterAccount,
@@ -32,6 +33,7 @@ import { GitGrillLogo } from '@/components/GitGrillLogo';
 import RecruiterAccountModal from '@/components/RecruiterAccountModal';
 import CandidateCompareModal from '@/components/CandidateCompareModal';
 import HiringCommitteeBriefModal from '@/components/HiringCommitteeBriefModal';
+import CsvImportModal from '@/components/CsvImportModal';
 
 function RecruiterPortalContent() {
   const router = useRouter();
@@ -49,6 +51,7 @@ function RecruiterPortalContent() {
   // Modals
   const [showGuardrailsModal, setShowGuardrailsModal] = useState(false);
   const [showNewJobModal, setShowNewJobModal] = useState(false);
+  const [showCsvImportModal, setShowCsvImportModal] = useState(false);
   const [compareModalOpen, setCompareModalOpen] = useState(false);
   const [briefCandidate, setBriefCandidate] = useState<JobCandidateRecord | null>(null);
 
@@ -65,6 +68,7 @@ function RecruiterPortalContent() {
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [editingNoteValue, setEditingNoteValue] = useState('');
   const [copiedMd, setCopiedMd] = useState(false);
+  const [copiedAtsId, setCopiedAtsId] = useState<string | null>(null);
 
   useEffect(() => {
     setAccount(getRecruiterAccount());
@@ -153,6 +157,48 @@ function RecruiterPortalContent() {
     setCopiedMd(true);
     setTimeout(() => setCopiedMd(false), 2500);
   };
+
+  const handleExportCSV = (selectedOnly = false) => {
+    if (!activeProject) return;
+    const targetIds = selectedOnly && selectedIds.length > 0 ? selectedIds : undefined;
+    const csvContent = exportPipelineToCSV(activeProject, targetIds);
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const safeTitle = activeProject.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    link.setAttribute('download', `gitgrill-${safeTitle}-candidates.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleCopyAtsNote = (cand: JobCandidateRecord) => {
+    if (!activeProject) return;
+    const noteText = `[GitGrill Screening Verdict: ${cand.verdict.replace(/_/g, ' ').toUpperCase()}]
+Role: ${activeProject.title} (${activeProject.department})
+Fit Score: ${cand.fitScore}% | Seniority: ${cand.seniorityEstimate.toUpperCase()} | Rating: ${cand.starRating ? '★'.repeat(cand.starRating) : 'Not rated'}
+Audited Requirements: ${cand.requirementsSummary.metCount} Met · ${cand.requirementsSummary.partialCount} Partial · ${cand.requirementsSummary.missingCount} Missing
+Recruiter Notes: ${cand.recruiterNotes || 'None'}
+Live Evidence Dossier: ${window.location.origin}/profile/${cand.username}?jobId=${activeProject.id}`;
+    navigator.clipboard.writeText(noteText);
+    setCopiedAtsId(cand.id);
+    setTimeout(() => setCopiedAtsId(null), 1800);
+  };
+
+  const pipelineStats = useMemo(() => {
+    if (!activeProject) return { total: 0, strong: 0, avg: 0, active: 0 };
+    const total = activeProject.candidates.length;
+    const strong = activeProject.candidates.filter(
+      (c) => c.fitScore >= 75 && c.pipelineStage !== 'archived'
+    ).length;
+    const active = activeProject.candidates.filter((c) => c.pipelineStage !== 'archived').length;
+    const avg =
+      total > 0
+        ? Math.round(activeProject.candidates.reduce((sum, c) => sum + c.fitScore, 0) / total)
+        : 0;
+    return { total, strong, avg, active };
+  }, [activeProject]);
 
   const stageOptions: { value: PipelineStage; label: string }[] = [
     { value: 'new_assessed', label: 'New Assessed' },
@@ -500,27 +546,86 @@ function RecruiterPortalContent() {
               </h2>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setShowCsvImportModal(true)}
+                className="flex items-center gap-1.5 rounded-lg border border-signal/40 bg-signal/10 px-3 py-1.5 font-mono text-xs font-semibold text-signal shadow-xs transition-colors hover:bg-signal/20 outline-none focus-visible:ring-2 focus-visible:ring-signal/40 cursor-pointer"
+                title="Import candidates in bulk from CSV or spreadsheet"
+              >
+                <Icon.Upload className="h-3.5 w-3.5" />
+                <span>Import CSV</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleExportCSV(false)}
+                className="flex items-center gap-1.5 rounded-lg border border-edge bg-card px-3 py-1.5 font-mono text-xs font-semibold text-content shadow-xs transition-colors hover:border-signal/50 hover:text-signal outline-none focus-visible:ring-2 focus-visible:ring-signal/40 cursor-pointer"
+                title="Download complete pipeline as CSV spreadsheet"
+              >
+                <Icon.Download className="h-3.5 w-3.5 text-muted" />
+                <span>Export CSV</span>
+              </button>
+
               <button
                 type="button"
                 onClick={handleExportMarkdown}
-                className="flex items-center gap-1.5 rounded-lg border border-edge bg-card px-3 py-1.5 font-mono text-xs font-semibold text-content shadow-xs transition-colors hover:border-signal/50 hover:text-signal outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
+                className="flex items-center gap-1.5 rounded-lg border border-edge bg-card px-3 py-1.5 font-mono text-xs font-semibold text-content shadow-xs transition-colors hover:border-signal/50 hover:text-signal outline-none focus-visible:ring-2 focus-visible:ring-signal/40 cursor-pointer"
+                title="Copy Markdown formatted pipeline table to clipboard"
               >
                 <Icon.Clipboard className="h-3.5 w-3.5 text-muted" />
-                <span>{copiedMd ? 'Copied' : 'Export Leaderboard'}</span>
+                <span>{copiedMd ? 'Copied MD' : 'Copy MD'}</span>
                 {copiedMd && <Icon.Check className="h-3 w-3 text-signal" />}
               </button>
 
               <button
                 type="button"
                 onClick={() => setShowGuardrailsModal(true)}
-                className="flex items-center gap-1.5 rounded-lg border border-edge bg-card px-3 py-1.5 font-mono text-xs font-semibold text-content shadow-xs transition-colors hover:border-signal/50 hover:text-signal outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
+                className="flex items-center gap-1.5 rounded-lg border border-edge bg-card px-3 py-1.5 font-mono text-xs font-semibold text-content shadow-xs transition-colors hover:border-signal/50 hover:text-signal outline-none focus-visible:ring-2 focus-visible:ring-signal/40 cursor-pointer"
               >
                 <Icon.Settings className="h-3.5 w-3.5 text-muted" />
                 <span>Guardrails</span>
               </button>
             </div>
           </div>
+
+          {/* Pipeline Health Summary Ribbon */}
+          {activeProject && activeProject.candidates.length > 0 && (
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 rounded-xl border border-edge/80 bg-well/40 p-3">
+              <div className="flex flex-col">
+                <span className="font-mono text-[10px] uppercase tracking-wider text-muted font-semibold">
+                  Total Evaluated
+                </span>
+                <span className="font-mono text-base font-bold text-content mt-0.5">
+                  {pipelineStats.total} <span className="text-xs text-muted font-normal">candidates</span>
+                </span>
+              </div>
+              <div className="flex flex-col">
+                <span className="font-mono text-[10px] uppercase tracking-wider text-muted font-semibold">
+                  Strong Matches
+                </span>
+                <span className="font-mono text-base font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
+                  {pipelineStats.strong} <span className="text-xs text-muted font-normal">≥ 75% score</span>
+                </span>
+              </div>
+              <div className="flex flex-col">
+                <span className="font-mono text-[10px] uppercase tracking-wider text-muted font-semibold">
+                  Average Fit Score
+                </span>
+                <span className="font-mono text-base font-bold text-signal mt-0.5">
+                  {pipelineStats.avg}%
+                </span>
+              </div>
+              <div className="flex flex-col">
+                <span className="font-mono text-[10px] uppercase tracking-wider text-muted font-semibold">
+                  Active in Pipeline
+                </span>
+                <span className="font-mono text-base font-bold text-content mt-0.5">
+                  {pipelineStats.active} <span className="text-xs text-muted font-normal">active</span>
+                </span>
+              </div>
+            </div>
+          )}
 
           {/* Filter, Search & Sort Bar */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
@@ -779,6 +884,15 @@ function RecruiterPortalContent() {
                           <div className="flex items-center justify-end gap-1.5">
                             <button
                               type="button"
+                              onClick={() => handleCopyAtsNote(cand)}
+                              className="rounded border border-edge bg-card px-2 py-1 font-mono text-[10px] font-medium text-content shadow-xs transition-colors hover:border-signal/50 hover:text-signal"
+                              title="Copy ATS scorecard note formatted for Greenhouse / Lever"
+                            >
+                              {copiedAtsId === cand.id ? 'Copied ATS!' : 'ATS Note'}
+                            </button>
+
+                            <button
+                              type="button"
                               onClick={() => setBriefCandidate(cand)}
                               className="rounded border border-edge bg-card px-2 py-1 font-mono text-[10px] font-medium text-content shadow-xs transition-colors hover:border-signal/50 hover:text-signal"
                               title="View and print 1-pager brief for hiring manager"
@@ -848,6 +962,16 @@ function RecruiterPortalContent() {
                 {selectedIds.length}
               </span>
             )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleExportCSV(true)}
+            className="inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 rounded-lg border border-edge bg-card px-3 py-1.5 font-mono text-xs font-semibold text-content shadow-xs transition-colors hover:border-signal/50 hover:text-signal"
+            title="Download selected candidates as CSV"
+          >
+            <Icon.Download className="h-3.5 w-3.5 text-muted" />
+            <span>Export CSV</span>
           </button>
 
           <Select
@@ -921,6 +1045,16 @@ function RecruiterPortalContent() {
           onClose={() => setBriefCandidate(null)}
           project={activeProject}
           candidate={briefCandidate}
+        />
+      )}
+
+      {showCsvImportModal && activeProject && (
+        <CsvImportModal
+          isOpen={showCsvImportModal}
+          onClose={() => setShowCsvImportModal(false)}
+          jobId={activeProject.id}
+          jobTitle={activeProject.title}
+          onImportSuccess={() => refreshProjects()}
         />
       )}
     </main>

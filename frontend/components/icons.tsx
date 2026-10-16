@@ -99,6 +99,11 @@ export const Icon = {
       <path d="M19 12H5M12 19l-7-7 7-7" />
     </svg>
   ),
+  ArrowRight: (p: IconProps) => (
+    <svg {...base(p)}>
+      <path d="M5 12h14M12 5l7 7-7 7" />
+    </svg>
+  ),
   Refresh: (p: IconProps) => (
     <svg {...base(p)}>
       <path d="M3 12a9 9 0 0 1 15.3-6.4L21 8M21 8V3M21 8h-5" />
@@ -237,6 +242,11 @@ export const Icon = {
   Download: (p: IconProps) => (
     <svg {...base(p)}>
       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+    </svg>
+  ),
+  Upload: (p: IconProps) => (
+    <svg {...base(p)}>
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
     </svg>
   ),
   AtSign: (p: IconProps) => (

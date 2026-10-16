@@ -96,6 +96,13 @@ export default function Home() {
             <a href="#pricing" className="whitespace-nowrap transition-colors hover:text-[#ea580c] dark:hover:text-signal">
               Pricing
             </a>
+            <Link
+              href="/recruiter"
+              className="inline-flex items-center gap-1 whitespace-nowrap transition-colors hover:text-[#ea580c] dark:hover:text-signal"
+            >
+              <span>For Recruiters</span>
+              <Icon.ArrowUpRight className="h-3 w-3 opacity-70" />
+            </Link>
             <button
               type="button"
               onClick={() => setDossierOpen(true)}
@@ -116,12 +123,12 @@ export default function Home() {
             </button>
             <AccountMenu workspace="developer" />
             <Link
-              href="/recruiter"
-              className="inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 rounded-lg border border-[#ea580c]/30 dark:border-signal/50 bg-[#ea580c]/10 dark:bg-signal/15 px-3 py-1.5 font-mono text-xs font-semibold text-[#ea580c] dark:text-signal hover:bg-[#ea580c] hover:text-white dark:hover:bg-signal dark:hover:text-ink transition-all shadow-xs"
+              href="/developer"
+              className="inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 rounded-lg bg-[#ea580c] dark:bg-signal px-3.5 py-1.5 font-mono text-xs font-bold text-white dark:text-ink hover:bg-[#ea580c]/90 dark:hover:bg-signal/90 transition-all shadow-xs"
             >
-              <Icon.Building className="h-3.5 w-3.5 shrink-0" />
-              <span>Recruiter Portal</span>
-              <Icon.ArrowUpRight className="h-3 w-3 shrink-0" />
+              <Icon.Briefcase className="h-3.5 w-3.5 shrink-0" />
+              <span>CareerOS</span>
+              <Icon.ArrowRight className="h-3 w-3 shrink-0" />
             </Link>
           </div>
         </div>
