@@ -28,29 +28,39 @@ const themeInitScript = `
 `;
 
 export const metadata: Metadata = {
-  title: 'GitGrill — GitHub developer intelligence & code defense',
+  title: 'GitGrill — AI-Native Technical Talent Intelligence & Developer CareerOS',
   description:
-    'Point it at a GitHub username. Get a developer intelligence report and deep code grill in under a minute.',
+    'Autonomous GitHub code defense, candidate intelligence, and developer CareerOS. Investigate codebases, verify claims with line-level diffs, and manage your master resume vault.',
+  metadataBase: new URL('https://gitgrill-gr.vercel.app'),
   icons: {
     icon: [
       { url: '/icon.svg', type: 'image/svg+xml' },
       { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/brand/app-icon.png', type: 'image/png' },
     ],
     shortcut: '/favicon.svg',
-    apple: '/brand/app-icon.jpg',
+    apple: '/apple-touch-icon.png',
   },
   openGraph: {
-    title: 'GitGrill — GitHub developer intelligence & code defense',
-    description: 'An AI agent that investigates and grills any GitHub developer codebase.',
+    title: 'GitGrill — AI-Native Technical Talent Intelligence & Developer CareerOS',
+    description: 'Autonomous GitHub code defense, candidate intelligence, and developer CareerOS.',
+    url: 'https://gitgrill-gr.vercel.app',
+    siteName: 'GitGrill',
     type: 'website',
     images: [
       {
-        url: '/brand/brand-hero.jpg',
+        url: '/brand/brand-hero.png',
         width: 1200,
         height: 630,
-        alt: 'GitGrill — Autonomous GitHub Technical Auditor',
+        alt: 'GitGrill — Autonomous GitHub Technical Auditor & CareerOS',
       },
     ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'GitGrill — AI-Native Technical Talent Intelligence & Developer CareerOS',
+    description: 'Autonomous GitHub code defense, candidate intelligence, and developer CareerOS.',
+    images: ['/brand/brand-hero.png'],
   },
 };
 

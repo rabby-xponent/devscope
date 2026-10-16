@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 64" fill="none">
+  <defs>
+    <radialGradient id="darkRadarSweep" cx="32" cy="32" r="28" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ea580c" stop-opacity="0.5"/>
+      <stop offset="70%" stop-color="#f97316" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#ea580c" stop-opacity="0.05"/>
+    </radialGradient>
+    <linearGradient id="darkGitOrange" x1="32" y1="47" x2="45" y2="20" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#c2410c"/>
+      <stop offset="60%" stop-color="#ea580c"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+    <style>
+      .logo-txt-primary { fill: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 26px; font-weight: 800; letter-spacing: 0.02em; }
+      .logo-txt-accent { fill: #f97316; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 26px; font-weight: 800; letter-spacing: 0.02em; }
+      .logo-sub { fill: #94a3b8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 8.5px; font-weight: 700; letter-spacing: 0.16em; }
+      .radar-reticle { stroke: #64748b; stroke-opacity: 0.7; }
+    </style>
+  </defs>
+
+  <!-- Inspection Radar Mark (Scaled to 48x48 centered at x=32, y=32) -->
+  <g transform="translate(8, 8) scale(1.5)">
+    <!-- Rings -->
+    <circle cx="16" cy="16" r="13.5" class="radar-reticle" stroke-width="1.5"/>
+    <circle cx="16" cy="16" r="8.5" class="radar-reticle" stroke-width="1.2" stroke-dasharray="2 2" stroke-opacity="0.6"/>
+    <circle cx="16" cy="16" r="3.5" class="radar-reticle" stroke-width="1" stroke-opacity="0.5"/>
+
+    <!-- Reticle Axes -->
+    <line x1="16" y1="2.5" x2="16" y2="29.5" class="radar-reticle" stroke-width="1.2" stroke-opacity="0.5"/>
+    <line x1="2.5" y1="16" x2="29.5" y2="16" class="radar-reticle" stroke-width="1.2" stroke-opacity="0.5"/>
+
+    <!-- Radar Sweep -->
+    <path d="M16 16 L16 2.5 A13.5 13.5 0 0 1 29.5 16 Z" fill="url(#darkRadarSweep)"/>
+    <line x1="16" y1="16" x2="25.5" y2="6.5" stroke="#ea580c" stroke-width="1.5" stroke-linecap="round"/>
+
+    <!-- Git Trunk & Branch -->
+    <line x1="16" y1="9.5" x2="16" y2="23.5" stroke="url(#darkGitOrange)" stroke-width="2.2" stroke-linecap="round"/>
+    <path d="M16 17.5 C16 15 19 13.5 22.5 11" stroke="url(#darkGitOrange)" stroke-width="2.2" stroke-linecap="round"/>
+
+    <!-- Commit Nodes -->
+    <circle cx="16" cy="23.5" r="2.2" fill="#c2410c" stroke="#0f172a" stroke-width="1.2"/>
+    <circle cx="16" cy="16" r="1.8" fill="#ea580c"/>
+    <circle cx="16" cy="9.5" r="2.2" fill="#ea580c" stroke="#0f172a" stroke-width="1.2"/>
+    <circle cx="22.5" cy="11" r="2.6" fill="#f59e0b" stroke="#ea580c" stroke-width="1.5"/>
+  </g>
+
+  <!-- Typography -->
+  <text x="68" y="38" class="logo-txt-primary">Git<tspan class="logo-txt-accent">Grill</tspan></text>
+  <text x="69" y="52" class="logo-sub">TALENT INTELLIGENCE &amp; CAREEROS</text>
+</svg>
