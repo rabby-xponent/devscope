@@ -33,9 +33,12 @@ import {
   generateHiringManagerPitch,
   generateAITailoredProposal,
   TailoredResumeProposal,
+  evaluateResumeAgainstJD,
+  JDMatchReport,
 } from '@/lib/resumes';
+import { TargetRole, getTargetRoles } from '@/lib/target-roles';
 
-type ViewMode = 'preview' | 'diagnostics' | 'defense' | 'inmail';
+type ViewMode = 'preview' | 'matchmaker' | 'diagnostics' | 'defense' | 'inmail';
 
 const ROLE_CATEGORY_OPTIONS: SelectOption[] = [
   { value: 'Backend / Distributed Systems', label: 'Backend / Distributed Systems', description: 'Go, Rust, Microservices, Low-latency' },
@@ -99,24 +102,42 @@ export function ResumeVault() {
   const [formSkillsText, setFormSkillsText] = useState('');
   const [formBulletsText, setFormBulletsText] = useState('');
 
+  // JD Matchmaker state in Vault
+  const [targetRoles, setTargetRoles] = useState<TargetRole[]>([]);
+  const [matchRoleId, setMatchRoleId] = useState<string>('');
+  const [expandedMatchProbeIdx, setExpandedMatchProbeIdx] = useState<number | null>(0);
+
   const loadData = async () => {
     let list = getResumes();
+    const rolesList = getTargetRoles();
+    setTargetRoles(rolesList);
+    if (rolesList.length > 0) {
+      setMatchRoleId((prev) => (prev ? prev : rolesList[0].id));
+    }
 
-    // Auto-heal master copies that had empty extractions due to earlier missing pdf parser
+    // Auto-heal master copies with upgraded coordinate-sorted extractor and parser
     let healed = false;
     for (let i = 0; i < list.length; i++) {
       const r = list[i];
-      if (
-        r.isMasterCopy &&
-        r.sourceFileType === 'pdf' &&
-        r.sourceFileDataUrl &&
-        (r.experience.length <= 1 && (r.experience[0]?.id === 'exp-master' || r.experience[0]?.company === 'Primary Engineering Experience' || !r.rawCleanText))
-      ) {
+      const hasGluedSkills = r.skills?.some((s) => s.category.includes('WebSocketsTesting') || s.category.includes('TestingInfra'));
+      const hasBrokenProjects = r.projects?.some((p) => p.name.includes('Built full-stack') || (p.bullets && p.bullets.length === 0));
+      const hasBogusCustomSection = r.identifiedSections?.some((s) => s.title.toLowerCase() === (r.fullName || '').toLowerCase() || s.title === 'GOLAM RABBY');
+      const hasEmptyText = !r.rawCleanText || r.experience.length <= 1;
+
+      if (r.isMasterCopy && r.sourceFileDataUrl && (hasGluedSkills || hasBrokenProjects || hasBogusCustomSection || hasEmptyText)) {
         try {
           const ab = await dataUrlToArrayBuffer(r.sourceFileDataUrl);
-          const text = await extractPdfText(ab);
+          const text = r.sourceFileType === 'pdf' ? await extractPdfText(ab) : await extractDocxText(ab);
           if (text) {
             const parsed = parseUploadedResumeText(text, r.sourceFileName);
+            const cleanIdentifiedSections = (parsed.identifiedSections || r.identifiedSections || []).filter(
+              (s) => s.title.toLowerCase() !== (parsed.fullName || r.fullName || '').toLowerCase() &&
+                     s.title !== 'GOLAM RABBY' &&
+                     !s.title.toLowerCase().includes('curriculum') &&
+                     !s.title.toLowerCase().includes('resume') &&
+                     !s.rawContent.includes(parsed.email || r.email || '@@@')
+            );
+
             list[i] = saveResume({
               ...r,
               title: parsed.title || r.title,
@@ -134,7 +155,7 @@ export function ResumeVault() {
               education: parsed.education && parsed.education.length > 0 ? parsed.education : r.education,
               projects: parsed.projects && parsed.projects.length > 0 ? parsed.projects : r.projects,
               rawCleanText: text,
-              identifiedSections: parsed.identifiedSections || r.identifiedSections,
+              identifiedSections: cleanIdentifiedSections,
             });
             healed = true;
           }
@@ -1245,6 +1266,18 @@ export function ResumeVault() {
                   </button>
                   <button
                     type="button"
+                    onClick={() => setActiveViewMode('matchmaker')}
+                    className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 font-bold transition-all ${
+                      activeViewMode === 'matchmaker'
+                        ? 'border border-signal/40 bg-signal/10 text-signal shadow-xs'
+                        : 'text-muted hover:text-content hover:bg-well'
+                    }`}
+                  >
+                    <Icon.Sparkle className="h-3.5 w-3.5 text-signal" />
+                    <span>JD Matchmaker</span>
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => setActiveViewMode('diagnostics')}
                     className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 font-bold transition-all ${
                       activeViewMode === 'diagnostics'
@@ -1367,6 +1400,14 @@ export function ResumeVault() {
                             >
                               <Icon.Sparkle className="h-3.5 w-3.5" />
                               <span>⚡ AI Tailor Resume / Section</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setActiveViewMode('matchmaker')}
+                              className="inline-flex items-center gap-1.5 rounded-xl border border-signal/40 bg-signal/10 px-3.5 py-2 font-mono text-xs font-bold text-signal shadow-xs hover:bg-signal/20 transition-all cursor-pointer"
+                            >
+                              <Icon.Target className="h-3.5 w-3.5" />
+                              <span>⚡ Match Against JD</span>
                             </button>
                             <button
                               type="button"
@@ -1593,7 +1634,16 @@ export function ResumeVault() {
 
                           {/* Custom Sections */}
                           {activeResume.identifiedSections
-                            ?.filter((s) => s.type === 'custom' || s.type === 'certifications')
+                            ?.filter(
+                              (s) =>
+                                (s.type === 'custom' || s.type === 'certifications') &&
+                                s.title.toLowerCase() !== (activeResume.fullName || '').toLowerCase() &&
+                                s.title !== 'GOLAM RABBY' &&
+                                !s.title.toLowerCase().includes('curriculum') &&
+                                !s.title.toLowerCase().includes('resume') &&
+                                !s.rawContent.includes(activeResume.email || '@@@') &&
+                                !s.rawContent.includes('github.com')
+                            )
                             .map((sec) => (
                               <div key={sec.id}>
                                 <div className="border border-neutral-900 px-2.5 py-0.5 font-bold uppercase tracking-wider text-xs text-neutral-900 bg-neutral-50 mb-2">
@@ -1830,6 +1880,232 @@ export function ResumeVault() {
                     </div>
                   </div>
                 )}
+
+                {/* MODE 5: JD Matchmaker for this Resume */}
+                {activeViewMode === 'matchmaker' && (() => {
+                  const activeTargetRole = targetRoles.find((r) => r.id === matchRoleId) || targetRoles[0];
+                  const matchRep = activeTargetRole
+                    ? evaluateResumeAgainstJD(activeResume, activeTargetRole.rawJdText || `${activeTargetRole.title} ${activeTargetRole.notes}`)
+                    : null;
+
+                  if (!activeTargetRole || !matchRep) {
+                    return (
+                      <div className="rounded-xl border border-dashed border-edge bg-well/40 p-8 text-center space-y-2">
+                        <Icon.Target className="h-6 w-6 text-muted mx-auto" />
+                        <h4 className="font-mono text-xs font-bold text-content">No Target Roles Found</h4>
+                        <p className="font-sans text-xs text-muted max-w-sm mx-auto">
+                          Add target job descriptions in the &ldquo;Target Roles &amp; Campaigns&rdquo; tab to run live deterministic matching against this resume.
+                        </p>
+                      </div>
+                    );
+                  }
+
+                  const roleSelectOpts: SelectOption[] = targetRoles.map((r) => ({
+                    value: r.id,
+                    label: `${r.company} — ${r.title}`,
+                    description: `Status: ${r.status.toUpperCase()} · ${r.rawJdText.length} chars JD`,
+                  }));
+
+                  return (
+                    <div className="space-y-5">
+                      {/* Top Header & Role Selector */}
+                      <div className="rounded-xl border border-edge bg-well/40 p-4 space-y-3">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 font-mono text-xs font-bold text-content">
+                            <Icon.Sparkle className="h-4 w-4 text-signal" />
+                            <span>Target Role (JD) to Match Against</span>
+                          </div>
+                          <span className="rounded bg-signal/15 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-signal self-start sm:self-auto">
+                            {activeTargetRole.status}
+                          </span>
+                        </div>
+
+                        <Select
+                          value={activeTargetRole.id}
+                          onChange={(val) => setMatchRoleId(val)}
+                          options={roleSelectOpts}
+                          ariaLabel="Select Target Job Description"
+                          className="w-full"
+                        />
+
+                        <div className="flex items-center justify-between text-[11px] font-mono text-muted pt-1">
+                          <span>{activeTargetRole.company} · {activeTargetRole.title}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenTailor(`${activeTargetRole.company} (${activeTargetRole.title})`)}
+                            className="text-signal hover:underline flex items-center gap-1 font-bold cursor-pointer"
+                          >
+                            <Icon.Sparkle className="h-3 w-3" />
+                            <span>⚡ Tailor for this JD</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Match Score Card & Category Breakdown */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="md:col-span-1 rounded-xl border border-edge bg-card p-4 space-y-4 shadow-xs">
+                          <div className="flex items-center justify-between">
+                            <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-muted">
+                              Fit Score
+                            </span>
+                            <span
+                              className={`rounded-full px-2 py-0.5 font-mono text-[9px] font-bold uppercase ${
+                                matchRep.fitScore >= 80
+                                  ? 'bg-signal/15 text-signal'
+                                  : matchRep.fitScore >= 60
+                                  ? 'bg-amber-500/15 text-amber-500'
+                                  : 'bg-red-500/15 text-red-500'
+                              }`}
+                            >
+                              {matchRep.fitScore >= 80 ? 'Strong Alignment' : matchRep.fitScore >= 60 ? 'Moderate' : 'Gaps'}
+                            </span>
+                          </div>
+
+                          <div className="flex items-baseline gap-1.5">
+                            <span className="font-mono text-5xl font-extrabold text-content">{matchRep.fitScore}</span>
+                            <span className="font-mono text-xs text-muted">/ 100</span>
+                          </div>
+
+                          <div className="h-1.5 w-full bg-edge rounded-full overflow-hidden">
+                            <div
+                              className={`h-full ${matchRep.fitScore >= 80 ? 'bg-signal' : 'bg-amber-500'}`}
+                              style={{ width: `${matchRep.fitScore}%` }}
+                            />
+                          </div>
+
+                          <div className="space-y-2 pt-2 border-t border-edge text-xs font-mono">
+                            <div className="flex justify-between text-muted text-[11px]">
+                              <span>Core Tech</span>
+                              <span className="text-content font-bold">{matchRep.categoryScores.coreLanguages}%</span>
+                            </div>
+                            <div className="flex justify-between text-muted text-[11px]">
+                              <span>Distributed Systems</span>
+                              <span className="text-content font-bold">{matchRep.categoryScores.distributedSystems}%</span>
+                            </div>
+                            <div className="flex justify-between text-muted text-[11px]">
+                              <span>Cloud & DevOps</span>
+                              <span className="text-content font-bold">{matchRep.categoryScores.devopsCloud}%</span>
+                            </div>
+                            <div className="flex justify-between text-muted text-[11px]">
+                              <span>Scale & Testing</span>
+                              <span className="text-content font-bold">{matchRep.categoryScores.architectureScale}%</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Matched vs Missing Badges */}
+                        <div className="md:col-span-2 rounded-xl border border-edge bg-card p-4 space-y-4 shadow-xs">
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-1.5 font-mono text-xs font-bold text-signal">
+                              <Icon.CheckCircle className="h-3.5 w-3.5" />
+                              <span>Verified in this Resume ({matchRep.matchedSkills.length})</span>
+                            </div>
+                            <div className="flex flex-wrap gap-1.5">
+                              {matchRep.matchedSkills.map((sk) => (
+                                <span
+                                  key={sk}
+                                  className="inline-flex items-center gap-1 rounded border border-signal/30 bg-signal/10 px-2 py-0.5 font-mono text-[11px] font-semibold text-signal uppercase"
+                                >
+                                  <Icon.Check className="h-2.5 w-2.5" />
+                                  <span>{sk}</span>
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="space-y-2 pt-3 border-t border-edge">
+                            <div className="flex items-center gap-1.5 font-mono text-xs font-bold text-amber-500">
+                              <Icon.Alert className="h-3.5 w-3.5" />
+                              <span>Missing Gaps for this Role ({matchRep.missingSkills.length})</span>
+                            </div>
+                            <div className="flex flex-wrap gap-1.5">
+                              {matchRep.missingSkills.length > 0 ? (
+                                matchRep.missingSkills.map((gap) => (
+                                  <span
+                                    key={gap}
+                                    className="inline-flex items-center gap-1 rounded border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 font-mono text-[11px] font-semibold text-amber-500 uppercase"
+                                  >
+                                    <Icon.Alert className="h-2.5 w-2.5" />
+                                    <span>{gap}</span>
+                                  </span>
+                                ))
+                              ) : (
+                                <span className="text-xs font-mono text-signal">No gaps identified!</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Bullet Recommendations */}
+                      {matchRep.bulletRecommendations.length > 0 && (
+                        <div className="rounded-xl border border-edge bg-card p-4 space-y-3 shadow-xs">
+                          <span className="font-mono text-xs font-bold text-content flex items-center gap-1.5">
+                            <Icon.Zap className="h-3.5 w-3.5 text-signal" />
+                            <span>Targeted Bullet Alignments for {activeTargetRole.company}</span>
+                          </span>
+                          <div className="space-y-2">
+                            {matchRep.bulletRecommendations.map((rec, i) => (
+                              <div key={i} className="rounded-lg border border-edge bg-well/40 p-3 font-mono text-xs space-y-1">
+                                <div className="flex justify-between text-[11px] text-muted">
+                                  <span className="font-bold text-content">{rec.company}</span>
+                                  <span className="text-signal">{rec.rationale}</span>
+                                </div>
+                                <div className="font-sans text-xs text-content bg-card p-2 rounded border border-edge">
+                                  {rec.tailored}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Interview Defense Probes */}
+                      {matchRep.interviewDefenseProbes.length > 0 && (
+                        <div className="rounded-xl border border-edge bg-card p-4 space-y-3 shadow-xs">
+                          <span className="font-mono text-xs font-bold text-content flex items-center gap-1.5">
+                            <Icon.Target className="h-3.5 w-3.5 text-signal" />
+                            <span>JD-Targeted Interview Practice Probes</span>
+                          </span>
+                          <div className="space-y-2 font-mono text-xs">
+                            {matchRep.interviewDefenseProbes.map((probe, i) => {
+                              const isOpen = expandedMatchProbeIdx === i;
+                              return (
+                                <div key={i} className="rounded-lg border border-edge bg-well/30 overflow-hidden">
+                                  <button
+                                    type="button"
+                                    onClick={() => setExpandedMatchProbeIdx(isOpen ? null : i)}
+                                    className="w-full flex items-center justify-between p-3 text-left font-bold text-content hover:bg-well/60 transition-colors cursor-pointer"
+                                  >
+                                    <span className="truncate pr-2">{probe.targetingGap}</span>
+                                    <Icon.ChevronDown className={`h-3.5 w-3.5 text-muted transition-transform ${isOpen ? 'rotate-180 text-signal' : ''}`} />
+                                  </button>
+                                  {isOpen && (
+                                    <div className="p-3 pt-0 border-t border-edge space-y-2 font-sans text-xs">
+                                      <p className="font-mono text-content font-semibold bg-card p-2 rounded border border-edge mt-2">
+                                        &ldquo;{probe.question}&rdquo;
+                                      </p>
+                                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                                        <div className="p-2 rounded bg-card border border-edge text-muted">
+                                          <strong className="text-content block mb-0.5">What Hiring Team Listens For:</strong>
+                                          {probe.whatHiringTeamListensFor}
+                                        </div>
+                                        <div className="p-2 rounded bg-signal/5 border border-signal/30 text-content">
+                                          <strong className="text-signal block mb-0.5">Recommended Defense:</strong>
+                                          {probe.recommendedDefense}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           )}
@@ -2235,6 +2511,282 @@ export function ResumeVault() {
                           <span>Add Bullet Point</span>
                         </button>
                       </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Key Projects Section */}
+              <div className="space-y-3 pt-3 border-t border-edge">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-bold text-content text-xs">
+                    Key Projects ({editProjects.length})
+                  </h4>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setEditProjects([
+                        ...editProjects,
+                        {
+                          name: 'New Project Name',
+                          link: 'github.com/...',
+                          description: 'React, TypeScript, Supabase',
+                          bullets: ['Key engineering achievement or architectural decision.'],
+                        },
+                      ])
+                    }
+                    className="inline-flex items-center gap-1 text-signal hover:underline text-[11px] font-bold cursor-pointer"
+                  >
+                    <Icon.Plus className="h-3 w-3" />
+                    <span>Add Project</span>
+                  </button>
+                </div>
+
+                <div className="space-y-4 max-h-[300px] overflow-y-auto pr-1 thin-scroll">
+                  {editProjects.map((proj, projIdx) => (
+                    <div key={projIdx} className="rounded-xl border border-edge bg-well/40 p-3.5 space-y-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-bold text-signal text-[11px]">Project #{projIdx + 1}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditProjects(editProjects.filter((_, i) => i !== projIdx));
+                          }}
+                          className="text-muted hover:text-rose-500 transition-colors p-1 cursor-pointer"
+                          title="Delete project"
+                        >
+                          <Icon.X className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <TextInput
+                          value={proj.name}
+                          onChange={(e) => {
+                            const updated = [...editProjects];
+                            updated[projIdx].name = e.target.value;
+                            setEditProjects(updated);
+                          }}
+                          placeholder="Project Name (e.g. Prottaho)"
+                        />
+                        <TextInput
+                          value={proj.link || ''}
+                          onChange={(e) => {
+                            const updated = [...editProjects];
+                            updated[projIdx].link = e.target.value;
+                            setEditProjects(updated);
+                          }}
+                          placeholder="Live Link / GitHub (e.g. prottaho.com | Feb 2026)"
+                        />
+                      </div>
+
+                      <TextInput
+                        value={proj.description}
+                        onChange={(e) => {
+                          const updated = [...editProjects];
+                          updated[projIdx].description = e.target.value;
+                          setEditProjects(updated);
+                        }}
+                        placeholder="Tech Stack (e.g. React, TypeScript, Tailwind, Supabase)"
+                      />
+
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] text-muted font-bold uppercase">Project Bullet Points</label>
+                        {(proj.bullets || []).map((pb, pbIdx) => (
+                          <div key={pbIdx} className="flex items-center gap-1.5">
+                            <span className="text-muted">•</span>
+                            <input
+                              type="text"
+                              value={pb}
+                              onChange={(e) => {
+                                const updated = [...editProjects];
+                                if (!updated[projIdx].bullets) updated[projIdx].bullets = [];
+                                updated[projIdx].bullets![pbIdx] = e.target.value;
+                                setEditProjects(updated);
+                              }}
+                              className="flex-1 rounded border border-edge bg-card px-2 py-1 text-content font-sans text-xs focus:border-signal focus:outline-hidden"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const updated = [...editProjects];
+                                updated[projIdx].bullets = (updated[projIdx].bullets || []).filter((_, i) => i !== pbIdx);
+                                setEditProjects(updated);
+                              }}
+                              className="text-muted hover:text-rose-500 p-1 cursor-pointer"
+                            >
+                              <Icon.X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ))}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const updated = [...editProjects];
+                            if (!updated[projIdx].bullets) updated[projIdx].bullets = [];
+                            updated[projIdx].bullets!.push('Architected feature with measurable performance impact.');
+                            setEditProjects(updated);
+                          }}
+                          className="text-signal hover:underline text-[10px] font-bold inline-flex items-center gap-1 mt-1 cursor-pointer"
+                        >
+                          <Icon.Plus className="h-2.5 w-2.5" />
+                          <span>Add Project Bullet</span>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Technical Skills Section */}
+              <div className="space-y-3 pt-3 border-t border-edge">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-bold text-content text-xs">
+                    Technical Skills ({editSkills.length} Categories)
+                  </h4>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setEditSkills([
+                        ...editSkills,
+                        { category: 'New Category', items: ['Skill 1', 'Skill 2'] },
+                      ])
+                    }
+                    className="inline-flex items-center gap-1 text-signal hover:underline text-[11px] font-bold cursor-pointer"
+                  >
+                    <Icon.Plus className="h-3 w-3" />
+                    <span>Add Category</span>
+                  </button>
+                </div>
+
+                <div className="space-y-2.5 max-h-[220px] overflow-y-auto pr-1 thin-scroll">
+                  {editSkills.map((sk, sIdx) => (
+                    <div key={sIdx} className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={sk.category}
+                        onChange={(e) => {
+                          const updated = [...editSkills];
+                          updated[sIdx].category = e.target.value;
+                          setEditSkills(updated);
+                        }}
+                        placeholder="Category (e.g. Frontend)"
+                        className="w-1/3 rounded border border-edge bg-card px-2 py-1 text-content font-mono text-xs focus:border-signal focus:outline-hidden"
+                      />
+                      <input
+                        type="text"
+                        value={sk.items.join(', ')}
+                        onChange={(e) => {
+                          const updated = [...editSkills];
+                          updated[sIdx].items = e.target.value.split(',').map((s) => s.trim()).filter(Boolean);
+                          setEditSkills(updated);
+                        }}
+                        placeholder="Comma-separated items (e.g. React, Next.js, TypeScript)"
+                        className="flex-1 rounded border border-edge bg-card px-2 py-1 text-content font-sans text-xs focus:border-signal focus:outline-hidden"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditSkills(editSkills.filter((_, i) => i !== sIdx));
+                        }}
+                        className="text-muted hover:text-rose-500 p-1 cursor-pointer"
+                      >
+                        <Icon.X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Education Section */}
+              <div className="space-y-3 pt-3 border-t border-edge">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-bold text-content text-xs">
+                    Education ({editEducation.length})
+                  </h4>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setEditEducation([
+                        ...editEducation,
+                        {
+                          degree: 'B.Sc. in Electrical and Electronic Engineering',
+                          institution: 'Khulna University of Engineering & Technology (KUET)',
+                          year: 'Jan 2026',
+                          coursework: 'Data Structures, Algorithms, Software Engineering',
+                        },
+                      ])
+                    }
+                    className="inline-flex items-center gap-1 text-signal hover:underline text-[11px] font-bold cursor-pointer"
+                  >
+                    <Icon.Plus className="h-3 w-3" />
+                    <span>Add Degree</span>
+                  </button>
+                </div>
+
+                <div className="space-y-3 max-h-[220px] overflow-y-auto pr-1 thin-scroll">
+                  {editEducation.map((edu, eduIdx) => (
+                    <div key={eduIdx} className="rounded-xl border border-edge bg-well/40 p-3 space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-bold text-signal text-[11px]">Degree #{eduIdx + 1}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditEducation(editEducation.filter((_, i) => i !== eduIdx));
+                          }}
+                          className="text-muted hover:text-rose-500 transition-colors p-1 cursor-pointer"
+                        >
+                          <Icon.X className="h-3 w-3" />
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <input
+                          type="text"
+                          value={edu.degree}
+                          onChange={(e) => {
+                            const updated = [...editEducation];
+                            updated[eduIdx].degree = e.target.value;
+                            setEditEducation(updated);
+                          }}
+                          placeholder="Degree"
+                          className="rounded border border-edge bg-card px-2 py-1 text-content font-sans text-xs focus:border-signal focus:outline-hidden"
+                        />
+                        <input
+                          type="text"
+                          value={edu.institution}
+                          onChange={(e) => {
+                            const updated = [...editEducation];
+                            updated[eduIdx].institution = e.target.value;
+                            setEditEducation(updated);
+                          }}
+                          placeholder="Institution / University"
+                          className="rounded border border-edge bg-card px-2 py-1 text-content font-sans text-xs focus:border-signal focus:outline-hidden"
+                        />
+                        <input
+                          type="text"
+                          value={edu.year || ''}
+                          onChange={(e) => {
+                            const updated = [...editEducation];
+                            updated[eduIdx].year = e.target.value;
+                            setEditEducation(updated);
+                          }}
+                          placeholder="Year (e.g. Jan 2026)"
+                          className="rounded border border-edge bg-card px-2 py-1 text-content font-sans text-xs focus:border-signal focus:outline-hidden"
+                        />
+                      </div>
+
+                      <input
+                        type="text"
+                        value={edu.coursework || ''}
+                        onChange={(e) => {
+                          const updated = [...editEducation];
+                          updated[eduIdx].coursework = e.target.value;
+                          setEditEducation(updated);
+                        }}
+                        placeholder="Relevant Coursework (e.g. Data Structures, Algorithms, Software Engineering)"
+                        className="w-full rounded border border-edge bg-card px-2 py-1 text-content font-sans text-xs focus:border-signal focus:outline-hidden"
+                      />
                     </div>
                   ))}
                 </div>

@@ -210,6 +210,22 @@ export function runResumeDiagnostic(
 export async function extractDocxText(arrayBuffer: ArrayBuffer): Promise<string> {
   try {
     const mammoth = await import('mammoth');
+    const htmlResult = await mammoth.convertToHtml({ arrayBuffer });
+    if (htmlResult.value) {
+      const cleanHtml = htmlResult.value
+        .replace(/<li>\s*(.*?)\s*<\/li>/gi, '• $1\n')
+        .replace(/<p>\s*(.*?)\s*<\/p>/gi, '$1\n')
+        .replace(/<h[1-6]>\s*(.*?)\s*<\/h[1-6]>/gi, '\n### $1\n')
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<[^>]+>/g, '')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>');
+      if (cleanHtml.trim().length > 30) {
+        return cleanHtml.trim();
+      }
+    }
     const result = await mammoth.extractRawText({ arrayBuffer });
     return result.value ? result.value.trim() : '';
   } catch (err) {
@@ -232,24 +248,113 @@ export async function extractPdfText(arrayBuffer: ArrayBuffer): Promise<string> 
     });
     const pdf = await loadingTask.promise;
     let fullText = '';
+    let page1HeaderTokens: string[] = [];
+
     for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
       const page = await pdf.getPage(pageNum);
       const content = await page.getTextContent();
-      let lastY: number | undefined;
-      let pageText = '';
-      for (const rawItem of content.items) {
-        const item = rawItem as { str?: string; transform?: number[] };
-        if (!item.str) continue;
-        if (lastY !== undefined && item.transform && Math.abs(item.transform[5] - lastY) > 6) {
-          pageText += '\n';
-        } else if (pageText && !pageText.endsWith(' ') && !item.str.startsWith(' ')) {
-          pageText += ' ';
-        }
-        pageText += item.str;
-        if (item.transform) lastY = item.transform[5];
+
+      interface ItemWithCoords {
+        str: string;
+        x: number;
+        y: number;
+        w: number;
+        h: number;
       }
-      fullText += pageText + '\n\n';
+
+      const rawItems: ItemWithCoords[] = [];
+      for (const raw of content.items) {
+        const it = raw as { str?: string; transform?: number[]; width?: number; height?: number };
+        if (!it.str) continue;
+        rawItems.push({
+          str: it.str,
+          x: it.transform ? it.transform[4] : 0,
+          y: it.transform ? it.transform[5] : 0,
+          w: it.width || 0,
+          h: it.height || 0,
+        });
+      }
+
+      if (rawItems.length === 0) continue;
+
+      // Group items into visual lines by Y coordinate (within 3.5px)
+      const linesMap: { y: number; items: ItemWithCoords[] }[] = [];
+
+      for (const item of rawItems) {
+        let foundLine = linesMap.find((l) => Math.abs(l.y - item.y) <= 3.5);
+        if (!foundLine) {
+          foundLine = { y: item.y, items: [] };
+          linesMap.push(foundLine);
+        }
+        foundLine.items.push(item);
+      }
+
+      // Sort lines top-to-bottom (PDF Y decreases going down)
+      linesMap.sort((a, b) => b.y - a.y);
+
+      const assembledLines: string[] = [];
+
+      for (const line of linesMap) {
+        // Sort items left-to-right (ascending X)
+        line.items.sort((a, b) => a.x - b.x);
+
+        let lineText = '';
+        for (let i = 0; i < line.items.length; i++) {
+          const it = line.items[i];
+          if (i === 0) {
+            lineText += it.str;
+          } else {
+            const prev = line.items[i - 1];
+            const gap = it.x - (prev.x + prev.w);
+            if (gap > 22) {
+              // Multi-column or separated item: separate with pipe so columns aren't glued together
+              lineText += '  |  ' + it.str;
+            } else if (gap > 2 || (!lineText.endsWith(' ') && !it.str.startsWith(' '))) {
+              lineText += ' ' + it.str;
+            } else {
+              lineText += it.str;
+            }
+          }
+        }
+
+        const trimmed = lineText.trim();
+        if (trimmed) {
+          assembledLines.push(trimmed);
+        }
+      }
+
+      // If page 1, capture top header tokens to identify and discard running page-break headers on page 2+
+      if (pageNum === 1) {
+        page1HeaderTokens = assembledLines
+          .slice(0, 5)
+          .map((l) => l.toLowerCase().replace(/[^a-z0-9]/g, ''))
+          .filter((t) => t.length > 3);
+        fullText += assembledLines.join('\n') + '\n\n';
+      } else {
+        // On page 2+, detect and skip repeated running headers
+        let startIndex = 0;
+        while (startIndex < Math.min(assembledLines.length, 6)) {
+          const token = assembledLines[startIndex].toLowerCase().replace(/[^a-z0-9]/g, '');
+          const isRunningHeader =
+            page1HeaderTokens.some((h) => token.includes(h) || h.includes(token)) ||
+            assembledLines[startIndex].includes('@') ||
+            assembledLines[startIndex].includes('github.com') ||
+            assembledLines[startIndex].includes('linkedin.com') ||
+            /^(page\s*\d|curriculum\s*vitae|resume)/i.test(assembledLines[startIndex]);
+
+          if (isRunningHeader) {
+            startIndex++;
+          } else {
+            break;
+          }
+        }
+        const pageBodyLines = assembledLines.slice(startIndex);
+        if (pageBodyLines.length > 0) {
+          fullText += pageBodyLines.join('\n') + '\n\n';
+        }
+      }
     }
+
     return fullText.trim();
   } catch (err) {
     console.warn('PDF text extraction error:', err);
@@ -431,12 +536,25 @@ export function setActiveResumeId(id: string): void {
 
 // --- JD Alignment & Matchmaking ------------------------------------------------
 
+export interface InterviewDefenseProbe {
+  question: string;
+  targetingGap: string;
+  whatHiringTeamListensFor: string;
+  recommendedDefense: string;
+}
+
 export interface JDMatchReport {
   resumeId: string;
   resumeTitle: string;
   fitScore: number;             // 0 - 100
   matchedSkills: string[];
   missingSkills: string[];
+  categoryScores: {
+    coreLanguages: number;
+    distributedSystems: number;
+    devopsCloud: number;
+    architectureScale: number;
+  };
   bulletRecommendations: {
     experienceId: string;
     company: string;
@@ -444,6 +562,7 @@ export interface JDMatchReport {
     tailored: string;
     rationale: string;
   }[];
+  interviewDefenseProbes: InterviewDefenseProbe[];
 }
 
 export function evaluateResumeAgainstJD(resume: ResumeProfile, jdText: string): JDMatchReport {
@@ -453,30 +572,56 @@ export function evaluateResumeAgainstJD(resume: ResumeProfile, jdText: string): 
   const matchedSkills: string[] = [];
   const missingSkills: string[] = [];
 
-  // Common high-signal technical keywords
-  const COMMON_TECH_KEYWORDS = [
-    'react', 'next.js', 'typescript', 'javascript', 'node.js', 'python', 'golang',
-    'go', 'rust', 'postgresql', 'postgres', 'redis', 'kafka', 'graphql', 'docker',
-    'kubernetes', 'aws', 'gcp', 'ci/cd', 'microservices', 'distributed systems',
-    'grpc', 'rest api', 'terraform', 'tailwind', 'mongodb', 'elasticsearch',
-  ];
+  // Categorized high-signal technical keywords
+  const TECH_CATEGORIES = {
+    coreLanguages: ['typescript', 'javascript', 'react', 'next.js', 'node.js', 'python', 'golang', 'go', 'rust', 'sql', 'c++'],
+    distributedSystems: ['microservices', 'distributed systems', 'redis', 'rabbitmq', 'kafka', 'websockets', 'grpc', 'graphql', 'rest api', 'event-driven'],
+    devopsCloud: ['docker', 'kubernetes', 'aws', 'gcp', 'ci/cd', 'terraform', 'linux', 'github actions', 'nginx'],
+    architectureScale: ['system design', 'postgresql', 'postgres', 'mysql', 'mongodb', 'elasticsearch', 'playwright', 'vitest', 'jest', 'testing'],
+  };
 
-  for (const tech of COMMON_TECH_KEYWORDS) {
+  const allTrackedTech = Array.from(new Set([
+    ...TECH_CATEGORIES.coreLanguages,
+    ...TECH_CATEGORIES.distributedSystems,
+    ...TECH_CATEGORIES.devopsCloud,
+    ...TECH_CATEGORIES.architectureScale,
+  ]));
+
+  for (const tech of allTrackedTech) {
     const inJD = cleanJD.includes(tech);
-    const hasSkill = allSkills.some((s) => s.toLowerCase() === tech || s.toLowerCase().includes(tech));
+    const hasSkill = allSkills.some((s) => {
+      const sLower = s.toLowerCase();
+      return sLower === tech || sLower.includes(tech) || (tech === 'go' && sLower === 'golang');
+    }) || resume.experience.some(e => e.bullets.some(b => b.toLowerCase().includes(tech)));
 
     if (inJD) {
       if (hasSkill) {
-        matchedSkills.push(tech);
+        if (!matchedSkills.includes(tech)) matchedSkills.push(tech);
       } else {
-        missingSkills.push(tech);
+        if (!missingSkills.includes(tech)) missingSkills.push(tech);
       }
     }
   }
 
+  // Calculate category alignment percentages
+  const calcCatScore = (keys: string[]) => {
+    const jdKeys = keys.filter(k => cleanJD.includes(k));
+    if (jdKeys.length === 0) return 85; // Baseline high when no specific constraint in category
+    const matchedCount = jdKeys.filter(k => matchedSkills.includes(k)).length;
+    return Math.round((matchedCount / jdKeys.length) * 100);
+  };
+
+  const categoryScores = {
+    coreLanguages: calcCatScore(TECH_CATEGORIES.coreLanguages),
+    distributedSystems: calcCatScore(TECH_CATEGORIES.distributedSystems),
+    devopsCloud: calcCatScore(TECH_CATEGORIES.devopsCloud),
+    architectureScale: calcCatScore(TECH_CATEGORIES.architectureScale),
+  };
+
   const totalRequired = matchedSkills.length + missingSkills.length;
-  const skillMatchRatio = totalRequired > 0 ? matchedSkills.length / totalRequired : 0.65;
-  const fitScore = Math.min(98, Math.max(35, Math.round(skillMatchRatio * 75 + (resume.diagnostic.overallScore * 0.25))));
+  const skillMatchRatio = totalRequired > 0 ? matchedSkills.length / totalRequired : 0.70;
+  const avgCatScore = (categoryScores.coreLanguages + categoryScores.distributedSystems + categoryScores.devopsCloud + categoryScores.architectureScale) / 4;
+  const fitScore = Math.min(98, Math.max(38, Math.round(skillMatchRatio * 55 + (avgCatScore * 0.25) + (resume.diagnostic.overallScore * 0.20))));
 
   // Generate targeted bullet improvements
   const bulletRecommendations: JDMatchReport['bulletRecommendations'] = [];
@@ -484,7 +629,6 @@ export function evaluateResumeAgainstJD(resume: ResumeProfile, jdText: string): 
   for (const exp of resume.experience) {
     for (const bullet of exp.bullets) {
       const lower = bullet.toLowerCase();
-      // Check if bullet can be aligned with missing or high-priority JD keywords
       const relevantMatched = matchedSkills.find((k) => cleanJD.includes(k) && !lower.includes(k));
       if (relevantMatched && bulletRecommendations.length < 3) {
         bulletRecommendations.push({
@@ -498,13 +642,55 @@ export function evaluateResumeAgainstJD(resume: ResumeProfile, jdText: string): 
     }
   }
 
+  // Generate pointed interview defense probes based on gaps or high-stakes requirements
+  const interviewDefenseProbes: InterviewDefenseProbe[] = [];
+
+  const topGaps = missingSkills.slice(0, 3);
+  if (topGaps.includes('kafka') || cleanJD.includes('kafka') || cleanJD.includes('distributed')) {
+    interviewDefenseProbes.push({
+      targetingGap: 'Message Durability & Stream Processing (Kafka / RabbitMQ)',
+      question: 'Our systems process large event streams. How do your asynchronous queuing architectures (e.g. RabbitMQ, Redis) translate to Kafka consumer groups, partition keys, and offset commit semantics?',
+      whatHiringTeamListensFor: 'Understanding of at-least-once vs exactly-once delivery, partition rebalancing behavior, backpressure, and handling poison-pill dead-letter queues.',
+      recommendedDefense: 'Highlight your direct experience with RabbitMQ worker pools and Redis idempotency keys: explain that message routing, ACK lifecycles, and dead-letter queues follow the same core distributed primitives, and discuss how you configure consumer group commits to prevent state drift.',
+    });
+  }
+
+  if (topGaps.includes('kubernetes') || cleanJD.includes('kubernetes') || cleanJD.includes('docker') || cleanJD.includes('aws')) {
+    interviewDefenseProbes.push({
+      targetingGap: 'Containerization & Cloud Production Deployments',
+      question: 'When deploying microservices to containerized infrastructure, how do you handle zero-downtime rollouts, liveness/readiness probes, and graceful shutdown?',
+      whatHiringTeamListensFor: 'Knowledge of SIGTERM handling, connection draining for in-flight HTTP/WebSocket requests, and ensuring database connection pools terminate safely.',
+      recommendedDefense: 'Describe how your Node.js/Next.js services intercept SIGTERM signals to stop accepting new connections while completing existing requests within a timeout window, paired with readiness probes that verify upstream DB and cache health.',
+    });
+  }
+
+  if (cleanJD.includes('sql') || cleanJD.includes('postgres') || cleanJD.includes('database') || cleanJD.includes('scale')) {
+    interviewDefenseProbes.push({
+      targetingGap: 'Relational Database Performance & Concurrency',
+      question: 'Walk me through a production scenario where an API endpoint degraded under load. How do you isolate whether the bottleneck is in the app runtime, DB query execution plan, or connection pool exhaustion?',
+      whatHiringTeamListensFor: 'Systematic debugging: EXPLAIN ANALYZE, checking pg_stat_activity, identifying missing composite indexes, and preventing N+1 query patterns.',
+      recommendedDefense: 'Detail your approach of inspecting execution plans with EXPLAIN ANALYZE, adding covering indexes on foreign keys, configuring connection pool limits (PgBouncer), and caching high-read aggregations in Redis with deterministic TTLs.',
+    });
+  }
+
+  if (interviewDefenseProbes.length === 0) {
+    interviewDefenseProbes.push({
+      targetingGap: 'System Architecture & Non-Deterministic Network Handling',
+      question: 'How do you design frontend and backend boundaries so client applications remain resilient during temporary network drops or partial service outages?',
+      whatHiringTeamListensFor: 'Optimistic UI state, retry with exponential backoff, circuit breakers, and idempotency tokens.',
+      recommendedDefense: 'Explain your implementation of optimistic UI rollbacks, client-side retry policies with jitter, and server-side idempotent request tokens to prevent duplicate mutations.',
+    });
+  }
+
   return {
     resumeId: resume.id,
     resumeTitle: resume.title,
     fitScore,
     matchedSkills,
-    missingSkills: missingSkills.slice(0, 6),
+    missingSkills: missingSkills.slice(0, 8),
+    categoryScores,
     bulletRecommendations,
+    interviewDefenseProbes,
   };
 }
 
@@ -618,14 +804,28 @@ export function identifyResumeSections(rawText: string): IdentifiedSection[] {
   const commitSection = () => {
     const rawContent = currentLines.join('\n').trim();
     if (rawContent) {
-      const bulletsCount = currentLines.filter((l) => /^[•\-*–\d+.]\s*/.test(l.trim())).length;
-      sections.push({
-        id: `sec_${sections.length}_${Math.random().toString(36).slice(2, 6)}`,
-        title: currentTitle,
-        type: currentType,
-        rawContent,
-        itemCount: bulletsCount > 0 ? bulletsCount : currentLines.filter(Boolean).length,
-      });
+      // Check if this section is actually just a repeated contact/header block (running header from page 2+)
+      const hasEmailOrPhone =
+        /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/.test(rawContent) ||
+        /(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}|\b0\d{4}[-.\s]?\d{6}\b/.test(rawContent) ||
+        rawContent.includes('github.com') ||
+        rawContent.includes('linkedin.com');
+
+      const isRepeatedHeader =
+        (currentType === 'custom' && hasEmailOrPhone) ||
+        (currentTitle.toLowerCase() === 'contact & profile' && sections.length > 0) ||
+        /^(curriculum\s*vitae|resume|page\s*\d)$/i.test(currentTitle);
+
+      if (!isRepeatedHeader) {
+        const bulletsCount = currentLines.filter((l) => /^[•\-*–\d+.]\s*/.test(l.trim())).length;
+        sections.push({
+          id: `sec_${sections.length}_${Math.random().toString(36).slice(2, 6)}`,
+          title: currentTitle,
+          type: currentType,
+          rawContent,
+          itemCount: bulletsCount > 0 ? bulletsCount : currentLines.filter(Boolean).length,
+        });
+      }
     }
     currentLines = [];
   };
@@ -652,7 +852,11 @@ export function identifyResumeSections(rawText: string): IdentifiedSection[] {
 
     if (!matched) {
       // Check for generic uppercase headings e.g. "PUBLICATIONS", "VOLUNTEERING"
-      if (/^[A-Z\s&/]{4,30}$/.test(line) && !line.includes('@') && !line.includes('http')) {
+      // NEVER treat someone's name or contact line or page markers as a section heading
+      const isKnownHeaderToken = /^(EDUCATION|EXPERIENCE|PROJECTS|SKILLS|CERTIFICATIONS|SUMMARY|LANGUAGES|ACHIEVEMENTS|AWARDS|PUBLICATIONS|INTERESTS)$/i.test(line);
+      const isHeaderShape = isKnownHeaderToken || (/^[A-Z\s&/]{4,28}$/.test(line) && !line.includes('@') && !line.includes('http') && !line.includes('|') && !line.includes('.com'));
+      
+      if (isHeaderShape) {
         commitSection();
         currentType = 'custom';
         currentTitle = line;
@@ -851,31 +1055,64 @@ export function parseUploadedResumeText(rawText: string, fileName?: string): Par
     const projLines = projSec.rawContent.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
     let currentProj: ResumeProject | null = null;
 
+    const DATE_MATCH = /\b((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+\d{4}|\d{4})\b/i;
+
     for (let i = 0; i < projLines.length; i++) {
       const line = projLines[i];
-      const isBullet = /^[•\-*–\d+.]\s*/.test(line);
+      const isBulletPrefix = /^[•\-*–\d+.]\s+/.test(line);
 
-      if (!isBullet && (line.includes('|') || line.includes('–') || line.includes('-') || (i + 1 < projLines.length && /^[•\-*–\d+.]\s*/.test(projLines[i + 1])))) {
-        if (currentProj && (currentProj.bullets?.length || currentProj.description)) {
+      // A line is a Project Header if:
+      // - Not an explicit bullet prefix
+      // - Does NOT start with an active engineering verb (e.g. built, developed, engineered)
+      // - Starts with ### markdown, OR contains date & separator, OR is short (< 80 chars) with '|' or ' – '
+      const isActionVerb = /^(built|developed|engineered|implemented|designed|created|added|integrated|refactored|optimized|resolved)\b/i.test(line);
+      const isProjectHeader =
+        !isBulletPrefix &&
+        !isActionVerb &&
+        (
+          /^###\s+/.test(line) ||
+          (DATE_MATCH.test(line) && (line.includes('|') || line.includes('–') || line.includes('—') || /\s-\s/.test(line) || line.includes('.com') || line.includes('.app') || line.includes('.dev') || line.includes('github') || line.includes('live'))) ||
+          ((line.includes('|') || /\s[–—-]\s/.test(line)) && line.length < 80 && !line.includes('@'))
+        );
+
+      if (isProjectHeader) {
+        if (currentProj) {
           projectList.push(currentProj);
         }
 
-        // Check if next line is a tech stack like "React, TypeScript, Tailwind..."
+        let projName = line.replace(/^###\s+/, '').trim();
+        let link = '';
+
+        if (projName.includes('|')) {
+          const parts = projName.split('|').map((p) => p.trim());
+          projName = parts[0];
+          link = parts.slice(1).join(' | ');
+        }
+
+        // Check if next line is a tech stack e.g. "React, TypeScript, Tailwind, Supabase"
         let desc = '';
-        let projName = line;
-        if (i + 1 < projLines.length && !/^[•\-*–\d+.]\s*/.test(projLines[i + 1]) && projLines[i + 1].includes(',')) {
-          desc = projLines[i + 1];
+        if (
+          i + 1 < projLines.length &&
+          !/^[•\-*–\d+.]\s+/.test(projLines[i + 1]) &&
+          projLines[i + 1].includes(',') &&
+          !/^(built|developed|engineered|implemented|designed|created|added)\b/i.test(projLines[i + 1]) &&
+          projLines[i + 1].length < 120
+        ) {
+          desc = projLines[i + 1].trim();
           i++; // Skip tech stack line
         }
 
         currentProj = {
-          name: projName.replace(/^[#*\s-]+/, '').trim(),
+          name: projName.replace(/[|–—\s]+$/, '').trim(),
           description: desc,
+          link: link || undefined,
           bullets: [],
         };
-      } else if (isBullet && currentProj) {
-        const clean = line.replace(/^[•\-*–\d+.]\s*/, '').trim();
-        currentProj.bullets?.push(clean);
+      } else if (currentProj) {
+        const cleanBullet = line.replace(/^[•\-*–\d+.]\s*/, '').trim();
+        if (cleanBullet.length > 3) {
+          currentProj.bullets?.push(cleanBullet);
+        }
       }
     }
 
@@ -891,33 +1128,23 @@ export function parseUploadedResumeText(rawText: string, fileName?: string): Par
   if (skillsSec) {
     const skillLines = skillsSec.rawContent.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
     for (const sLine of skillLines) {
-      // Handles lines with multiple categories, e.g. "Languages: C++...    Tools & Systems: Git..."
-      const colonMatches = Array.from(sLine.matchAll(/([A-Za-z0-9\s&/]+):\s*([^:]+?)(?=(?:[A-Z][A-Za-z0-9\s&/]+:|$))/g));
-      if (colonMatches.length > 0) {
-        for (const match of colonMatches) {
-          const cat = match[1].trim();
-          const items = match[2]
-            .split(/[,|•\n]/)
+      // Split on multi-column separator " | " if present
+      const segments = sLine.split(/\s{2,}\|\s{2,}|\s*\|\s*/);
+      for (const seg of segments) {
+        if (seg.includes(':')) {
+          const colonIdx = seg.indexOf(':');
+          const cat = seg.slice(0, colonIdx).replace(/^[#*\s-]+/, '').trim();
+          const items = seg
+            .slice(colonIdx + 1)
+            .split(/[,•\n]/)
             .map((i) => i.replace(/^[*-]\s*/, '').trim())
             .filter((i) => i.length > 0 && i.length < 35);
-          if (items.length > 0) {
+          if (cat && items.length > 0) {
             skillCategories.push({
               category: cat,
               items: Array.from(new Set(items)),
             });
           }
-        }
-      } else if (sLine.includes(':')) {
-        const [cat, rawItems] = sLine.split(':');
-        const items = rawItems
-          .split(/[,|•\n]/)
-          .map((i) => i.replace(/^[*-]\s*/, '').trim())
-          .filter((i) => i.length > 0 && i.length < 35);
-        if (items.length > 0) {
-          skillCategories.push({
-            category: cat.replace(/^[#*\s-]+/, '').trim(),
-            items: Array.from(new Set(items)),
-          });
         }
       }
     }
@@ -1087,7 +1314,8 @@ export interface TailoredResumeProposal {
 
 export function generateAITailoredProposal(
   resume: ResumeProfile,
-  targetFocus: string = 'Cefalo (Software Engineer)'
+  targetFocus: string = 'Cefalo (Software Engineer)',
+  jdText?: string
 ): TailoredResumeProposal {
   const isCefalo = targetFocus.toLowerCase().includes('cefalo');
   const targetLabel = isCefalo ? 'Cefalo (Software Engineer)' : targetFocus;
@@ -1097,6 +1325,14 @@ export function generateAITailoredProposal(
     tailoredSummary = `Software Engineer experienced in building high-performance web applications, distributed backend services, and scalable async systems using TypeScript, React, Next.js, and Node.js. Track record architecting resilient background pipelines (RabbitMQ, Redis, WebSockets), engineering real-time streaming workflows, and writing production-grade automated tests (Playwright, Vitest). Strong foundation in data structures, algorithms, and relational database optimization (PostgreSQL, MySQL).`;
   } else if (!resume.summary.includes('Track record')) {
     tailoredSummary = `${resume.summary.replace(/\.$/, '')}, focused on building robust distributed backend systems, streaming data flows, and automated test coverage.`;
+  }
+
+  // If JD text is provided and mentions specific focus, align summary
+  if (jdText) {
+    const jdLower = jdText.toLowerCase();
+    if (jdLower.includes('distributed') || jdLower.includes('microservices')) {
+      tailoredSummary = `${tailoredSummary.replace(/\.$/, '')}, with emphasis on distributed system resilience and decoupled service architectures.`;
+    }
   }
 
   const bulletProposals: TailoredBulletProposal[] = [];

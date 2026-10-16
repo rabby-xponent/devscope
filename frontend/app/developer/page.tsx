@@ -19,6 +19,7 @@ import NewTargetRoleModal from '@/components/NewTargetRoleModal';
 import DefenseHub from '@/components/DefenseHub';
 import { ResumeVault } from '@/components/ResumeVault';
 import { ResumeTailorModal } from '@/components/ResumeTailorModal';
+import { JDResumeMatchmaker } from '@/components/JDResumeMatchmaker';
 import {
   TargetRole,
   ApplicationStatus,
@@ -53,7 +54,7 @@ function DeveloperCareerContent() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [defenseCards, setDefenseCards] = useState<DefenseCard[]>([]);
-  const [activeTab, setActiveTab] = useState<'roles' | 'resumes'>('roles');
+  const [activeTab, setActiveTab] = useState<'roles' | 'resumes' | 'matchmaker'>('roles');
   const [selectedTailorRole, setSelectedTailorRole] = useState<TargetRole | null>(null);
   const [roleToRemove, setRoleToRemove] = useState<{ id: string; title: string } | null>(null);
   const [alertModal, setAlertModal] = useState<{ isOpen: boolean; title: string; description: string; variant?: 'error' | 'info' | 'warning' }>({
@@ -285,6 +286,21 @@ function DeveloperCareerContent() {
                 AI Audit
               </span>
             </button>
+
+            <button
+              onClick={() => setActiveTab('matchmaker')}
+              className={`flex items-center gap-2 rounded-xl px-4 py-2 font-mono text-xs font-bold transition-all ${
+                activeTab === 'matchmaker'
+                  ? 'border border-signal/40 bg-signal/10 text-signal shadow-xs'
+                  : 'border border-transparent text-muted hover:border-edge hover:bg-card hover:text-content'
+              }`}
+            >
+              <Icon.Sparkle className="h-4 w-4" />
+              <span>JD ↔ Resume Matchmaker</span>
+              <span className="ml-1 rounded-full bg-signal/20 px-2 py-0.5 font-mono text-[10px] text-signal uppercase tracking-wider font-bold">
+                Combined
+              </span>
+            </button>
           </div>
 
           <div className="hidden sm:flex items-center gap-2 font-mono text-[11px] text-muted">
@@ -295,6 +311,17 @@ function DeveloperCareerContent() {
 
         {activeTab === 'resumes' ? (
           <ResumeVault />
+        ) : activeTab === 'matchmaker' ? (
+          <JDResumeMatchmaker
+            initialRoleId={activeRoleId}
+            onNavigateToRole={(rId) => {
+              setActiveRoleId(rId);
+              setActiveTab('roles');
+            }}
+            onNavigateToResume={() => {
+              setActiveTab('resumes');
+            }}
+          />
         ) : (
           <>
             {/* Proof Strength + Quick Stats */}
@@ -475,13 +502,14 @@ function DeveloperCareerContent() {
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setSelectedTailorRole(role);
+                            handleSelectRole(role.id);
+                            setActiveTab('matchmaker');
                           }}
-                          className="flex items-center gap-1 rounded-lg border border-signal/35 bg-signal/10 px-2.5 py-1 font-mono text-[11px] font-semibold text-signal transition-colors hover:bg-signal/20"
-                          title="Tailor your saved resumes against this job description"
+                          className="flex items-center gap-1 rounded-lg border border-signal/35 bg-signal/10 px-2.5 py-1 font-mono text-[11px] font-semibold text-signal transition-colors hover:bg-signal/20 cursor-pointer"
+                          title="Match and rank your resumes against this JD"
                         >
-                          <Icon.FileText className="h-3 w-3" />
-                          Tailor
+                          <Icon.Sparkle className="h-3 w-3" />
+                          <span>Match Resumes</span>
                         </button>
                         <button
                           type="button"

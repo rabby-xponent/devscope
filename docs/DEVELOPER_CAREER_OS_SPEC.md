@@ -186,18 +186,84 @@ export interface TailoredResumeResult {
 
 ---
 
-## 4. Phased Implementation Roadmap
+## 4. Deterministic Domain Separation & Combined Capabilities
 
-### Phase 1: Multi-Resume Vault & JD Tailoring Engine (Immediate Target)
-1. **Resume Vault UI**:
-   - Tab in Developer CareerOS to create, import, edit, and organize multiple resumes.
-   - Built-in AI Impact Diagnostic that critiques bullets and scores impact density.
-2. **JD Alignment & Ranker**:
-   - Save JDs in Target Roles and instantly rank all saved resumes by match score.
-   - Gap matrix showing what each resume is missing against the JD.
+To guarantee clarity, determinism, and immutability for working engineers, CareerOS operates across three cleanly decoupled domains:
+
+```
++---------------------------------------------------------------------------------------------------------+
+|                                    DEVELOPER CAREER OS COMMAND CENTER                                   |
++---------------------------------------------------+-----------------------------------------------------+
+| 1. TARGET JD DOMAIN                               | 2. RESUME VAULT DOMAIN                              |
+| - Target job tracker & application status         | - Master CV (100% immutable master copy)            |
+| - Raw JD text ingestion                           | - Authentic PDF/Docx structured document preview    |
+| - Extracted technical & scale requirements        | - In-place section & bullet editor                  |
+| - Application campaign ledger                     | - Native PDF viewer & verbatim source viewer        |
+| - 1-click trigger: "⚡ Match Resumes"             | - Resume interview drills & recruiter InMail pitch  |
++---------------------------------------------------+-----------------------------------------------------+
+                                                    |
+                                                    v
++---------------------------------------------------------------------------------------------------------+
+| 3. COMBINED MATCHMAKER DOMAIN (JD <-> RESUME INTERSECTION ENGINE)                                       |
+| - Dual Selector: Pair any Target JD against any Resume Profile                                          |
+| - Deterministic Fit Score (0-100%) with 4-Dimension Metric Breakdown                                    |
+| - Verified Hard Skills (green badges) vs Missing Skill Gaps (amber alerts)                              |
+| - Multi-Resume Leaderboard: Benchmarks all vault variants against the selected JD                        |
+| - 1-Click AI Tailoring Studio: Side-by-side diff proposing targeted metrics & keywords                   |
+| - Non-destructive Variant Branching: Creates v2.0 without altering original CV                          |
+| - JD-Targeted Technical Interview Defense Simulator: Probes gap-specific architecture questions        |
++---------------------------------------------------------------------------------------------------------+
+```
+
+### Domain 1: Target JD Domain (Clean & Deterministic)
+- **Entity**: `TargetRole`
+- **Capabilities**:
+  - Add & edit target roles with title, company, salary/level, and raw JD text.
+  - Track application lifecycle: `researching` → `applied` → `screening` → `interviewing` → `offer` → `rejected`.
+  - Extract hard requirements (Languages, Microservices, Datastores, Cloud primitives).
+  - Quick launch directly into the Matchmaker with that JD pre-selected.
+
+### Domain 2: Resume Domain (Clean & Deterministic)
+- **Entity**: `ResumeProfile`
+- **Capabilities**:
+  - **Authentic Document Layout**: Rendered with exact structure matching the engineer's master CV (boxed section headers, pipe-separated contact row, bold company + right-aligned dates, bullet discs, 2-column skills grid, and degree coursework).
+  - **In-Place Section Editor**: Deterministic modal to edit full name, title, contact info, summary, experience positions, bullets, projects, skills, and education directly in DevScope.
+  - **Multi-Format Document Viewing**: Seamless toggle between Authentic Render, Verbatim Raw Source / Markdown, and Original Native PDF.
+  - **Interview Drills & InMail Outreach**: Probing technical questions on resume claims, and engineer-to-engineer hiring manager cold pitches.
+  - **Clean Print / PDF Export**: Dedicated `@media print` styling yielding professional PDF output without any web UI clutter.
+
+### Domain 3: Combined Capabilities (JD ↔ Resume Intersection Engine)
+- **Component**: `JDResumeMatchmaker` (`frontend/components/JDResumeMatchmaker.tsx`)
+- **Capabilities**:
+  1. **Deterministic Fit Analysis**:
+     - Computes fit score (0-100%) based on verified skills, diagnostic health, and required JD primitives.
+     - Dimension breakdown: Core Languages & Runtimes, Distributed Systems & Messaging, DevOps & Cloud, Architecture & DB Scale.
+     - Green checkmark badges for verified matched skills; amber warning badges for missing skill gaps.
+  2. **Multi-Resume Leaderboard**:
+     - Automatically audits all resumes in the user's vault against the selected JD.
+     - Displays ranked leaderboard (#1 Best Fit, #2, #3...) with fit scores, verified counts, and gap counts.
+  3. **1-Click AI Tailoring Studio**:
+     - Side-by-side proposal showing summary adjustments and quantifiable bullet upgrades incorporating missing JD primitives.
+     - User can toggle individual bullet points on or off.
+     - Creates versioned variants (e.g. `v2.0 (Tailored for Cefalo)`), keeping the master copy completely untouched.
+  4. **JD-Targeted Technical Interview Defense**:
+     - Pointed technical interview questions derived specifically from where the candidate's resume intersects with the target company's stack.
+     - Breaks down *"What the Hiring Team Listens For"* and *"Recommended Engineering Defense"*.
+
+---
+
+## 5. Phased Implementation Roadmap
+
+### Phase 1: Multi-Resume Vault & JD Tailoring Engine (Completed)
+1. **Resume Vault UI & Authentic Rendering**:
+   - Master CV format preservation with boxed section headers, pipe contact line, and right-aligned dates.
+   - Built-in in-place section editor and AI Impact Diagnostics.
+2. **JD ↔ Resume Matchmaker**:
+   - Clean 3-workspace tab navigation (`Target Roles & Campaigns`, `Resume Vault`, `JD ↔ Resume Matchmaker`).
+   - Deterministic fit score, verified skills, missing gaps, and multi-resume leaderboard.
 3. **Tailoring Studio**:
    - 1-click bullet tuning for target JDs with before/after diffs.
-   - Export tailored resume to clean Markdown / Text / formatted ATS template.
+   - Non-destructive variant branching (`v2.0`).
 
 ### Phase 2: Live App Crawler & Deep Technical Survey
 1. **Live App Crawler**: URL input to audit frontend/backend live deployments and add verified claims.
