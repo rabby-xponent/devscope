@@ -9,6 +9,7 @@ create table if not exists public.users (
   email text,
   github_handle text,
   name text,
+  role text not null default 'developer' check (role in ('developer', 'recruiter', 'admin')),
   preferences jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now()
 );

@@ -21,8 +21,8 @@ export function useEntitlements(): {
   const [entitlements, setEntitlements] = useState<Entitlements | null>(null);
 
   const refresh = useCallback(async () => {
-    setEntitlements(await fetchEntitlements());
-  }, []);
+    setEntitlements(await fetchEntitlements(Boolean(user)));
+  }, [user]);
 
   useEffect(() => {
     if (loading) return;

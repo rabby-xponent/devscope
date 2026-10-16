@@ -42,8 +42,8 @@ export const PLANS: Record<PlanId, PlanDefinition> = {
   pro_monthly: {
     id: 'pro_monthly',
     tier: 'pro',
-    label: 'Pro — monthly',
-    display: '$14/mo',
+    label: 'Developer Pro — monthly',
+    display: '৳399 / $4/mo',
     displayBdt: '৳399/mo',
     bdtAmount: 399,
     cadence: 'Billed monthly, cancel anytime.',
@@ -54,8 +54,8 @@ export const PLANS: Record<PlanId, PlanDefinition> = {
   pro_annual: {
     id: 'pro_annual',
     tier: 'pro',
-    label: 'Pro — annual',
-    display: '$120/yr',
+    label: 'Developer Pro — annual',
+    display: '৳3,490 / $35/yr',
     displayBdt: '৳3,490/yr',
     bdtAmount: 3490,
     cadence: 'Two months free versus monthly.',

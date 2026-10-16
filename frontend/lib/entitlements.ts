@@ -45,7 +45,7 @@ export function localEntitlements(authenticated: boolean): Entitlements {
 }
 
 /** Live verdicts from the backend; falls back to the local registry on failure. */
-export async function fetchEntitlements(): Promise<Entitlements> {
+export async function fetchEntitlements(authenticated = false): Promise<Entitlements> {
   try {
     const res = await fetch(`${API_URL}/api/entitlements`, {
       headers: await authHeaders(),
@@ -55,7 +55,7 @@ export async function fetchEntitlements(): Promise<Entitlements> {
     const data = await res.json();
     return { tier: data.tier, capabilities: data.capabilities || {}, live: true };
   } catch {
-    return localEntitlements(false);
+    return localEntitlements(authenticated);
   }
 }
 

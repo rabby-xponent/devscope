@@ -16,11 +16,14 @@
 
 import { API_URL } from './config';
 
+export type UserRole = 'developer' | 'recruiter' | 'admin';
+
 export interface AuthUser {
   id: string;
   email: string | null;
   handle: string | null;
   name: string | null;
+  role?: UserRole;
 }
 
 export type AuthBackend = 'supabase' | 'dev';
@@ -72,16 +75,23 @@ export async function getAccessToken(): Promise<string | null> {
 function extractHandle(sbUser: {
   email?: string | null;
   user_metadata?: Record<string, unknown>;
-}): { email: string | null; handle: string | null; name: string | null } {
+  app_metadata?: Record<string, unknown>;
+}): { email: string | null; handle: string | null; name: string | null; role: UserRole } {
   const meta = sbUser.user_metadata || {};
+  const appMeta = sbUser.app_metadata || {};
   const handle =
     (typeof meta.user_name === 'string' && meta.user_name) ||
     (typeof meta.preferred_username === 'string' && meta.preferred_username) ||
     null;
+  const rawRole = (meta.role as string) || (appMeta.role as string);
+  const role: UserRole =
+    rawRole === 'recruiter' || rawRole === 'admin' ? rawRole : 'developer';
+
   return {
     email: sbUser.email ?? null,
     handle: handle ? handle.replace(/^@/, '') : null,
     name: (typeof meta.full_name === 'string' && meta.full_name) || null,
+    role,
   };
 }
 
@@ -98,11 +108,13 @@ export async function getSessionUser(): Promise<AuthUser | null> {
       if (data?.user) {
         const parsed = extractHandle(data.user);
         const derivedHandle = parsed.handle || (data.user.email ? data.user.email.split('@')[0] : null);
+        const storedRole = typeof window !== 'undefined' ? (localStorage.getItem('gitgrill_user_role') as UserRole | null) : null;
         clientUser = {
           id: data.user.id,
           email: data.user.email ?? null,
           handle: derivedHandle,
           name: parsed.name || derivedHandle,
+          role: parsed.role || storedRole || 'developer',
         };
       }
     } catch {
@@ -153,12 +165,18 @@ export async function getSessionUser(): Promise<AuthUser | null> {
 
 // --- Sign-in / sign-out ---------------------------------------------------------
 
-export async function signInWithGitHub(): Promise<void> {
+export async function signInWithGitHub(role: UserRole = 'developer'): Promise<void> {
   const sb = await supabase();
   if (!sb) throw new Error('Supabase is not configured on this deployment.');
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('gitgrill_user_role', role);
+  }
   const { error } = await sb.auth.signInWithOAuth({
     provider: 'github',
-    options: { redirectTo: `${window.location.origin}/auth/callback` },
+    options: {
+      redirectTo: `${window.location.origin}/auth/callback`,
+      queryParams: { role },
+    },
   });
   if (error) throw new Error(error.message);
 }
@@ -171,6 +189,84 @@ export async function signInWithMagicLink(email: string): Promise<void> {
     options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
   });
   if (error) throw new Error(error.message);
+}
+
+/** Signs in a user using email and password. */
+export async function signInWithPassword(email: string, password: string): Promise<AuthUser> {
+  const cleanEmail = email.trim().toLowerCase();
+  const sb = await supabase();
+  if (sb) {
+    const { data, error } = await sb.auth.signInWithPassword({
+      email: cleanEmail,
+      password,
+    });
+    if (error) throw new Error(error.message);
+    notifyListeners();
+    const user = await getSessionUser();
+    if (!user) throw new Error('Could not establish session.');
+    return user;
+  } else {
+    // Dev fallback mode
+    const user = await devSignIn(cleanEmail, cleanEmail.split('@')[0]);
+    return user;
+  }
+}
+
+/** Registers a new user using email, password, and assigned role. */
+export async function signUpWithPassword(
+  email: string,
+  password: string,
+  role: UserRole = 'developer',
+  name?: string
+): Promise<{ user: AuthUser | null; confirmationRequired: boolean }> {
+  const cleanEmail = email.trim().toLowerCase();
+  const sb = await supabase();
+  if (sb) {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('gitgrill_user_role', role);
+    }
+    const { data, error } = await sb.auth.signUp({
+      email: cleanEmail,
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        data: {
+          role,
+          full_name: name || cleanEmail.split('@')[0],
+        },
+      },
+    });
+    if (error) throw new Error(error.message);
+    notifyListeners();
+    const confirmationRequired = !data.session;
+    const user = await getSessionUser();
+    return { user, confirmationRequired };
+  } else {
+    // Dev fallback mode
+    const user = await devSignIn(cleanEmail, cleanEmail.split('@')[0]);
+    return { user, confirmationRequired: false };
+  }
+}
+
+/** Sends a password reset email instructions link. */
+export async function resetPassword(email: string): Promise<void> {
+  const cleanEmail = email.trim().toLowerCase();
+  const sb = await supabase();
+  if (sb) {
+    const { error } = await sb.auth.resetPasswordForEmail(cleanEmail, {
+      redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
+    });
+    if (error) throw new Error(error.message);
+  }
+}
+
+/** Allows an authenticated user to update or set their password. */
+export async function updatePassword(newPassword: string): Promise<void> {
+  const sb = await supabase();
+  if (sb) {
+    const { error } = await sb.auth.updateUser({ password: newPassword });
+    if (error) throw new Error(error.message);
+  }
 }
 
 /**
@@ -250,14 +346,20 @@ export async function handleAuthCallback(): Promise<{
   return { success: false, error: 'No authorization credentials or session token found in callback URL.' };
 }
 
-/** Sends a 6-digit OTP code to the given email address. */
-export async function sendOtp(email: string): Promise<{ simulated: boolean; code?: string }> {
+/** Sends a 6-digit OTP code to the given email address with optional role. */
+export async function sendOtp(email: string, role: UserRole = 'developer'): Promise<{ simulated: boolean; code?: string }> {
   const cleanEmail = email.trim().toLowerCase();
   const sb = await supabase();
   if (sb) {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('gitgrill_user_role', role);
+    }
     const { error } = await sb.auth.signInWithOtp({
       email: cleanEmail,
-      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        data: { role },
+      },
     });
     if (error) throw new Error(error.message);
     return { simulated: false };

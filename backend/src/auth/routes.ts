@@ -22,12 +22,14 @@ interface SessionUser {
   email: string | null;
   handle: string | null;
   name: string | null;
+  role?: string;
 }
 
 interface DevAuthBody {
   userId?: string;
   email?: string;
   handle?: string;
+  role?: string;
 }
 
 /**
@@ -38,15 +40,18 @@ export async function provisionIdentity(
   id: string,
   email: string | null,
   handle: string | null,
-  name: string | null
+  name: string | null,
+  role: string = 'developer'
 ): Promise<SessionUser | null> {
   const admin = getAdmin();
   if (!admin) return null;
 
+  const validRole = role === 'recruiter' || role === 'admin' ? role : 'developer';
+
   const { data: user, error } = await admin
     .from('users')
     .upsert(
-      { id, email, github_handle: handle, name },
+      { id, email, github_handle: handle, name, role: validRole },
       { onConflict: 'id', ignoreDuplicates: false }
     )
     .select()
@@ -54,18 +59,21 @@ export async function provisionIdentity(
   if (error) throw new Error(`user upsert failed: ${error.message}`);
 
   let workspaceId: string;
+  const wsType = validRole === 'recruiter' ? 'team' : 'individual';
+  const wsName = validRole === 'recruiter' ? 'RecruiterOS' : 'Developer CareerOS';
+
   const { data: existingWs } = await admin
     .from('workspaces')
     .select('id')
     .eq('owner_user_id', id)
-    .eq('type', 'individual')
+    .eq('type', wsType)
     .maybeSingle();
   if (existingWs?.id) {
     workspaceId = existingWs.id as string;
   } else {
     const { data: createdWs, error: wsError } = await admin
       .from('workspaces')
-      .insert({ owner_user_id: id, type: 'individual', name: 'My Workspace' })
+      .insert({ owner_user_id: id, type: wsType, name: wsName })
       .select('id')
       .single();
     if (wsError) throw new Error(`workspace create failed: ${wsError.message}`);
@@ -78,6 +86,7 @@ export async function provisionIdentity(
     email: user.email ?? email,
     handle: user.github_handle ?? handle,
     name: user.name ?? name,
+    role: user.role ?? validRole,
   };
 }
 
@@ -86,7 +95,7 @@ router.get('/me', requireAuth, async (req: Request, res: Response) => {
   const auth = req.auth!;
   if (!isDbConfigured()) {
     // Dev-auth mode: token claims are the whole identity.
-    res.json({ user: { id: auth.userId, email: auth.email, handle: auth.handle, name: null } });
+    res.json({ user: { id: auth.userId, email: auth.email, handle: auth.handle, name: null, role: 'developer' } });
     return;
   }
   const { data } = await getAdmin()!
@@ -100,6 +109,7 @@ router.get('/me', requireAuth, async (req: Request, res: Response) => {
       email: data?.email ?? auth.email,
       handle: data?.github_handle ?? auth.handle,
       name: data?.name ?? null,
+      role: data?.role ?? 'developer',
     },
   });
 });
@@ -122,7 +132,8 @@ router.post('/sync', requireAuth, async (req: Request, res: Response) => {
         ? body.handle.replace(/^@/, '')
         : auth.handle;
     const name = typeof body.name === 'string' && body.name ? body.name : null;
-    const user = await provisionIdentity(auth.userId, email ?? null, handle ?? null, name);
+    const role = typeof body.role === 'string' && body.role ? body.role : 'developer';
+    const user = await provisionIdentity(auth.userId, email ?? null, handle ?? null, name, role);
     res.json({ user });
   } catch (err: any) {
     res.status(500).json({ error: err?.message || 'Identity sync failed.' });

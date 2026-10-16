@@ -29,8 +29,10 @@ function AuthCallbackContent() {
           setStatus('success');
           await refresh();
 
-          // Check if there's a next destination
-          const nextUrl = searchParams.get('next') || '/';
+          // Check if there's a next destination or route to role workspace
+          const savedRole = typeof window !== 'undefined' ? localStorage.getItem('gitgrill_user_role') : null;
+          const defaultDest = savedRole === 'recruiter' ? '/recruiter' : '/developer';
+          const nextUrl = searchParams.get('next') || defaultDest;
           setTimeout(() => {
             router.push(nextUrl);
           }, 1000);
