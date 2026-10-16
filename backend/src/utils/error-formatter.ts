@@ -14,7 +14,7 @@ export function sanitizeErrorMessage(err: any, username: string): SanitizedError
   const raw = String(err?.message || err || '');
   const status = err?.response?.status;
 
-  // 1. LLM Provider Exhaustion / Rate Limits
+  // 1. LLM Provider Exhaustion / High Traffic
   if (
     raw.includes('All LLM providers exhausted') ||
     raw.includes('rate_limited') ||
@@ -23,7 +23,7 @@ export function sanitizeErrorMessage(err: any, username: string): SanitizedError
   ) {
     return {
       userMessage:
-        'All AI synthesis engines are currently at peak capacity or experiencing temporary rate limits. Please wait 30 seconds and retry.',
+        'The candidate analysis engine is currently handling high volume. Please wait 30 seconds and retry.',
       technicalDetails: raw,
       canRetry: true,
     };
@@ -42,7 +42,7 @@ export function sanitizeErrorMessage(err: any, username: string): SanitizedError
   if (status === 403 || raw.includes('rate limit') || raw.includes('API rate limit')) {
     return {
       userMessage:
-        'GitHub API public rate limit reached. Please wait a minute before retrying, or configure an authenticated GitHub token.',
+        'GitHub API request limit reached. Please wait a moment before retrying, or configure an authenticated GitHub token.',
       technicalDetails: raw,
       canRetry: true,
     };

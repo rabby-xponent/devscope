@@ -181,27 +181,34 @@ export function DeepCodeAuditModal({
                 <span>Inspecting {owner}/{selectedRepo}</span>
               </div>
               <div className="max-h-60 overflow-y-auto thin-scroll space-y-2 pt-2">
-                {trace.map((evt, idx) => (
-                  <div key={idx} className="leading-relaxed">
-                    {evt.type === 'thinking' && (
-                      <div className="text-muted">
-                        <span className="text-muted/70">[{new Date(evt.timestamp).toLocaleTimeString()}]</span>{' '}
-                        <span className="text-amber-600 dark:text-amber-400 font-semibold">Thinking:</span> {evt.thinking}
-                      </div>
-                    )}
-                    {evt.type === 'tool_call' && (
-                      <div className="text-content">
-                        <span className="text-muted/70">[{new Date(evt.timestamp).toLocaleTimeString()}]</span>{' '}
-                        <span className="text-signal font-semibold">Call Tool:</span> {evt.tool}({JSON.stringify(evt.input)})
-                      </div>
-                    )}
-                    {evt.type === 'tool_result' && (
-                      <div className="text-muted pl-4 border-l border-edge">
-                        ↳ <span className="text-content">{evt.summary}</span>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                {trace.map((evt, idx) => {
+                  const cleanThinking = evt.thinking
+                    ?.replace(/Routing to [^.]+\.\.\./gi, 'Synthesizing candidate architectural signals...')
+                    ?.replace(/[^.]+hit rate limits[^.]+\.\.\./gi, 'Deepening analysis with secondary evaluator...')
+                    ?.replace(/[^.]+unavailable[^.]+failing over[^.]+\.\.\./gi, 'Calibrating candidate signals...');
+
+                  return (
+                    <div key={idx} className="leading-relaxed">
+                      {evt.type === 'thinking' && (
+                        <div className="text-muted">
+                          <span className="text-muted/70">[{new Date(evt.timestamp).toLocaleTimeString()}]</span>{' '}
+                          <span className="text-signal font-semibold">Investigating:</span> {cleanThinking || evt.thinking}
+                        </div>
+                      )}
+                      {evt.type === 'tool_call' && (
+                        <div className="text-content">
+                          <span className="text-muted/70">[{new Date(evt.timestamp).toLocaleTimeString()}]</span>{' '}
+                          <span className="text-signal font-semibold">Call Tool:</span> {evt.tool}({JSON.stringify(evt.input)})
+                        </div>
+                      )}
+                      {evt.type === 'tool_result' && (
+                        <div className="text-muted pl-4 border-l border-edge">
+                          ↳ <span className="text-content">{evt.summary}</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}

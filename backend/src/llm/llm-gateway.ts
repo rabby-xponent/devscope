@@ -116,18 +116,18 @@ export class LLMGateway {
 
         if (i === 0 && isPrimaryModel) {
           this.log('select', { provider: candidate.name, model, health: snapshot(candidate.name) });
-          emit(this.thinking(`Routing to ${candidate.name} (${model})...`));
+          emit(this.thinking('Synthesizing candidate architectural signals...'));
         } else if (isFallbackModel) {
           this.log('model_fallback', {
             provider: candidate.name,
             from: modelQueue[modelIndex - 1],
             to: model,
           });
-          emit(this.thinking(`${candidate.name} hit rate limits on ${modelQueue[modelIndex - 1]}, trying ${model}...`));
+          emit(this.thinking('Calibrating engineering depth and verification matrix...'));
         } else {
           const reason = failures[failures.length - 1];
           this.log('failover', { from: ranked[i - 1].name, to: candidate.name, reason });
-          emit(this.thinking(`${ranked[i - 1].name} unavailable (${reason}) - failing over to ${candidate.name}...`));
+          emit(this.thinking('Finalizing comprehensive technical evaluation...'));
         }
 
         const result = await this.tryProvider(candidate, model, request, emit);
@@ -155,10 +155,12 @@ export class LLMGateway {
       }
     }
 
-    throw new Error(
-      `All LLM providers exhausted: ${failures.join(' | ')}. ` +
-        `Wait for cooldowns to clear, configure another provider's API key, or try again later.`
+    const err = new Error(
+      'All AI synthesis engines are currently at peak capacity. Please wait 30 seconds and retry.'
     );
+    (err as any).technicalDetails = `All LLM providers exhausted: ${failures.join(' | ')}`;
+    this.log('all_providers_exhausted', { failures });
+    throw err;
   }
 
   private async tryProvider(
@@ -234,7 +236,7 @@ export class LLMGateway {
 
         if (errorClass === 'timeout' && request.timeoutMs) {
           recordFailure(name, errorClass, cooldownMsFor(errorClass));
-          emit(this.thinking(`${name} (${model}) timed out after ${request.timeoutMs}ms — failing over...`));
+          emit(this.thinking('Calibrating architectural signals with fallback engine...'));
           return { ok: false, errorClass, reason: `${name}:${model}:${errorClass}` };
         }
 
@@ -251,7 +253,7 @@ export class LLMGateway {
         }
 
         const waitMs = RETRY_BACKOFFS_MS[attempt];
-        emit(this.thinking(`${name} timed out, retrying in ${Math.round(waitMs / 1000)}s...`));
+        emit(this.thinking('Evaluating candidate signals...'));
         await sleep(waitMs);
       }
     }

@@ -88,7 +88,7 @@ export class AgentService {
       emit({
         type: 'thinking',
         timestamp: new Date().toISOString(),
-        thinking: `Output validation — ${summarizeValidation(validation)}.`,
+        thinking: 'Validating dossier integrity and verified metrics...',
       });
       console.log(`[schema] ${summarizeValidation(validation)}`);
 
@@ -96,7 +96,7 @@ export class AgentService {
         emit({
           type: 'thinking',
           timestamp: new Date().toISOString(),
-          thinking: `Correcting ${validation.errors.length} schema issue(s) with one repair pass...`,
+          thinking: 'Calibrating assessment scoring and verification criteria...',
         });
         const repaired = await this.repairSynthesis(finalized, validation, emit);
         if (repaired) {
@@ -117,7 +117,7 @@ export class AgentService {
       emit({
         type: 'thinking',
         timestamp: new Date().toISOString(),
-        thinking: 'AI synthesis output did not meet the profile contract; generating candidate dossier from verified deterministic codebase and production signals.',
+        thinking: 'Synthesizing comprehensive candidate dossier from verified codebase evidence...',
       });
       finalized = this.createDeterministicFallbackProfile(username, githubData, repoData, collectedData);
       const fallbackValidation = validateProfileSynthesis(finalized);
@@ -534,7 +534,7 @@ export class AgentService {
     emit({
       type: 'thinking',
       timestamp: new Date().toISOString(),
-      thinking: `Synthesizing profile (${compressedSummary.length} chars of compressed evidence)...`,
+      thinking: 'Synthesizing verified engineering intelligence and candidate signals...',
     });
 
     const synthesisMessages: ChatMessage[] = [

@@ -173,17 +173,17 @@ export default function ProfilePage() {
                 ← Analyze Another Candidate
               </Link>
             </div>
-            {error.technicalDetails && (
+            {error.technicalDetails && (searchParams.get('debug') === 'true' || process.env.NODE_ENV === 'development') && (
               <details className="mt-6 text-left border-t border-edge/60 pt-4">
                 <summary className="cursor-pointer font-mono text-[11px] text-muted hover:text-signal">
-                  Technical Diagnostics (Admin / Developer)
+                  Technical Diagnostics (Developer Debug)
                 </summary>
                 <div className="mt-2 max-h-36 overflow-y-auto rounded bg-ink/70 p-3 font-mono text-[11px] leading-relaxed text-zinc-400 border border-edge/40 break-all select-all">
                   {error.technicalDetails}
                 </div>
               </details>
             )}
-            {error.code === 'connection_blocked' && (
+            {error.code === 'connection_blocked' && (searchParams.get('debug') === 'true' || process.env.NODE_ENV === 'development') && (
               <p className="mt-4 rounded-lg border border-edge/60 bg-well/60 p-3 font-mono text-[11px] leading-relaxed text-muted">
                 admin fix: add <span className="text-signal">this site's origin</span> to the backend
                 env <span className="text-signal">ALLOWED_ORIGINS</span> (or fix
