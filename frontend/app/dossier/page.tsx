@@ -5,7 +5,7 @@
  *
  * Designed as a canonical, linkable reference for technical recruiters,
  * engineering managers, and interviewers evaluating the GitGrill codebase.
- * Direct URL: https://gitgrill.dev/dossier
+ * Direct URL: https://gitgrill-gr.vercel.app/dossier
  */
 
 import React, { useState } from 'react';

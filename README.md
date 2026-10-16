@@ -11,16 +11,17 @@
 [![Express](https://img.shields.io/badge/Express-4.19-000000?style=flat-square&logo=express)](https://expressjs.com/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
 [![Architecture](https://img.shields.io/badge/Agent-Autonomous%20ReAct-ff6b6b?style=flat-square)](docs/DEVSCOPE_SPEC.md)
-[![Dossier](https://img.shields.io/badge/System-Build%20Dossier-00C7B7?style=flat-square)](https://gitgrill.dev/dossier)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-gitgrill--gr.vercel.app-success?style=flat-square)](https://gitgrill-gr.vercel.app)
+[![Dossier](https://img.shields.io/badge/System-Build%20Dossier-00C7B7?style=flat-square)](https://gitgrill-gr.vercel.app/dossier)
 
-[Overview](#overview) • [Key Capabilities](#key-capabilities) • [Architecture](#architecture) • [Engineering Dossier](#engineering-build-dossier) • [Quickstart](#local-quickstart) • [Docs & Specs](#technical-specifications) • [Author](#author)
+[Live Demo](https://gitgrill-gr.vercel.app) • [Build Dossier](https://gitgrill-gr.vercel.app/dossier) • [Overview](#overview) • [Key Capabilities](#key-capabilities) • [Architecture](#architecture) • [Quickstart](#local-quickstart) • [Docs & Specs](#technical-specifications) • [Author](#author)
 
 </div>
 
 ---
 
-> 💡 **For Recruiters & Hiring Managers:**
-> Check out the live interactive [**Engineering Build Dossier**](https://gitgrill.dev/dossier) for an executive technical briefing, system metrics, design trade-offs, and architecture benchmarks.
+> 🌐 **Live Production Application:** [**gitgrill-gr.vercel.app**](https://gitgrill-gr.vercel.app)  
+> 💡 **For Recruiters & Hiring Managers:** Check out the live interactive [**Engineering Build Dossier**](https://gitgrill-gr.vercel.app/dossier) for an executive technical briefing, system metrics, design trade-offs, and architecture benchmarks.
 
 ---
 
