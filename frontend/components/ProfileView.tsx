@@ -323,7 +323,7 @@ export function ProfileView({
         <div>
           <div className="flex items-center gap-2">
             <span className="font-mono text-base font-bold tracking-widest text-zinc-900">GITGRILL</span>
-            <span className="font-mono text-[10px] uppercase tracking-wider text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-300 font-semibold">
+            <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-800 bg-zinc-100 px-2.5 py-0.5 rounded-full border border-zinc-300 font-semibold">
               Candidate Intelligence Dossier
             </span>
           </div>
@@ -414,11 +414,11 @@ export function ProfileView({
               <span className="font-mono text-lg font-bold text-ece9f0 print:text-base print:text-zinc-900">
                 {rp?.seniorityEstimate?.toUpperCase() || 'ENGINEER'} LEVEL
               </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-orange-200 bg-orange-50 px-3 py-0.5 font-mono text-[11px] font-semibold text-orange-800 dark:border-signal/30 dark:bg-signal/10 dark:text-signal print:border-amber-300 print:bg-amber-100 print:text-amber-900">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-orange-200 bg-orange-50 px-3 py-0.5 font-mono text-[11px] font-semibold text-orange-800 dark:border-signal/30 dark:bg-signal/10 dark:text-signal print:border-orange-300 print:bg-orange-50 print:text-orange-900">
                 <PersonaIcon name={persona.icon} />
                 {persona.label}
               </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-orange-200 bg-orange-50 px-3 py-0.5 font-mono text-[11px] font-semibold text-orange-800 dark:border-signal/30 dark:bg-signal/10 dark:text-signal print:border-amber-300 print:bg-amber-100 print:text-amber-900">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-orange-200 bg-orange-50 px-3 py-0.5 font-mono text-[11px] font-semibold text-orange-800 dark:border-signal/30 dark:bg-signal/10 dark:text-signal print:border-orange-300 print:bg-orange-50 print:text-orange-900">
                 <Icon.Star className="h-3 w-3" />
                 Shortlist Recommendation
               </span>
@@ -481,7 +481,7 @@ export function ProfileView({
               <Pill
                 icon={<Icon.Globe className="h-3 w-3" />}
                 label={`Live App: ${profile.liveAppAudit.detectedStack.framework || 'Shipped'} (${profile.liveAppAudit.responseTimeMs}ms)`}
-                className="border-signal/35 bg-signal/10 text-signal print:border-amber-300 print:bg-amber-50 print:text-amber-900"
+                className="border-signal/35 bg-signal/10 text-signal print:border-emerald-300 print:bg-emerald-50 print:text-emerald-900"
               />
             )}
           </div>
@@ -490,7 +490,7 @@ export function ProfileView({
 
       {/* REQUISITION FIT SCORECARD (Rendered if candidate was benchmarked against a target role) */}
       {profile.requisitionFit && (
-        <div className="mb-6 rounded-2xl border border-signal/30 bg-card bg-gradient-to-br from-signal/[0.07] via-card to-card p-5 sm:p-6 shadow-card print:border-amber-400/80 print:bg-none print:bg-white print:p-3.5 print-avoid-break">
+        <div className="mb-6 rounded-2xl border border-signal/30 bg-card bg-gradient-to-br from-signal/[0.07] via-card to-card p-5 sm:p-6 shadow-card print:border-zinc-300 print:bg-none print:bg-white print:p-3.5 print-card">
           <div className="flex flex-wrap items-start justify-between gap-4 border-b border-edge/60 pb-3.5 print:border-zinc-300 print:pb-2">
             <div>
               <div className="flex items-center gap-2">
@@ -667,7 +667,7 @@ export function ProfileView({
           subtitle="Comprehensive architectural and domain background assessment"
           className="print-avoid-break"
         >
-          <div className="max-w-3xl space-y-3.5 text-[15px] leading-relaxed text-ece9f0/90 print:space-y-1.5 print:text-[12px] print:leading-normal print:text-zinc-800">
+          <div className="w-full space-y-3.5 text-[15px] leading-relaxed text-ece9f0/90 print:space-y-1.5 print:text-[12px] print:leading-normal print:text-zinc-800">
             {profile.summary.split('\n').filter(Boolean).map((p, i) => (
               <p key={i}>{p}</p>
             ))}
@@ -810,9 +810,8 @@ export function ProfileView({
             index="04"
             title="Claim vs. Evidence Matrix"
             subtitle="Cross-referencing candidate technical claims against verified codebase artifacts and live production builds"
-            className="print-avoid-break"
           >
-            <div className="space-y-3 max-w-3xl">
+            <div className="w-full space-y-3">
               {profile.claimEvidenceMatrix.map((item, i) => {
                 const isVerified = item.status === 'verified';
                 const isObserved = item.status === 'production_observed';
@@ -869,9 +868,8 @@ export function ProfileView({
           index="05"
           title="Verified Technical Stack & Expertise"
           subtitle="Language and framework proficiency backed by codebase analysis"
-          className="print-avoid-break"
         >
-          <div className="max-w-2xl space-y-3.5 print:space-y-1.5">
+          <div className="w-full space-y-3.5 print:space-y-1.5">
             {profile.expertise.map((e, i) => (
               <div key={i} className="flex items-center gap-4 print:gap-3">
                 <div className="w-32 flex-none font-mono text-sm font-medium text-ece9f0 print:text-[11px] print:w-28 print:text-zinc-900">
@@ -903,9 +901,8 @@ export function ProfileView({
             index="06"
             title="Commit Quality & Development Habits"
             subtitle="Code hygiene, consistency cadence, and collaboration signals"
-            className="print-avoid-break"
           >
-            <div className="grid max-w-2xl grid-cols-2 gap-3 sm:grid-cols-4 print:gap-2">
+            <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-4 print:gap-2">
               <div className="rounded-lg border border-edge bg-surface/40 p-3 print:border-zinc-300 print:bg-white print:p-2">
                 <div className="font-mono text-[10px] uppercase tracking-widest text-muted print:text-zinc-600 font-semibold">
                   Commit Quality
@@ -946,7 +943,7 @@ export function ProfileView({
               </div>
             </div>
             {rp.commitStyleInsight && (
-              <p className="mt-4 flex max-w-3xl items-start gap-2 text-[14px] italic leading-relaxed text-content/80 print:mt-2 print:text-[11px] print:text-zinc-700">
+              <p className="mt-4 flex w-full items-start gap-2 text-[14px] italic leading-relaxed text-content/80 print:mt-2 print:text-[11px] print:text-zinc-700">
                 <Icon.Message className="mt-0.5 h-4 w-4 flex-none text-muted not-italic print:text-zinc-500" />
                 <span>{rp.commitStyleInsight}</span>
               </p>
@@ -960,7 +957,7 @@ export function ProfileView({
           title="Open Source & Flagship Repositories"
           subtitle="Notable public codebases and technical contributions"
         >
-          <p className="mb-6 max-w-3xl text-[15px] leading-relaxed text-ece9f0/90 print:mb-2.5 print:text-[12px] print:leading-normal print:text-zinc-800">
+          <p className="mb-6 w-full text-[15px] leading-relaxed text-ece9f0/90 print:mb-2.5 print:text-[12px] print:leading-normal print:text-zinc-800">
             {profile.openSourceImpact.narrative}
           </p>
           <div className="grid gap-3 sm:grid-cols-2 print:gap-2">
@@ -999,7 +996,7 @@ export function ProfileView({
           subtitle="How the candidate's focus and technical stack shifted over time"
           className="print-avoid-break"
         >
-          <p className="max-w-3xl text-[15px] leading-relaxed text-ece9f0/90 print:text-[12px] print:leading-normal print:text-zinc-800">
+          <p className="w-full text-[15px] leading-relaxed text-ece9f0/90 print:text-[12px] print:leading-normal print:text-zinc-800">
             {profile.techEvolution}
           </p>
         </Section>
@@ -1011,7 +1008,7 @@ export function ProfileView({
           subtitle="Identified technical spikes alongside areas requiring qualification"
           className="print-avoid-break"
         >
-          <div className="grid max-w-3xl gap-8 sm:grid-cols-2 print:gap-4">
+          <div className="grid w-full gap-8 sm:grid-cols-2 print:gap-4">
             <div>
               <h3 className="mb-3 font-mono text-[11px] uppercase tracking-widest text-signal print:text-amber-800 font-bold print:mb-1.5">
                 Demonstrated Strengths
@@ -1050,7 +1047,6 @@ export function ProfileView({
             index="10"
             title="Public Web & Community Footprint"
             subtitle="External technical presence, discussion forums, and technical writing"
-            className="print-avoid-break"
           >
             <div className="flex flex-wrap gap-3 print:gap-2">
               {(hnUrl || hnMentionCount) && (
@@ -1081,16 +1077,15 @@ export function ProfileView({
             index="11"
             title="15-Minute Technical Phone Screen Playbook"
             subtitle="Calibrated technical screening questions for recruiters and hiring managers. Probe hands-on depth before escalating to engineering rounds."
-            className="print-avoid-break"
           >
-            <div className="max-w-3xl space-y-4 print:space-y-2.5">
+            <div className="w-full space-y-4 print:space-y-2.5">
               {rp.phoneScreenGuide.map((item, i) => (
                 <div
                   key={i}
                   className="rounded-xl border border-edge bg-surface/60 p-4 transition-all hover:border-signal/30 print:border-zinc-300 print:bg-white print:p-2.5 print-card"
                 >
                   <div className="flex items-start gap-3 print:gap-2">
-                    <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-signal/10 font-mono text-xs font-bold text-signal print:text-amber-800 print:bg-amber-100">
+                    <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-signal/10 font-mono text-xs font-bold text-signal print:text-zinc-800 print:bg-zinc-100 print:border print:border-zinc-300">
                       Q{i + 1}
                     </span>
                     <div className="min-w-0 flex-1">
@@ -1129,9 +1124,8 @@ export function ProfileView({
             index="12"
             title="Candidate Validation & Probe Topics"
             subtitle="Specific architectural questions and potential areas of concern identified during deep analysis"
-            className="print-avoid-break"
           >
-            <div className="grid max-w-3xl gap-8 sm:grid-cols-2 print:gap-4">
+            <div className="grid w-full gap-8 sm:grid-cols-2 print:gap-4">
               <div>
                 <h3 className="mb-3 font-mono text-[11px] uppercase tracking-widest text-signal print:text-amber-800 font-bold print:mb-1.5">
                   Target Technical Topics
@@ -1171,7 +1165,7 @@ export function ProfileView({
       </div>
 
       {/* Executive Branded Print Footer (Visible ONLY when printed/saved as PDF) */}
-      <div className="hidden border-t border-zinc-300 pt-3 mt-6 print:flex print:items-center print:justify-between font-mono text-[9px] text-zinc-500 print-avoid-break">
+      <div className="hidden border-t border-zinc-300 pt-3 mt-6 print:flex print:items-center print:justify-between font-mono text-[9px] text-zinc-500">
         <span>CONFIDENTIAL · Generated for Hiring Committee Evaluation</span>
         <span>GitGrill Engineering Intelligence Dossier · @{profile.username}</span>
       </div>

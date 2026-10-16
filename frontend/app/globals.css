@@ -230,7 +230,7 @@ input[type='range']::-moz-range-track {
 @media print {
   @page {
     size: letter portrait;
-    margin: 10mm 12mm 10mm 12mm;
+    margin: 8mm 12mm 8mm 12mm;
   }
 
   *,
@@ -243,14 +243,34 @@ input[type='range']::-moz-range-track {
     background-image: none !important;
   }
 
+  :root,
   html,
+  html.dark,
   body {
+    --canvas-rgb: 255 255 255 !important;
+    --card-rgb: 255 255 255 !important;
+    --well-rgb: 248 250 252 !important;
+    --surface-rgb: 255 255 255 !important;
+    --ink-rgb: 255 255 255 !important;
+    --edge-rgb: 226 232 240 !important;
     background: #ffffff !important;
+    background-color: #ffffff !important;
     color: #0f172a !important;
     font-size: 9.5pt !important;
     line-height: 1.35 !important;
     padding: 0 !important;
     margin: 0 !important;
+  }
+
+  main,
+  article,
+  section,
+  .page-texture,
+  .bg-canvas,
+  .bg-card {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
   }
 
   nav,
@@ -262,12 +282,16 @@ input[type='range']::-moz-range-track {
     display: none !important;
   }
 
-  .print-card,
-  .print-avoid-break {
+  .print-card {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
     background-image: none !important;
     background-color: #ffffff !important;
+  }
+
+  .print-avoid-break {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
 
   h1, h2, h3, h4, h5, h6,
@@ -290,17 +314,25 @@ input[type='range']::-moz-range-track {
   }
 
   .text-signal {
-    color: #b45309 !important;
+    color: #c2410c !important;
   }
 
   .bg-signal {
-    background-color: #d97706 !important;
+    background-color: #ea580c !important;
   }
 
   .border-edge,
   .border-edge\/60,
   .border-edge\/80 {
     border-color: #cbd5e1 !important;
+  }
+
+  .bg-well,
+  .bg-well\/60,
+  .bg-well\/70 {
+    background-color: #f8fafc !important;
+    background-image: none !important;
+    border-color: #e2e8f0 !important;
   }
 
   .bg-surface,
