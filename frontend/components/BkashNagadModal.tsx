@@ -67,7 +67,7 @@ export function BkashNagadModal({
     setError(null);
 
     if (!senderNumber.trim() || !trxId.trim()) {
-      setError('মোবাইল নম্বর ও Transaction ID (TrxID) উভয়ই পূরণ করুন।');
+      setError('Please provide both your mobile number and Transaction ID (TrxID).');
       return;
     }
 
@@ -85,7 +85,7 @@ export function BkashNagadModal({
       setSuccessResult(res);
       if (onSuccess) onSuccess();
     } catch (err: any) {
-      setError(err?.message || 'সাবমিশন ব্যর্থ হয়েছে। দয়া করে সঠিক তথ্য দিন।');
+      setError(err?.message || 'Submission failed. Please verify your details and try again.');
     } finally {
       setLoading(false);
     }
@@ -110,10 +110,10 @@ export function BkashNagadModal({
             </span>
             <div>
               <h2 className="text-base font-bold font-sans tracking-tight text-content">
-                বিকাশ ও নগদ পেমেন্ট
+                bKash & Nagad Payment
               </h2>
               <p className="font-mono text-[11px] text-muted">
-                বাংলাদেশী ডেভেলপার ও টিম অ্যাক্সেস
+                Instant activation for Bangladeshi developers & teams
               </p>
             </div>
           </div>
@@ -135,7 +135,7 @@ export function BkashNagadModal({
               <Icon.Check className="h-7 w-7" />
             </div>
             <h3 className="mt-4 text-xl font-bold font-sans text-emerald-600 dark:text-emerald-400">
-              পেমেন্ট সাবমিশন সফল হয়েছে
+              Payment Submitted Successfully
             </h3>
             <p className="mt-2 text-sm text-muted leading-relaxed max-w-sm mx-auto">
               {successResult.message}
@@ -146,12 +146,12 @@ export function BkashNagadModal({
                 <span className="font-bold text-[#ea580c]">{successResult.record?.trxId}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted">প্ল্যান:</span>
+                <span className="text-muted">Plan:</span>
                 <span className="text-content font-medium">{planInfo.label} ({planInfo.displayBdt})</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted">স্ট্যাটাস:</span>
-                <span className="text-amber-600 dark:text-amber-400 font-semibold">ভেরিফিকেশন পেন্ডিং (২৪ ঘণ্টা প্রভিশনাল অ্যাক্সেস সক্রিয়)</span>
+                <span className="text-muted">Status:</span>
+                <span className="text-amber-600 dark:text-amber-400 font-semibold">Verification Pending (24h provisional access active)</span>
               </div>
             </div>
             <button
@@ -161,14 +161,14 @@ export function BkashNagadModal({
               }}
               className="mt-6 w-full rounded-xl bg-[#ea580c] hover:bg-[#c2410c] py-3 font-mono text-xs font-bold uppercase tracking-wider text-white transition-all shadow-md"
             >
-              ড্যাশবোর্ডে ফিরে যান →
+              Go to Dashboard →
             </button>
           </div>
         ) : (
           /* Payment Form */
           <div className="mt-4">
             <p className="text-xs text-muted leading-relaxed">
-              ক্রেডিট কার্ড ছাড়াই সরাসরি বিকাশ, নগদ বা রকেটে পেমেন্ট করে প্রো অ্যাকাউন্ট অ্যাক্টিভ করুন।
+              Upgrade to Pro without an international card. Pay directly via bKash, Nagad, or Rocket.
             </p>
 
             {/* Plan selector */}
@@ -182,37 +182,41 @@ export function BkashNagadModal({
                     : 'border-edge bg-well hover:border-edge/80'
                 }`}
               >
-                <div className="font-mono text-xs font-semibold text-muted">মাসিক প্রো</div>
-                <div className="mt-1 font-sans text-lg font-extrabold text-content">
-                  ৳৩৯৯ <span className="text-xs font-normal text-muted">/মাস</span>
+                <div className="flex items-center justify-between min-h-[20px]">
+                  <span className="font-mono text-xs font-semibold text-muted">Monthly Pro</span>
                 </div>
-                <div className="text-[11px] text-muted font-mono mt-0.5">ডিপ কোড অডিট ও ড্রিল</div>
+                <div className="mt-1 font-sans text-lg font-extrabold text-content">
+                  ৳399 <span className="text-xs font-normal text-muted">/mo</span>
+                </div>
+                <div className="text-[11px] text-muted font-mono mt-0.5">Deep code audit & drills</div>
               </button>
 
               <button
                 type="button"
                 onClick={() => setSelectedPlan('pro_annual')}
-                className={`rounded-xl border p-3.5 text-left transition-all relative ${
+                className={`rounded-xl border p-3.5 text-left transition-all ${
                   selectedPlan === 'pro_annual'
                     ? 'border-[#ea580c] bg-[#ea580c]/10 shadow-xs'
                     : 'border-edge bg-well hover:border-edge/80'
                 }`}
               >
-                <span className="absolute -top-2 right-2 rounded bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.5 text-[9px] font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                  ২৭% সাশ্রয়ী
-                </span>
-                <div className="font-mono text-xs font-semibold text-muted">বাৎসরিক প্রো</div>
-                <div className="mt-1 font-sans text-lg font-extrabold text-content">
-                  ৳৩,৪৯০ <span className="text-xs font-normal text-muted">/বছর</span>
+                <div className="flex items-center justify-between min-h-[20px] gap-1">
+                  <span className="font-mono text-xs font-semibold text-muted">Annual Pro</span>
+                  <span className="rounded-full bg-emerald-500/15 dark:bg-emerald-500/25 border border-emerald-500/30 px-2 py-0.5 text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                    Save 27%
+                  </span>
                 </div>
-                <div className="text-[11px] text-muted font-mono mt-0.5">১ বছরের আনলিমিটেড</div>
+                <div className="mt-1 font-sans text-lg font-extrabold text-content">
+                  ৳3,490 <span className="text-xs font-normal text-muted">/yr</span>
+                </div>
+                <div className="text-[11px] text-muted font-mono mt-0.5">1 year unlimited access</div>
               </button>
             </div>
 
             {/* Step 1: Send Money Box */}
             <div className="mt-4 rounded-xl border border-edge bg-well/70 p-4">
               <div className="font-mono text-xs font-bold uppercase tracking-wider text-content flex items-center justify-between">
-                <span>১. টাকা পাঠান ({planInfo.displayBdt})</span>
+                <span>1. Send Money ({planInfo.displayBdt})</span>
                 {/* Method selector pills */}
                 <div className="flex gap-1.5">
                   <button
@@ -224,7 +228,7 @@ export function BkashNagadModal({
                         : 'border border-edge bg-card text-muted hover:text-content'
                     }`}
                   >
-                    বিকাশ
+                    bKash
                   </button>
                   <button
                     type="button"
@@ -235,7 +239,7 @@ export function BkashNagadModal({
                         : 'border border-edge bg-card text-muted hover:text-content'
                     }`}
                   >
-                    নগদ
+                    Nagad
                   </button>
                   <button
                     type="button"
@@ -246,7 +250,7 @@ export function BkashNagadModal({
                         : 'border border-edge bg-card text-muted hover:text-content'
                     }`}
                   >
-                    রকেট
+                    Rocket
                   </button>
                 </div>
               </div>
@@ -255,7 +259,7 @@ export function BkashNagadModal({
               <div className="mt-3 flex items-center justify-between rounded-lg border border-edge bg-card px-4 py-3 shadow-xs">
                 <div>
                   <div className="text-[11px] text-muted font-mono uppercase tracking-wider">
-                    {provider.toUpperCase()} ({activeAccount.type}) নম্বর
+                    {provider.toUpperCase()} ({activeAccount.type}) Number
                   </div>
                   <div className="text-lg font-bold font-mono text-content tracking-wider mt-0.5 select-all">
                     {activeAccount.number}
@@ -269,32 +273,32 @@ export function BkashNagadModal({
                   {copied ? (
                     <>
                       <Icon.Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                      <span className="text-emerald-600 dark:text-emerald-400 font-semibold">কপি হয়েছে</span>
+                      <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Copied!</span>
                     </>
                   ) : (
                     <>
                       <Icon.Copy className="h-3.5 w-3.5 text-muted" />
-                      <span>কপি নম্বর</span>
+                      <span>Copy Number</span>
                     </>
                   )}
                 </button>
               </div>
 
               <div className="mt-2 text-[11px] text-muted leading-normal">
-                বিকাশ বা নগদ অ্যাপ থেকে <strong>Send Money</strong> করুন। রেফারেন্সে আপনার গিটহাব ইউজারনেম দিন।
+                Use <strong>Send Money</strong> in your {provider.toUpperCase()} app. Enter your GitHub username in the reference.
               </div>
             </div>
 
             {/* Step 2: Form submission */}
             <form onSubmit={handleSubmit} className="mt-4 space-y-3">
               <div className="font-mono text-xs font-bold uppercase tracking-wider text-content">
-                ২. ট্রানজেকশন তথ্য দিন
+                2. Enter Transaction Details
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
                   <label className="block text-[11px] font-mono text-muted mb-1">
-                    প্রেরক মোবাইল নম্বর
+                    Sender Mobile Number
                   </label>
                   <input
                     type="text"
@@ -334,15 +338,15 @@ export function BkashNagadModal({
                 {loading ? (
                   <>
                     <Icon.Spinner className="h-4 w-4 animate-spin" />
-                    <span>যাচাই হচ্ছে...</span>
+                    <span>Verifying...</span>
                   </>
                 ) : (
-                  <span>সাবমিট ও পেমেন্ট নিশ্চিত করুন</span>
+                  <span>Submit & Activate Pro →</span>
                 )}
               </button>
 
               <div className="text-[11px] text-center text-muted font-mono">
-                ট্রানজেকশন সাবমিট করার পর ম্যানুয়াল ভেরিফিকেশন চলাকালীন ২৪ ঘণ্টার প্রভিশনাল অ্যাক্সেস পাবেন।
+                Immediate 24-hour provisional access is activated upon submission while verification completes.
               </div>
             </form>
           </div>

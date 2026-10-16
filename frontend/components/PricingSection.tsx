@@ -46,7 +46,7 @@ export function PricingSection() {
                     : 'text-slate-600 dark:text-muted hover:text-slate-900 dark:hover:text-[#ece9f0]'
                 }`}
               >
-                মাসিক (Monthly)
+                Monthly
               </button>
               <button
                 type="button"
@@ -57,7 +57,7 @@ export function PricingSection() {
                     : 'text-slate-600 dark:text-muted hover:text-slate-900 dark:hover:text-[#ece9f0]'
                 }`}
               >
-                <span>বাৎসরিক (Annual)</span>
+                <span>Annual</span>
                 <span
                   className={`rounded-full px-2 py-0.5 text-[10px] font-bold tracking-tight transition-colors ${
                     annual
@@ -65,7 +65,7 @@ export function PricingSection() {
                       : 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/30'
                   }`}
                 >
-                  Save 27% (২ মাস ফ্রি)
+                  Save 27% (2 months free)
                 </span>
               </button>
             </div>
@@ -82,17 +82,17 @@ export function PricingSection() {
               </div>
               <div className="mt-4 flex items-baseline gap-2">
                 <span className="font-sans text-4xl font-extrabold tracking-tight text-slate-900 dark:text-[#ece9f0]">
-                  ৳০
+                  ৳0
                 </span>
                 <span className="font-mono text-xs text-slate-500 dark:text-muted">
-                  / চিরতরে ফ্রি
+                  / free forever
                 </span>
               </div>
               <div className="mt-2 text-[11px] font-mono text-slate-500 dark:text-muted">
-                কোনো কার্ড বা পেমেন্ট মেথড ছাড়াই আজীবন
+                No credit card required · Instant access
               </div>
               <p className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-muted">
-                ব্যক্তিগত গিটহাব প্রোফাইল প্রি-ফ্লাইট এবং নতুন ক্যান্ডিডেট ভেরিফিকেশনের জন্য ইনস্ট্যান্ট অডিট।
+                Instant code audit for developer profile pre-flight and candidate verification.
               </p>
 
               <div className="mt-6 border-t border-slate-100 dark:border-edge/50 pt-6">
@@ -102,15 +102,15 @@ export function PricingSection() {
                 <ul className="space-y-2.5 font-mono text-xs text-slate-600 dark:text-muted">
                   <li className="flex items-start gap-2">
                     <Icon.Check className="h-4 w-4 flex-none text-emerald-600 dark:text-emerald-400 mt-0.5" />
-                    <span><strong>৩টি ফ্রেশ অডিট</strong> / প্রতি ৩০ দিনে</span>
+                    <span><strong>3 fresh audits</strong> / every 30 days</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Icon.Check className="h-4 w-4 flex-none text-emerald-600 dark:text-emerald-400 mt-0.5" />
-                    <span><strong>১টি সক্রিয় Target Role</strong> ক্যাম্পেইন</span>
+                    <span><strong>1 active Target Role</strong> campaign</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Icon.Check className="h-4 w-4 flex-none text-emerald-600 dark:text-emerald-400 mt-0.5" />
-                    <span><strong>১টি শেয়ারযোগ্য পাবলিক Proof Page</strong></span>
+                    <span><strong>1 shareable public Proof Page</strong></span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Icon.Check className="h-4 w-4 flex-none text-emerald-600 dark:text-emerald-400 mt-0.5" />
@@ -122,7 +122,7 @@ export function PricingSection() {
                   </li>
                   <li className="flex items-start gap-2">
                     <Icon.Check className="h-4 w-4 flex-none text-emerald-600 dark:text-emerald-400 mt-0.5" />
-                    <span>পূর্বের সব ক্যাশড প্রোফাইল রি-ওপেন সম্পূর্ণ ফ্রি</span>
+                    <span>Re-open previously cached profiles anytime</span>
                   </li>
                 </ul>
               </div>
@@ -134,7 +134,7 @@ export function PricingSection() {
                 onClick={handleFreeCta}
                 className="w-full rounded-xl border border-slate-200 dark:border-edge bg-slate-50 dark:bg-card px-4 py-3 font-mono text-xs font-semibold uppercase tracking-wider text-slate-900 dark:text-[#ece9f0] transition-colors hover:border-[#ea580c] hover:text-[#ea580c] dark:hover:border-signal dark:hover:text-signal shadow-xs"
               >
-                ফ্রি অডিট শুরু করুন ↑
+                Start Free Audit ↑
               </button>
             </div>
           </div>
@@ -152,26 +152,26 @@ export function PricingSection() {
               </div>
               <div className="mt-4 flex flex-wrap items-baseline gap-2">
                 <span className="font-sans text-4xl font-extrabold tracking-tight text-slate-900 dark:text-[#ece9f0]">
-                  {annual ? '৳৩,৪৯০' : '৳৩৯৯'}
+                  {annual ? '৳3,490' : '৳399'}
                 </span>
                 <span className="font-mono text-xs text-slate-500 dark:text-muted">
-                  {annual ? '/ বছর' : '/ মাস'}
+                  {annual ? '/ year' : '/ month'}
                 </span>
               </div>
 
               {annual ? (
                 <div className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg border border-emerald-300 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/15 px-2.5 py-1 font-mono text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
                   <Icon.Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                  <span>৳১,২৯৮ সাশ্রয় · ২ মাস ফ্রি (প্রতি মাসে মাত্র ৳২৯০)</span>
+                  <span>Save ৳1,298 · 2 months free (only ৳290/mo)</span>
                 </div>
               ) : (
                 <div className="mt-2 text-[11px] font-mono text-slate-500 dark:text-muted">
-                  বিকাশ, নগদ বা রকেটে সহজ পেমেন্ট · ইনস্ট্যান্ট অ্যাক্টিভেশন
+                  bKash, Nagad or Rocket · Instant activation
                 </div>
               )}
 
               <p className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-muted">
-                সক্রিয় জব সিকার, সিনিয়র ইঞ্জিনিয়ার ও কনসালট্যান্টদের জন্য লিমিটলেস ইন্টেলিজেন্স ও কোড ডিফেন্স।
+                Limitless intelligence and adversarial code defense for job seekers, senior engineers, and consultants.
               </p>
 
               <div className="mt-6 border-t border-slate-100 dark:border-edge/50 pt-6">
@@ -181,27 +181,27 @@ export function PricingSection() {
                 <ul className="space-y-2.5 font-mono text-xs text-slate-600 dark:text-muted">
                   <li className="flex items-start gap-2">
                     <Icon.Check className="h-4 w-4 flex-none text-[#ea580c] dark:text-signal mt-0.5" />
-                    <span><strong className="text-slate-900 dark:text-[#ece9f0]">Tier 2 Deep Code Audit</strong> (বাস্তব সোর্স কোড ও কমিট ডিফ অডিট)</span>
+                    <span><strong className="text-slate-900 dark:text-[#ece9f0]">Tier 2 Deep Code Audit</strong> (real source code & commit diff audit)</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Icon.Check className="h-4 w-4 flex-none text-[#ea580c] dark:text-signal mt-0.5" />
-                    <span><strong className="text-slate-900 dark:text-[#ece9f0]">Interactive Code Defense</strong> (লাইন-লেভেল অ্যাডভারসারিয়াল ইন্টারভিউ ড্রিল)</span>
+                    <span><strong className="text-slate-900 dark:text-[#ece9f0]">Interactive Code Defense</strong> (line-level interview drills)</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Icon.Check className="h-4 w-4 flex-none text-[#ea580c] dark:text-signal mt-0.5" />
-                    <span><strong className="text-slate-900 dark:text-[#ece9f0]">Unlimited</strong> ক্যান্ডিডেট ও সেলফ অডিট</span>
+                    <span><strong className="text-slate-900 dark:text-[#ece9f0]">Unlimited</strong> candidate & self audits</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Icon.Check className="h-4 w-4 flex-none text-[#ea580c] dark:text-signal mt-0.5" />
-                    <span><strong className="text-slate-900 dark:text-[#ece9f0]">Unlimited</strong> Target Roles ও ক্যারিয়ার ক্যাম্পেইন</span>
+                    <span><strong className="text-slate-900 dark:text-[#ece9f0]">Unlimited</strong> Target Roles & career campaigns</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Icon.Check className="h-4 w-4 flex-none text-[#ea580c] dark:text-signal mt-0.5" />
-                    <span><strong>Priority Multi-Model LLM Gateway</strong> (জিরো কিউ ওয়েটিং)</span>
+                    <span><strong>Priority Multi-Model LLM Gateway</strong> (zero queue waiting)</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Icon.Check className="h-4 w-4 flex-none text-[#ea580c] dark:text-signal mt-0.5" />
-                    <span>হায়ারিং কমিটির জন্য হাই-কনট্রাস্ট Executive PDF ডসিয়ার এক্সপোর্ট</span>
+                    <span>High-contrast Executive PDF dossier export for hiring committees</span>
                   </li>
                 </ul>
               </div>
@@ -213,7 +213,7 @@ export function PricingSection() {
                 onClick={handleProCta}
                 className="w-full rounded-xl bg-[#ea580c] hover:bg-[#c2410c] dark:bg-signal dark:hover:bg-signal/90 px-4 py-3.5 font-mono text-xs font-bold uppercase tracking-wider text-white dark:text-ink shadow-md transition-all active:scale-95 flex items-center justify-center gap-2"
               >
-                <span>বিকাশ বা নগদে প্রো নিন →</span>
+                <span>Get Pro with bKash / Nagad →</span>
               </button>
             </div>
           </div>
@@ -226,26 +226,26 @@ export function PricingSection() {
               </div>
               <div className="mt-4 flex flex-wrap items-baseline gap-2">
                 <span className="font-sans text-4xl font-extrabold tracking-tight text-slate-900 dark:text-[#ece9f0]">
-                  {annual ? '৳১৮,৯৯০' : '৳১,৯৯৯'}
+                  {annual ? '৳18,990' : '৳1,999'}
                 </span>
                 <span className="font-mono text-xs text-slate-500 dark:text-muted">
-                  {annual ? '/ বছর' : '/ মাস'}
+                  {annual ? '/ year' : '/ month'}
                 </span>
               </div>
 
               {annual ? (
                 <div className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg border border-emerald-300 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/15 px-2.5 py-1 font-mono text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
                   <Icon.Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                  <span>বাৎসরিক বিলিংয়ে ৳৪,৯৯৮ সাশ্রয় (২১% অফ)</span>
+                  <span>Save ৳4,998 on annual billing (21% off)</span>
                 </div>
               ) : (
                 <div className="mt-2 text-[11px] font-mono text-slate-500 dark:text-muted">
-                  টিম অ্যাক্সেস ও আনলিমিটেড পাইপলাইন ট্র্যাকিং
+                  Team access & unlimited pipeline tracking
                 </div>
               )}
 
               <p className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-muted">
-                হায়ারিং টিম, এজেন্সি ও টেকনিক্যাল হেডহান্টারদের জন্য পাইপলাইন ট্র্যাকিং ও টিম কলাবরেশন।
+                Candidate pipeline tracking and team collaboration for hiring teams, tech agencies, and headhunters.
               </p>
 
               <div className="mt-6 border-t border-slate-100 dark:border-edge/50 pt-6">
@@ -255,23 +255,23 @@ export function PricingSection() {
                 <ul className="space-y-2.5 font-mono text-xs text-slate-600 dark:text-muted">
                   <li className="flex items-start gap-2">
                     <Icon.Check className="h-4 w-4 flex-none text-blue-600 dark:text-blue-400 mt-0.5" />
-                    <span><strong>ATS-Ready 1-Pager Briefs</strong> hiring committee-র জন্য</span>
+                    <span><strong>ATS-Ready 1-Pager Briefs</strong> for hiring committees</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Icon.Check className="h-4 w-4 flex-none text-blue-600 dark:text-blue-400 mt-0.5" />
-                    <span><strong>Batch Talent Pipeline</strong> ও স্ক্রিনিং বোর্ড</span>
+                    <span><strong>Batch Talent Pipeline</strong> & screening board</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Icon.Check className="h-4 w-4 flex-none text-blue-600 dark:text-blue-400 mt-0.5" />
-                    <span><strong>Custom Job Description</strong> ফিট স্কোরিং ও গ্যাপ প্রোবস</span>
+                    <span><strong>Custom Job Description</strong> fit scoring & gap probes</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Icon.Check className="h-4 w-4 flex-none text-blue-600 dark:text-blue-400 mt-0.5" />
-                    <span>শেয়ার্ড ক্যান্ডিডেট লিডারবোর্ড ও কোলাবোরেটিভ নোটস</span>
+                    <span>Shared candidate leaderboard & collaborative notes</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Icon.Check className="h-4 w-4 flex-none text-blue-600 dark:text-blue-400 mt-0.5" />
-                    <span>মাল্টি-সিট ওয়ার্কস্পেস টিম ম্যানেজমেন্ট</span>
+                    <span>Multi-seat workspace team management</span>
                   </li>
                 </ul>
               </div>
@@ -293,7 +293,7 @@ export function PricingSection() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             {/* Accepted MFS Badges */}
             <div className="flex items-center gap-2.5">
-              <span className="font-mono text-xs font-semibold text-slate-700 dark:text-muted">পেমেন্ট মেথড:</span>
+              <span className="font-mono text-xs font-semibold text-slate-700 dark:text-muted">Payment Methods:</span>
               <span className="inline-flex items-center rounded-lg border border-pink-200 dark:border-pink-900/40 bg-pink-50 dark:bg-pink-950/30 px-2.5 py-1 font-mono text-[11px] font-bold text-pink-700 dark:text-pink-300">
                 bKash
               </span>
@@ -309,7 +309,7 @@ export function PricingSection() {
             <div className="flex items-center gap-2 font-mono text-xs text-slate-600 dark:text-muted">
               <Icon.Zap className="h-4 w-4 text-[#ea580c] dark:text-signal flex-none" />
               <span>
-                <strong>২৪ ঘণ্টার ইনস্ট্যান্ট প্রভিশনাল অ্যাক্সেস:</strong> TrxID সাবমিট করলেই কোনো অপেক্ষা ছাড়া সাথে সাথে প্রো ফিচারস আনলক।
+                <strong>24-Hour Instant Provisional Access:</strong> Submit your TrxID for immediate access with zero wait time.
               </span>
             </div>
           </div>

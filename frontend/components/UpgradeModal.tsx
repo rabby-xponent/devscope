@@ -216,7 +216,7 @@ export function UpgradeModal({
                 className="flex items-center justify-center gap-2 rounded-xl border border-[#ea580c]/50 bg-[#ea580c]/10 hover:bg-[#ea580c]/20 px-4 py-2.5 font-mono text-xs font-bold text-[#ea580c] dark:text-signal transition-all"
               >
                 <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#ea580c] text-white text-[10px]">৳</span>
-                <span>বিকাশ বা নগদ দিয়ে আপগ্রেড ({PLANS[plan].displayBdt})</span>
+                <span>Upgrade with bKash / Nagad ({PLANS[plan].displayBdt})</span>
               </button>
             </>
           )}
