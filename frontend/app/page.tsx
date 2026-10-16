@@ -659,7 +659,13 @@ export default function Home() {
                 <li className="flex items-start gap-3">
                   <span className="text-slate-400 dark:text-muted font-bold text-base leading-none">•</span>
                   <span>
-                    <strong>Ghosted after technical submissions:</strong> No objective breakdown of how their practical code was evaluated.
+                    <strong>Ghosted after technical submissions:</strong> No objective breakdown of how practical code was evaluated.
+                  </span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-slate-400 dark:text-muted font-bold text-base leading-none">•</span>
+                  <span>
+                    <strong>Static resumes & blind applications:</strong> Candidates spray static PDFs into ATS black holes without pre-flight validation against actual job requirements or ability to branch tailored variants.
                   </span>
                 </li>
               </ul>
@@ -670,23 +676,28 @@ export default function Home() {
           <div className="mt-10 rounded-xl bg-slate-900 dark:bg-[#1c1917] p-4 text-white font-mono text-xs flex flex-wrap items-center justify-between gap-4 shadow-sm">
             <span className="text-[#f97316] font-semibold">THE OUTCOME:</span>
             <div className="flex flex-wrap items-center gap-2 text-stone-300">
+              <span>Blind Applications</span>
+              <span>→</span>
               <span>False Negatives</span>
               <span>→</span>
-              <span>Engineering Time Lost</span>
+              <span>Engineering Burnout</span>
               <span>→</span>
-              <span>$40k+ Mismatched Hires</span>
-              <span>→</span>
-              <span className="text-white font-semibold">Start Over From Scratch ↺</span>
+              <span className="text-white font-semibold">Solve Both with GitGrill ⚡</span>
             </div>
-            <button
-              onClick={() => {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                document.querySelector('input')?.focus();
-              }}
-              className="text-[#f97316] underline hover:text-white"
-            >
-              Solve It with GitGrill ↑
-            </button>
+            <div className="flex items-center gap-4">
+              <Link href="/developer" className="text-[#f97316] font-semibold underline hover:text-white transition-colors">
+                Developer CareerOS →
+              </Link>
+              <button
+                onClick={() => {
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  document.querySelector('input')?.focus();
+                }}
+                className="text-stone-300 underline hover:text-white transition-colors"
+              >
+                Audit Handle ↑
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -831,23 +842,31 @@ export default function Home() {
       <section className="py-20 text-center bg-[#faf9f5] dark:bg-[#0c0b0e]">
         <div className="mx-auto max-w-3xl px-6">
           <h2 className="font-sans text-3xl font-extrabold tracking-tight sm:text-4xl text-slate-900 dark:text-[#ece9f0]">
-            Stop guessing. Start evaluating with{' '}
+            Stop guessing. Build, verify, & apply with{' '}
             <span className="text-[#ea580c] dark:text-signal">ground truth.</span>
           </h2>
-          <p className="mt-4 text-sm text-slate-600 dark:text-muted">
-            Enter any candidate&apos;s GitHub handle or live portfolio project to generate an executive brief in 14 seconds.
+          <p className="mt-4 text-sm sm:text-base text-slate-600 dark:text-muted leading-relaxed">
+            Whether you&apos;re an engineer pre-flighting your next job application or a hiring team auditing candidate depth, GitGrill replaces buzzword guesswork with deterministic code proof.
           </p>
 
-          <div className="mt-8 flex justify-center">
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href="/developer"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#ea580c] hover:bg-[#c2410c] dark:bg-signal dark:hover:bg-signal/90 px-7 py-3.5 font-mono text-xs font-bold uppercase tracking-wider text-white dark:text-ink transition-all shadow-md shadow-orange-500/20 active:scale-95"
+            >
+              <Icon.Briefcase className="h-4 w-4" />
+              <span>Launch Developer CareerOS →</span>
+            </Link>
+
             <button
               onClick={() => {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
                 const input = document.querySelector('input');
                 input?.focus();
               }}
-              className="rounded-xl bg-[#ea580c] hover:bg-[#c2410c] dark:bg-signal dark:hover:bg-signal/90 px-8 py-3.5 font-mono text-xs font-semibold uppercase tracking-wider text-white dark:text-ink transition-all shadow-md shadow-orange-500/20"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-edge bg-white dark:bg-card hover:border-[#ea580c] hover:text-[#ea580c] dark:hover:border-signal dark:hover:text-signal px-7 py-3.5 font-mono text-xs font-semibold uppercase tracking-wider text-slate-900 dark:text-[#ece9f0] transition-colors shadow-xs"
             >
-              Analyze Candidate Now ↑
+              <span>Audit Engineering Handle ↑</span>
             </button>
           </div>
         </div>
