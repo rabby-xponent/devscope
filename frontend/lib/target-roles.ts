@@ -75,10 +75,29 @@ export const APPLICATION_STATUS_META: Record<
   rejected: { label: 'Closed', order: 5 },
 };
 
+function getRolesKey(): string {
+  if (typeof window === 'undefined') return STORAGE_KEY;
+  const uid = localStorage.getItem('gitgrill_current_user_id');
+  return uid ? `gitgrill_${uid}_target_roles_v1` : STORAGE_KEY;
+}
+
+function getActiveRoleKey(): string {
+  if (typeof window === 'undefined') return ACTIVE_ROLE_KEY;
+  const uid = localStorage.getItem('gitgrill_current_user_id');
+  return uid ? `gitgrill_${uid}_active_target_role_v1` : ACTIVE_ROLE_KEY;
+}
+
+function getDefenseKey(): string {
+  if (typeof window === 'undefined') return DEFENSE_KEY;
+  const uid = localStorage.getItem('gitgrill_current_user_id');
+  return uid ? `gitgrill_${uid}_defense_cards_v1` : DEFENSE_KEY;
+}
+
 export function getTargetRoles(): TargetRole[] {
   if (typeof window === 'undefined') return [];
   try {
-    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
+    const key = getRolesKey();
+    const raw = localStorage.getItem(key) || (key === STORAGE_KEY ? localStorage.getItem(LEGACY_STORAGE_KEY) : null);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed : [];
@@ -94,7 +113,7 @@ export function saveTargetRole(role: TargetRole): TargetRole {
   if (idx >= 0) roles[idx] = stamped;
   else roles.unshift(stamped);
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(roles));
+    localStorage.setItem(getRolesKey(), JSON.stringify(roles));
   } catch {
     /* ignore */
   }
@@ -104,7 +123,7 @@ export function saveTargetRole(role: TargetRole): TargetRole {
 export function deleteTargetRole(id: string): void {
   const roles = getTargetRoles().filter((r) => r.id !== id);
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(roles));
+    localStorage.setItem(getRolesKey(), JSON.stringify(roles));
   } catch {
     /* ignore */
   }
@@ -118,7 +137,7 @@ export function getTargetRoleById(id: string): TargetRole | undefined {
 export function setActiveTargetRoleId(id: string): void {
   if (typeof window === 'undefined') return;
   try {
-    localStorage.setItem(ACTIVE_ROLE_KEY, id);
+    localStorage.setItem(getActiveRoleKey(), id);
   } catch {
     /* ignore */
   }
@@ -127,7 +146,7 @@ export function setActiveTargetRoleId(id: string): void {
 export function getActiveTargetRoleId(): string {
   if (typeof window === 'undefined') return '';
   try {
-    return localStorage.getItem(ACTIVE_ROLE_KEY) || '';
+    return localStorage.getItem(getActiveRoleKey()) || '';
   } catch {
     return '';
   }
@@ -327,7 +346,8 @@ const REVIEW_INTERVALS: Record<DefenseCard['confidence'], number> = {
 export function getDefenseCards(): DefenseCard[] {
   if (typeof window === 'undefined') return [];
   try {
-    const raw = localStorage.getItem(DEFENSE_KEY) || localStorage.getItem(LEGACY_DEFENSE_KEY);
+    const key = getDefenseKey();
+    const raw = localStorage.getItem(key) || (key === DEFENSE_KEY ? localStorage.getItem(LEGACY_DEFENSE_KEY) : null);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed : [];
@@ -338,7 +358,7 @@ export function getDefenseCards(): DefenseCard[] {
 
 function saveDefenseCards(cards: DefenseCard[]): void {
   try {
-    localStorage.setItem(DEFENSE_KEY, JSON.stringify(cards));
+    localStorage.setItem(getDefenseKey(), JSON.stringify(cards));
   } catch {
     /* ignore */
   }

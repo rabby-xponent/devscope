@@ -60,6 +60,18 @@ export function setActiveWorkspaceMode(mode: WorkspaceMode): void {
   }
 }
 
+function getScopedRecruiterKey(): string {
+  if (typeof window === 'undefined') return RECRUITER_KEY;
+  const uid = localStorage.getItem('gitgrill_current_user_id');
+  return uid ? `gitgrill_${uid}_recruiter_profile_v1` : RECRUITER_KEY;
+}
+
+function getScopedDeveloperKey(): string {
+  if (typeof window === 'undefined') return DEVELOPER_KEY;
+  const uid = localStorage.getItem('gitgrill_current_user_id');
+  return uid ? `gitgrill_${uid}_developer_profile_v1` : DEVELOPER_KEY;
+}
+
 export function getRecruiterProfile(): RecruiterWorkspaceProfile {
   const defaultProfile: RecruiterWorkspaceProfile = {
     companyName: 'Internal Hiring Team',
@@ -69,7 +81,8 @@ export function getRecruiterProfile(): RecruiterWorkspaceProfile {
 
   if (typeof window === 'undefined') return defaultProfile;
   try {
-    const raw = localStorage.getItem(RECRUITER_KEY) || localStorage.getItem(LEGACY_RECRUITER_KEY);
+    const key = getScopedRecruiterKey();
+    const raw = localStorage.getItem(key) || (key === RECRUITER_KEY ? localStorage.getItem(LEGACY_RECRUITER_KEY) : null);
     if (!raw) return defaultProfile;
     const parsed = JSON.parse(raw);
     return { ...defaultProfile, ...parsed };
@@ -83,7 +96,7 @@ export function saveRecruiterProfile(profile: Partial<RecruiterWorkspaceProfile>
   const updated = { ...current, ...profile };
   if (typeof window !== 'undefined') {
     try {
-      localStorage.setItem(RECRUITER_KEY, JSON.stringify(updated));
+      localStorage.setItem(getScopedRecruiterKey(), JSON.stringify(updated));
     } catch {
       /* ignore */
     }
@@ -120,7 +133,8 @@ export function getDeveloperProfile(): DeveloperWorkspaceProfile {
 
   if (typeof window === 'undefined') return defaultProfile;
   try {
-    const raw = localStorage.getItem(DEVELOPER_KEY) || localStorage.getItem(LEGACY_DEVELOPER_KEY);
+    const key = getScopedDeveloperKey();
+    const raw = localStorage.getItem(key) || (key === DEVELOPER_KEY ? localStorage.getItem(LEGACY_DEVELOPER_KEY) : null);
     if (!raw) return defaultProfile;
     const parsed = JSON.parse(raw);
     return { ...defaultProfile, ...parsed };
@@ -134,7 +148,7 @@ export function saveDeveloperProfile(profile: Partial<DeveloperWorkspaceProfile>
   const updated = { ...current, ...profile };
   if (typeof window !== 'undefined') {
     try {
-      localStorage.setItem(DEVELOPER_KEY, JSON.stringify(updated));
+      localStorage.setItem(getScopedDeveloperKey(), JSON.stringify(updated));
     } catch {
       /* ignore */
     }

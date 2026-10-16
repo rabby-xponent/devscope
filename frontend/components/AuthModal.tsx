@@ -32,12 +32,14 @@ type Step = 'input' | 'otp';
 export default function AuthModal({
   onClose,
   onSignedIn,
+  initialMode = 'signin',
 }: {
   onClose: () => void;
   onSignedIn: () => void;
+  initialMode?: Mode;
 }) {
   const backend = authBackend();
-  const [mode, setMode] = useState<Mode>('signin');
+  const [mode, setMode] = useState<Mode>(initialMode);
   const [authMethod, setAuthMethod] = useState<AuthMethod>('password');
   const [role, setRole] = useState<'developer' | 'recruiter'>('developer');
   const [step, setStep] = useState<Step>('input');

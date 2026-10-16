@@ -147,12 +147,17 @@ export async function getSessionUser(): Promise<AuthUser | null> {
     if (res.ok) {
       const data = await res.json();
       if (data?.user?.id) {
-        return {
+        const enrichedUser: AuthUser = {
           id: data.user.id,
           email: data.user.email ?? clientUser?.email ?? null,
           handle: data.user.handle ?? clientUser?.handle ?? null,
           name: data.user.name ?? clientUser?.name ?? null,
+          role: clientUser?.role || 'developer',
         };
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('gitgrill_current_user_id', enrichedUser.id);
+        }
+        return enrichedUser;
       }
     }
   } catch {
@@ -160,7 +165,19 @@ export async function getSessionUser(): Promise<AuthUser | null> {
   }
 
   // 4. Return the verified Supabase user if backend is offline or unconfigured
+  if (typeof window !== 'undefined') {
+    if (clientUser?.id) {
+      localStorage.setItem('gitgrill_current_user_id', clientUser.id);
+    } else {
+      localStorage.removeItem('gitgrill_current_user_id');
+    }
+  }
   return clientUser;
+}
+
+export function getCurrentUserId(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('gitgrill_current_user_id');
 }
 
 // --- Sign-in / sign-out ---------------------------------------------------------
@@ -509,6 +526,10 @@ export async function signOutSession(): Promise<void> {
     await sb.auth.signOut();
   } else if (typeof window !== 'undefined') {
     localStorage.removeItem(DEV_TOKEN_KEY);
+  }
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('gitgrill_current_user_id');
+    localStorage.removeItem('gitgrill_user_role');
   }
   notifyListeners();
 }

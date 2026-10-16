@@ -26,6 +26,7 @@ interface SessionValue {
   refresh: () => Promise<void>;
   signOut: () => Promise<void>;
   openSignIn: () => void;
+  openSignUp: () => void;
   closeSignIn: () => void;
   signInOpen: boolean;
 }
@@ -36,6 +37,7 @@ const SessionContext = createContext<SessionValue>({
   refresh: async () => {},
   signOut: async () => {},
   openSignIn: () => {},
+  openSignUp: () => {},
   closeSignIn: () => {},
   signInOpen: false,
 });
@@ -48,6 +50,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [signInOpen, setSignInOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
 
   const refresh = useCallback(async () => {
     const next = await getSessionUser();
@@ -83,7 +86,14 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       loading,
       refresh,
       signOut,
-      openSignIn: () => setSignInOpen(true),
+      openSignIn: () => {
+        setAuthMode('signin');
+        setSignInOpen(true);
+      },
+      openSignUp: () => {
+        setAuthMode('signup');
+        setSignInOpen(true);
+      },
       closeSignIn: () => setSignInOpen(false),
       signInOpen,
     }),
@@ -95,6 +105,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       {children}
       {signInOpen && (
         <AuthModal
+          initialMode={authMode}
           onClose={() => setSignInOpen(false)}
           onSignedIn={() => {
             void refresh();

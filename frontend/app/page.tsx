@@ -38,7 +38,7 @@ const CANDIDATE_ARCHETYPES = [
 ];
 
 export default function Home() {
-  const { user, loading: sessionLoading } = useSession();
+  const { user, loading: sessionLoading, openSignUp } = useSession();
 
   // Simple Quick Audit Search State
   const [auditUsername, setAuditUsername] = useState('');
@@ -112,13 +112,14 @@ export default function Home() {
             <ThemeToggle />
             <AccountMenu />
             {!sessionLoading && !user && (
-              <Link
-                href="/developer"
+              <button
+                type="button"
+                onClick={openSignUp}
                 className="inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 rounded-lg bg-[#ea580c] dark:bg-signal px-3.5 py-1.5 font-mono text-xs font-bold text-white dark:text-ink hover:opacity-90 transition-all shadow-xs"
               >
                 <span>Get Started</span>
                 <Icon.ArrowRight className="h-3 w-3 shrink-0" />
-              </Link>
+              </button>
             )}
           </div>
         </div>
