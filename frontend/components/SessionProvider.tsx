@@ -70,6 +70,13 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     };
   }, [refresh]);
 
+  // Auto-close modal when user is signed in
+  useEffect(() => {
+    if (user && signInOpen) {
+      setSignInOpen(false);
+    }
+  }, [user, signInOpen]);
+
   const value = useMemo(
     () => ({
       user,

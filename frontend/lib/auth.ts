@@ -88,8 +88,32 @@ function extractHandle(sbUser: {
 // --- Session resolution -------------------------------------------------------
 
 export async function getSessionUser(): Promise<AuthUser | null> {
+  const sb = await supabase();
+  let clientUser: AuthUser | null = null;
+
+  // 1. Check if Supabase client has an active authenticated user in browser session
+  if (sb) {
+    try {
+      const { data } = await sb.auth.getUser();
+      if (data?.user) {
+        const parsed = extractHandle(data.user);
+        const derivedHandle = parsed.handle || (data.user.email ? data.user.email.split('@')[0] : null);
+        clientUser = {
+          id: data.user.id,
+          email: data.user.email ?? null,
+          handle: derivedHandle,
+          name: parsed.name || derivedHandle,
+        };
+      }
+    } catch {
+      // Supabase getUser failed
+    }
+  }
+
+  // 2. Check token / dev mode
   const token = await getAccessToken();
-  if (!token) return null;
+  if (!token) return clientUser;
+
   if (token.startsWith('local:')) {
     try {
       return JSON.parse(token.slice(6)) as AuthUser;
@@ -97,17 +121,34 @@ export async function getSessionUser(): Promise<AuthUser | null> {
       return null;
     }
   }
+
+  // 3. Attempt backend profile enrichment (with timeout so sleeping backend never freezes auth)
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2500);
     const res = await fetch(`${API_URL}/api/auth/me`, {
       headers: { Authorization: `Bearer ${token}` },
+      signal: controller.signal,
     });
-    if (!res.ok) return null;
-    const data = await res.json();
-    if (!data?.user?.id) return null;
-    return data.user as AuthUser;
+    clearTimeout(timeoutId);
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data?.user?.id) {
+        return {
+          id: data.user.id,
+          email: data.user.email ?? clientUser?.email ?? null,
+          handle: data.user.handle ?? clientUser?.handle ?? null,
+          name: data.user.name ?? clientUser?.name ?? null,
+        };
+      }
+    }
   } catch {
-    return null;
+    // Backend offline / cold-starting
   }
+
+  // 4. Return the verified Supabase user if backend is offline or unconfigured
+  return clientUser;
 }
 
 // --- Sign-in / sign-out ---------------------------------------------------------
@@ -130,6 +171,83 @@ export async function signInWithMagicLink(email: string): Promise<void> {
     options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
   });
   if (error) throw new Error(error.message);
+}
+
+/**
+ * Processes Supabase Auth redirect callbacks (OAuth, magic link, and confirmation tokens).
+ */
+export async function handleAuthCallback(): Promise<{
+  success: boolean;
+  error?: string;
+  user?: AuthUser;
+}> {
+  if (typeof window === 'undefined') {
+    return { success: false, error: 'Cannot run callback in server environment.' };
+  }
+
+  const hash = window.location.hash.startsWith('#')
+    ? window.location.hash.substring(1)
+    : window.location.hash;
+  const hashParams = new URLSearchParams(hash);
+  const searchParams = new URLSearchParams(window.location.search);
+
+  // Check for errors returned in either hash or query parameters
+  const errCode = hashParams.get('error_code') || searchParams.get('error_code');
+  const errDesc = hashParams.get('error_description') || searchParams.get('error_description');
+  const rawErr = hashParams.get('error') || searchParams.get('error');
+
+  if (errCode || rawErr) {
+    let msg = errDesc
+      ? decodeURIComponent(errDesc.replace(/\+/g, ' '))
+      : rawErr || 'Authentication link error';
+    if (errCode === 'otp_expired') {
+      msg = 'This verification link has expired or has already been used. Please request a fresh login link or 6-digit code.';
+    }
+    return { success: false, error: msg };
+  }
+
+  const sb = await supabase();
+  if (!sb) {
+    return { success: false, error: 'Supabase client is not available.' };
+  }
+
+  // Check PKCE query code
+  const code = searchParams.get('code');
+  if (code) {
+    const { error } = await sb.auth.exchangeCodeForSession(code);
+    if (error) {
+      return { success: false, error: error.message };
+    }
+    notifyListeners();
+    const user = await getSessionUser();
+    return { success: true, user: user ?? undefined };
+  }
+
+  // Check explicit access_token + refresh_token in hash
+  const accessToken = hashParams.get('access_token');
+  const refreshToken = hashParams.get('refresh_token');
+  if (accessToken && refreshToken) {
+    const { error } = await sb.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    });
+    if (error) {
+      return { success: false, error: error.message };
+    }
+    notifyListeners();
+    const user = await getSessionUser();
+    return { success: true, user: user ?? undefined };
+  }
+
+  // Fallback: check if detectSessionInUrl already established the session
+  const { data } = await sb.auth.getSession();
+  if (data?.session) {
+    notifyListeners();
+    const user = await getSessionUser();
+    return { success: true, user: user ?? undefined };
+  }
+
+  return { success: false, error: 'No authorization credentials or session token found in callback URL.' };
 }
 
 /** Sends a 6-digit OTP code to the given email address. */

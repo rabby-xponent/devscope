@@ -71,7 +71,19 @@ function RecruiterPortalContent() {
   const [copiedAtsId, setCopiedAtsId] = useState<string | null>(null);
 
   useEffect(() => {
-    setAccount(getRecruiterAccount());
+    const baseAccount = getRecruiterAccount();
+    if (sessionUser) {
+      setAccount({
+        ...baseAccount,
+        id: sessionUser.id,
+        name: sessionUser.name || sessionUser.handle || sessionUser.email?.split('@')[0] || baseAccount.name,
+        email: sessionUser.email || baseAccount.email,
+        title: baseAccount.title || 'Technical Talent Partner',
+        company: baseAccount.company || 'Personal Workspace',
+      });
+    } else {
+      setAccount(baseAccount);
+    }
     const list = getJobProjects();
     setProjects(list);
 
@@ -83,7 +95,7 @@ function RecruiterPortalContent() {
       const active = getActiveJobProjectId();
       setActiveJobId(active);
     }
-  }, [searchParams]);
+  }, [searchParams, sessionUser]);
 
   const activeProject = projects.find((p) => p.id === activeJobId) || projects[0];
 

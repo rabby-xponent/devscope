@@ -7,13 +7,16 @@
  * - Supabase when configured, seamless instant fallback locally
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Icon } from '@/components/icons';
+import { GitGrillLogo } from '@/components/GitGrillLogo';
 import {
   authBackend,
   signInWithGitHub,
   sendOtp,
   verifyOtp,
+  getSessionUser,
+  onSessionChange,
 } from '@/lib/auth';
 
 type Mode = 'signin' | 'signup';
@@ -35,6 +38,45 @@ export default function AuthModal({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Auto-detect when the user has confirmed via email link in another tab or callback
+  useEffect(() => {
+    let cancelled = false;
+
+    const checkSession = async () => {
+      try {
+        const u = await getSessionUser();
+        if (!cancelled && u && u.id) {
+          onSignedIn();
+        }
+      } catch {}
+    };
+
+    const off = onSessionChange(() => {
+      void checkSession();
+    });
+
+    const onStorage = (e: StorageEvent) => {
+      if (e.key && (e.key.includes('supabase') || e.key.includes('token') || e.key.includes('session'))) {
+        void checkSession();
+      }
+    };
+    window.addEventListener('storage', onStorage);
+
+    // Periodic check while waiting on OTP/link screen
+    const timer = setInterval(() => {
+      if (step === 'otp') {
+        void checkSession();
+      }
+    }, 1500);
+
+    return () => {
+      cancelled = true;
+      off();
+      window.removeEventListener('storage', onStorage);
+      clearInterval(timer);
+    };
+  }, [onSignedIn, step]);
+
   const handleGitHub = async () => {
     setBusy(true);
     setError(null);
@@ -42,7 +84,12 @@ export default function AuthModal({
       await signInWithGitHub();
       // OAuth redirects away; resumes at /auth/callback
     } catch (err: any) {
-      setError(err?.message || 'GitHub OAuth failed.');
+      const msg = err?.message || 'GitHub OAuth failed.';
+      if (msg.toLowerCase().includes('not enabled') || msg.toLowerCase().includes('unsupported provider')) {
+        setError('GitHub OAuth provider is not enabled in your Supabase project dashboard. Please use Email OTP below or enable GitHub under Supabase Auth Providers.');
+      } else {
+        setError(msg);
+      }
       setStep('error');
     } finally {
       setBusy(false);
@@ -90,7 +137,7 @@ export default function AuthModal({
       await verifyOtp(email, cleanToken);
       onSignedIn();
     } catch (err: any) {
-      setError(err?.message || 'Invalid or expired OTP code. Please try again.');
+      setError(err?.message || 'Invalid or expired OTP code. Please try again or click the link in your email.');
     } finally {
       setBusy(false);
     }
@@ -109,11 +156,12 @@ export default function AuthModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Header & Close Button */}
-        <div className="flex items-center justify-between border-b border-edge px-6 py-4">
-          <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-signal shadow-[0_0_8px_#ea580c]" />
-            <span className="font-mono text-xs font-bold tracking-widest text-content uppercase">
-              GITGRILL ACCESS
+        <div className="flex items-center justify-between border-b border-edge px-6 py-4 bg-well/40">
+          <div className="flex items-center gap-2.5">
+            <GitGrillLogo size="sm" />
+            <span className="text-edge">/</span>
+            <span className="font-mono text-[10px] font-bold tracking-widest text-signal uppercase">
+              {mode === 'signup' ? 'Create Account' : 'Workspace Access'}
             </span>
           </div>
           <button
@@ -167,14 +215,18 @@ export default function AuthModal({
           <div>
             <h2 className="font-sans text-lg font-bold text-content">
               {step === 'otp'
-                ? 'Check your email for code'
+                ? mode === 'signup'
+                  ? 'Confirm your email & account'
+                  : 'Check your email for code'
                 : mode === 'signin'
                   ? 'Welcome back to GitGrill'
                   : 'Create your workspace'}
             </h2>
             <p className="mt-1 font-sans text-xs leading-relaxed text-muted">
               {step === 'otp'
-                ? `Enter the 6-digit code sent to ${email} to sign in instantly.`
+                ? mode === 'signup'
+                  ? `We sent a confirmation link & 6-digit code to ${email}. Click the link in your email or enter the code below to complete registration.`
+                  : `We sent a sign-in link & 6-digit code to ${email}. Click the link in your email or enter the code below to access your workspace.`
                 : mode === 'signin'
                   ? 'Access your saved technical audits, candidate pipelines, and roles.'
                   : '3 free audits per rolling 30 days, saved roles, and ATS-ready dossiers. No credit card required.'}
@@ -193,21 +245,23 @@ export default function AuthModal({
           {step !== 'otp' ? (
             <div className="mt-6 space-y-4">
               {/* GitHub OAuth Button */}
-              <button
-                type="button"
-                disabled={busy || backend !== 'supabase'}
-                onClick={handleGitHub}
-                title={backend !== 'supabase' ? 'Direct GitHub OAuth requires NEXT_PUBLIC_SUPABASE_URL. Use Email OTP below.' : undefined}
-                className="flex w-full items-center justify-center gap-2.5 rounded-xl bg-content px-4 py-2.5 font-mono text-xs font-bold text-canvas shadow-xs transition-colors hover:bg-content/90 disabled:cursor-not-allowed disabled:opacity-40 outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
-              >
-                <Icon.Github className="h-4 w-4" />
-                <span>Continue with GitHub</span>
-              </button>
+              <div>
+                <button
+                  type="button"
+                  disabled={busy || backend !== 'supabase'}
+                  onClick={handleGitHub}
+                  title={backend !== 'supabase' ? 'Direct GitHub OAuth requires NEXT_PUBLIC_SUPABASE_URL. Use Email OTP below.' : undefined}
+                  className="flex w-full items-center justify-center gap-2.5 rounded-xl bg-content px-4 py-2.5 font-mono text-xs font-bold text-canvas shadow-xs transition-colors hover:bg-content/90 disabled:cursor-not-allowed disabled:opacity-40 outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
+                >
+                  <Icon.Github className="h-4 w-4" />
+                  <span>Continue with GitHub</span>
+                </button>
+              </div>
 
               <div className="flex items-center gap-3 py-1">
                 <span className="h-px flex-1 bg-edge" />
                 <span className="font-mono text-[10px] uppercase tracking-wider text-muted">
-                  or sign in with Email OTP
+                  {mode === 'signup' ? 'or sign up with Email OTP / Link' : 'or sign in with Email OTP / Link'}
                 </span>
                 <span className="h-px flex-1 bg-edge" />
               </div>
@@ -237,7 +291,7 @@ export default function AuthModal({
                   disabled={busy || !email.trim()}
                   className="w-full rounded-xl bg-signal px-4 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-xs transition-all hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60 outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
                 >
-                  {busy ? 'Sending Code…' : 'Send 6-Digit OTP Code →'}
+                  {busy ? 'Sending Link & Code…' : mode === 'signup' ? 'Send Sign-Up Code & Link →' : 'Send Sign-In Code & Link →'}
                 </button>
               </form>
 
@@ -267,33 +321,48 @@ export default function AuthModal({
                 </div>
               )}
 
-              <form onSubmit={handleVerifyOtp} className="space-y-4">
-                <div>
-                  <label className="block font-mono text-[11px] font-semibold text-content uppercase tracking-wider mb-1.5">
-                    Enter 6-Digit Verification Code
+              {/* Instant Magic Link Banner */}
+              <div className="rounded-xl border border-signal/40 bg-signal/10 p-4 text-left shadow-xs">
+                <div className="flex items-center gap-2 text-signal font-mono text-xs font-bold">
+                  <Icon.Mail className="h-4 w-4" />
+                  <span>One-Click Email Link Sent!</span>
+                </div>
+                <p className="mt-1.5 font-sans text-xs leading-relaxed text-content/90">
+                  Open your email and click the <strong>&quot;Confirm email address&quot;</strong> button to authenticate instantly. <strong>No 6-digit code is needed!</strong> This modal will automatically detect when you confirm.
+                </p>
+                <div className="mt-2.5 flex items-center gap-2 font-mono text-[10px] text-muted">
+                  <span className="h-2 w-2 rounded-full bg-signal animate-pulse" />
+                  <span>Waiting for your email confirmation…</span>
+                </div>
+              </div>
+
+              {/* Optional 6-digit OTP code fallback */}
+              <div className="rounded-xl border border-edge bg-well/40 p-3.5">
+                <form onSubmit={handleVerifyOtp} className="space-y-3">
+                  <label className="block font-mono text-[11px] font-semibold text-content uppercase tracking-wider">
+                    Received a 6-Digit Code Instead?
                   </label>
-                  <div className="flex items-center gap-2 rounded-xl border border-edge bg-well px-3.5 py-2.5 focus-within:border-signal focus-within:ring-2 focus-within:ring-signal/15">
+                  <div className="flex items-center gap-2 rounded-xl border border-edge bg-card px-3.5 py-2 focus-within:border-signal focus-within:ring-2 focus-within:ring-signal/15">
                     <Icon.Lock className="h-4 w-4 flex-none text-muted" />
                     <input
                       type="text"
                       maxLength={6}
-                      autoFocus
                       value={otpCode}
                       onChange={(e) => setOtpCode(e.target.value.replace(/[^0-9a-zA-Z]/g, ''))}
-                      placeholder="123456"
-                      className="w-full bg-transparent font-mono text-base font-bold tracking-[0.4em] text-center text-content outline-none placeholder:text-muted/40"
+                      placeholder="Enter 6 digits"
+                      className="w-full bg-transparent font-mono text-sm font-bold tracking-[0.3em] text-center text-content outline-none placeholder:text-muted/40 placeholder:tracking-normal"
                     />
                   </div>
-                </div>
 
-                <button
-                  type="submit"
-                  disabled={busy || otpCode.trim().length < 6}
-                  className="w-full rounded-xl bg-signal px-4 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-xs transition-all hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60 outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
-                >
-                  {busy ? 'Verifying…' : 'Verify & Access Workspace →'}
-                </button>
-              </form>
+                  <button
+                    type="submit"
+                    disabled={busy || otpCode.trim().length < 6}
+                    className="w-full rounded-xl border border-edge bg-card py-2 font-mono text-xs font-semibold text-content shadow-xs transition-colors hover:border-signal/50 hover:text-signal disabled:cursor-not-allowed disabled:opacity-40 outline-none focus-visible:ring-2 focus-visible:ring-signal/40"
+                  >
+                    {busy ? 'Verifying Code…' : 'Submit 6-Digit Code →'}
+                  </button>
+                </form>
+              </div>
 
               <div className="flex items-center justify-between font-mono text-[11px] text-muted pt-2 border-t border-edge">
                 <button
