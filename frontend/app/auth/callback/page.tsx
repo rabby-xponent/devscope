@@ -3,7 +3,7 @@
 import React, { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { handleAuthCallback } from '@/lib/auth';
+import { handleAuthCallback, updatePassword, onAuthRecovery } from '@/lib/auth';
 import { useSession } from '@/components/SessionProvider';
 import { GitGrillLogo } from '@/components/GitGrillLogo';
 import { Icon } from '@/components/icons';
@@ -14,11 +14,24 @@ function AuthCallbackContent() {
   const searchParams = useSearchParams();
   const { refresh, openSignIn } = useSession();
 
-  const [status, setStatus] = useState<'processing' | 'success' | 'error'>('processing');
+  const [status, setStatus] = useState<'processing' | 'recovery' | 'success' | 'error'>('processing');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPw, setShowPw] = useState(false);
+  const [showConfirmPw, setShowConfirmPw] = useState(false);
+  const [recoveryBusy, setRecoveryBusy] = useState(false);
+  const [recoveryError, setRecoveryError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
+
+    // Immediately capture Supabase PASSWORD_RECOVERY event
+    const offRecovery = onAuthRecovery(() => {
+      if (!cancelled) {
+        setStatus('recovery');
+      }
+    });
 
     async function processAuth() {
       try {
@@ -26,6 +39,11 @@ function AuthCallbackContent() {
         if (cancelled) return;
 
         if (res.success) {
+          if (res.isRecovery) {
+            setStatus('recovery');
+            return;
+          }
+
           setStatus('success');
           await refresh();
 
@@ -34,8 +52,10 @@ function AuthCallbackContent() {
           const defaultDest = savedRole === 'recruiter' ? '/recruiter' : '/developer';
           const nextUrl = searchParams.get('next') || defaultDest;
           setTimeout(() => {
-            router.push(nextUrl);
-          }, 1000);
+            if (!cancelled) {
+              router.push(nextUrl);
+            }
+          }, 1200);
         } else {
           setStatus('error');
           setErrorMessage(res.error || 'Authentication link is invalid or has expired.');
@@ -51,8 +71,38 @@ function AuthCallbackContent() {
 
     return () => {
       cancelled = true;
+      offRecovery();
     };
   }, [refresh, router, searchParams]);
+
+  async function handleRecoverySubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (newPassword.length < 6) {
+      setRecoveryError('Password must be at least 6 characters.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setRecoveryError('Passwords do not match.');
+      return;
+    }
+
+    setRecoveryBusy(true);
+    setRecoveryError(null);
+    try {
+      await updatePassword(newPassword);
+      setStatus('success');
+      await refresh();
+      const savedRole = typeof window !== 'undefined' ? localStorage.getItem('gitgrill_user_role') : null;
+      const defaultDest = savedRole === 'recruiter' ? '/recruiter' : '/developer';
+      setTimeout(() => {
+        router.push(defaultDest);
+      }, 1500);
+    } catch (err: any) {
+      setRecoveryError(err?.message || 'Failed to update password.');
+    } finally {
+      setRecoveryBusy(false);
+    }
+  }
 
   return (
     <div className="flex-1 flex items-center justify-center p-6">
@@ -74,6 +124,87 @@ function AuthCallbackContent() {
           </div>
         )}
 
+        {status === 'recovery' && (
+          <div className="space-y-4 text-left">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-signal/40 bg-signal/10 text-signal shadow-xs">
+              <Icon.Lock className="h-7 w-7 text-signal" />
+            </div>
+            <div className="text-center">
+              <h2 className="font-mono text-base font-bold uppercase tracking-wider text-content">
+                Set New Password
+              </h2>
+              <p className="font-sans text-xs text-muted mt-1">
+                Your reset link is verified. Choose a secure new password for your account.
+              </p>
+            </div>
+
+            {recoveryError && (
+              <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-2.5 font-mono text-xs text-rose-500">
+                {recoveryError}
+              </div>
+            )}
+
+            <form onSubmit={handleRecoverySubmit} className="space-y-3 pt-2">
+              <div>
+                <label className="block font-mono text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
+                  New Password (min 6 characters)
+                </label>
+                <div className="flex items-center gap-2 rounded-xl border border-edge bg-well px-3.5 py-2.5 focus-within:border-signal">
+                  <input
+                    type={showPw ? 'text' : 'password'}
+                    required
+                    minLength={6}
+                    autoFocus
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full bg-transparent font-mono text-xs text-content outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPw((v) => !v)}
+                    className="text-muted hover:text-content"
+                  >
+                    {showPw ? <Icon.EyeOff className="h-4 w-4" /> : <Icon.Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-mono text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
+                  Confirm New Password
+                </label>
+                <div className="flex items-center gap-2 rounded-xl border border-edge bg-well px-3.5 py-2.5 focus-within:border-signal">
+                  <input
+                    type={showConfirmPw ? 'text' : 'password'}
+                    required
+                    minLength={6}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full bg-transparent font-mono text-xs text-content outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPw((v) => !v)}
+                    className="text-muted hover:text-content"
+                  >
+                    {showConfirmPw ? <Icon.EyeOff className="h-4 w-4" /> : <Icon.Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={recoveryBusy || newPassword.length < 6 || newPassword !== confirmPassword}
+                className="w-full rounded-xl bg-signal py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-xs hover:brightness-105 disabled:opacity-50"
+              >
+                {recoveryBusy ? 'Saving Password…' : 'Save Password & Access Workspace →'}
+              </button>
+            </form>
+          </div>
+        )}
+
         {status === 'success' && (
           <div className="space-y-4">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-emerald-500/40 bg-emerald-500/10 text-emerald-500 shadow-xs">
@@ -85,6 +216,16 @@ function AuthCallbackContent() {
             <p className="font-sans text-xs leading-relaxed text-muted">
               Identity confirmed. Redirecting you to your GitGrill workspace…
             </p>
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => setStatus('recovery')}
+                className="inline-flex items-center gap-1.5 font-mono text-xs text-signal hover:underline"
+              >
+                <Icon.Lock className="h-3.5 w-3.5" />
+                <span>Want to set or change your account password? Click here →</span>
+              </button>
+            </div>
           </div>
         )}
 

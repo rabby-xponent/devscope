@@ -253,6 +253,9 @@ export async function resetPassword(email: string): Promise<void> {
   const cleanEmail = email.trim().toLowerCase();
   const sb = await supabase();
   if (sb) {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('gitgrill_pending_recovery', '1');
+    }
     const { error } = await sb.auth.resetPasswordForEmail(cleanEmail, {
       redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
     });
@@ -266,7 +269,40 @@ export async function updatePassword(newPassword: string): Promise<void> {
   if (sb) {
     const { error } = await sb.auth.updateUser({ password: newPassword });
     if (error) throw new Error(error.message);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('gitgrill_pending_recovery');
+    }
   }
+}
+
+/** Listens for Supabase PASSWORD_RECOVERY auth state changes. */
+export function onAuthRecovery(callback: () => void): () => void {
+  let unsub: (() => void) | null = null;
+  supabase().then((sb) => {
+    if (sb) {
+      const { data } = sb.auth.onAuthStateChange((event: string) => {
+        if (event === 'PASSWORD_RECOVERY') {
+          callback();
+        }
+      });
+      unsub = () => data.subscription.unsubscribe();
+    }
+  });
+  return () => {
+    if (unsub) unsub();
+  };
+}
+
+function isRecoverySession(session: any): boolean {
+  if (!session?.access_token) return false;
+  try {
+    const payload = JSON.parse(atob(session.access_token.split('.')[1]));
+    const amr = payload?.amr;
+    if (Array.isArray(amr) && amr.some((entry: any) => entry?.method === 'recovery' || entry === 'recovery')) {
+      return true;
+    }
+  } catch {}
+  return false;
 }
 
 /**
@@ -276,6 +312,7 @@ export async function handleAuthCallback(): Promise<{
   success: boolean;
   error?: string;
   user?: AuthUser;
+  isRecovery?: boolean;
 }> {
   if (typeof window === 'undefined') {
     return { success: false, error: 'Cannot run callback in server environment.' };
@@ -287,6 +324,17 @@ export async function handleAuthCallback(): Promise<{
   const hashParams = new URLSearchParams(hash);
   const searchParams = new URLSearchParams(window.location.search);
 
+  const localRecoveryPending =
+    typeof window !== 'undefined' && localStorage.getItem('gitgrill_pending_recovery') === '1';
+
+  let isRecovery =
+    hashParams.get('type') === 'recovery' ||
+    searchParams.get('type') === 'recovery' ||
+    hash.includes('type=recovery') ||
+    window.location.search.includes('type=recovery') ||
+    window.location.href.includes('recovery') ||
+    localRecoveryPending;
+
   // Check for errors returned in either hash or query parameters
   const errCode = hashParams.get('error_code') || searchParams.get('error_code');
   const errDesc = hashParams.get('error_description') || searchParams.get('error_description');
@@ -297,9 +345,9 @@ export async function handleAuthCallback(): Promise<{
       ? decodeURIComponent(errDesc.replace(/\+/g, ' '))
       : rawErr || 'Authentication link error';
     if (errCode === 'otp_expired') {
-      msg = 'This verification link has expired or has already been used. Please request a fresh login link or 6-digit code.';
+      msg = 'This verification link has expired or has already been used. Please request a fresh login link or password reset.';
     }
-    return { success: false, error: msg };
+    return { success: false, error: msg, isRecovery };
   }
 
   const sb = await supabase();
@@ -310,37 +358,46 @@ export async function handleAuthCallback(): Promise<{
   // Check PKCE query code
   const code = searchParams.get('code');
   if (code) {
-    const { error } = await sb.auth.exchangeCodeForSession(code);
+    const { data, error } = await sb.auth.exchangeCodeForSession(code);
     if (error) {
-      return { success: false, error: error.message };
+      return { success: false, error: error.message, isRecovery };
+    }
+    if (isRecoverySession(data?.session)) {
+      isRecovery = true;
     }
     notifyListeners();
     const user = await getSessionUser();
-    return { success: true, user: user ?? undefined };
+    return { success: true, user: user ?? undefined, isRecovery };
   }
 
   // Check explicit access_token + refresh_token in hash
   const accessToken = hashParams.get('access_token');
   const refreshToken = hashParams.get('refresh_token');
   if (accessToken && refreshToken) {
-    const { error } = await sb.auth.setSession({
+    const { data, error } = await sb.auth.setSession({
       access_token: accessToken,
       refresh_token: refreshToken,
     });
     if (error) {
-      return { success: false, error: error.message };
+      return { success: false, error: error.message, isRecovery };
+    }
+    if (isRecoverySession(data?.session)) {
+      isRecovery = true;
     }
     notifyListeners();
     const user = await getSessionUser();
-    return { success: true, user: user ?? undefined };
+    return { success: true, user: user ?? undefined, isRecovery };
   }
 
   // Fallback: check if detectSessionInUrl already established the session
   const { data } = await sb.auth.getSession();
   if (data?.session) {
+    if (isRecoverySession(data?.session)) {
+      isRecovery = true;
+    }
     notifyListeners();
     const user = await getSessionUser();
-    return { success: true, user: user ?? undefined };
+    return { success: true, user: user ?? undefined, isRecovery };
   }
 
   return { success: false, error: 'No authorization credentials or session token found in callback URL.' };
